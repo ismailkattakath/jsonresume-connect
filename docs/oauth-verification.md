@@ -61,8 +61,11 @@ kept for the record.
 
 ### A. Cloud project
 
-1. **Cloud console › project picker › New project.** Name it `json-resume-connect`. Attach a
-   billing account: the [Configure OAuth][coauth] prerequisites list "Enable billing".
+1. **Cloud console › project picker › New project.** Name it **and set the project ID** to
+   `jsonresume-connect` (the repo slug; the ID is permanent and defaults to a random one). Attach
+   a billing account: the [Configure OAuth][coauth] prerequisites list "Enable billing".
+   **Done 2026-10-27:** project `jsonresume-connect`, number `560535498451`, org `kattakath.com`,
+   billing linked, the three APIs below enabled.
 2. **APIs & Services › Library.** Enable **Google Workspace Marketplace SDK**, **Google Drive
    API** and **Google Docs API** (the manifest uses the Drive v3 and Docs v1 advanced services).
 3. **Apps Script editor › Project Settings › Google Cloud Platform (GCP) Project › Change
