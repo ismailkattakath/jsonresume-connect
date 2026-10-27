@@ -1,0 +1,43 @@
+name: DCO
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dco-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  dco:
+    name: dco
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Every commit has a matching Signed-off-by
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        # Developer Certificate of Origin (https://developercertificate.org/): the trailer
+        # must name the commit author, as `git commit -s` writes it. Bot commits
+        # (release-please, Dependabot) carry no sign-off and are exempt.
+        run: |
+          fail=0
+          for c in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            name=$(git log -1 --format='%an' "$c"); email=$(git log -1 --format='%ae' "$c")
+            case "$email" in *'[bot]@users.noreply.github.com') echo "skip bot $c"; continue;; esac
+            if git log -1 --format='%(trailers:key=Signed-off-by,valueonly)' "$c" | grep -qiF "$name <$email>"; then
+              echo "ok   $c"
+            else
+              echo "::error::commit $c has no 'Signed-off-by: $name <$email>' (use git commit -s)"; fail=1
+            fi
+          done
+          exit "$fail"
