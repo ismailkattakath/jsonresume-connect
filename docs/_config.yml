@@ -1,0 +1,15 @@
+# GitHub Pages (Settings › Pages › Deploy from a branch › main › /docs).
+# Serves the public pages the Marketplace listing and OAuth consent screen link to:
+#   /            index.md   (homepage: must describe the app and link the privacy policy)
+#   /privacy/    privacy.md
+#   /terms/      terms.md
+title: JSON Resume to Doc
+description: Résumé steps for Google Workspace Studio™ flows — JSON Resume in, a document in Google Docs™ out.
+theme: jekyll-theme-primer
+# Internal working docs stay in the repo but are not published.
+exclude:
+  - design-review.md
+  - oauth-verification.md
+  - marketplace-listing.md
+  - naming.md
+  - README-intro.md
