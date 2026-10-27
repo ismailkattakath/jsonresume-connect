@@ -1,190 +1,235 @@
 /**
- * Tests for the pure logic of LoadJsonResume.gs.
+ * Tests for the step half (src/JsonResumeToDoc.gs): the Studio payload shape,
+ * the /api/oauth/resume body, strict validation, the connect cards and the
+ * plain-text flattening.
  *
- * Apps Script cannot run off Google's servers, so the Workspace Studio
- * integration itself has to be verified by installing the add-on. Everything
- * that does NOT touch CardService or UrlFetchApp is plain JavaScript though,
- * and that is where the bugs live: the formInputs shape, the URL guard, the
- * per-section headline formatting. Those are tested here, against REAL resumes
- * fetched from the public JSON Resume registry rather than a fixture someone
- * wrote to match the code.
- *
- * Run: nix run nixpkgs#nodejs -- addon/test-loadjsonresume.mjs
+ * Apps Script cannot run off Google's servers, so the Studio integration
+ * itself is verified by installing the add-on. Everything that does not touch
+ * a Google service is plain JavaScript, and that is where the bugs live.
  */
 
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { createContext, runInContext } from 'node:vm';
+import {
+  LIVE_EVENT,
+  check,
+  fakeOAuth2,
+  loadProject,
+  propertyStore,
+  recordingCardService,
+} from './helpers.mjs';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, '..', 'src', 'JsonResumeToDoc.gs'), 'utf8');
-
-// Load the script's pure half into a fresh context.
-//
-// `node:vm` rather than `new Function(...)`: the latter needs the source
-// CONCATENATED into a function body, which is a code-injection shape even when
-// the string is our own file — and a security hook flagged it, correctly. vm is
-// the purpose-built stdlib API, takes the source as a value rather than
-// splicing it into a template, and states the intent plainly.
-//
-// No stubs: CardService and UrlFetchApp are Apps Script globals, and the two
-// functions that use them are never called here. A ReferenceError would mean
-// something under test had reached for a global it should not.
-const ctx = createContext({ console, fetch, AbortSignal });
-// Parsing the file IS the first test. A syntax error here used to surface as a
-// bare Node crash with no context; an edit that breaks the .gs must fail loudly
-// and say where, not look like a harness problem.
-try {
-  runInContext(src, ctx, { filename: 'LoadJsonResume.gs' });
-  console.log('  ok   LoadJsonResume.gs parses');
-} catch (e) {
-  console.log(`  FAIL LoadJsonResume.gs does not parse — ${e.message}`);
-  process.exit(1);
-}
-
-const failures = [];
-const check = (name, cond, detail = '') => {
-  if (cond) console.log(`  ok   ${name}`);
-  else { console.log(`  FAIL ${name} ${detail}`); failures.push(name); }
-};
+const ctx = loadProject();
 
 // ---- the /api/oauth/resume body -------------------------------------------
-// Load is Connect-only (2026-10-27): the body is { username, url, resume }.
-check('unwraps { username, resume }',
-  ctx.unwrapResumePayload({ username: 'u', url: 'x', resume: { basics: { name: 'A' } } }).resume.basics.name === 'A');
-check('keeps the username', ctx.unwrapResumePayload({ username: 'u', resume: {} }).username === 'u');
-check('a bare resume passes through', ctx.unwrapResumePayload({ basics: { name: 'B' } }).resume.basics.name === 'B');
-check('a non-object resume field is not unwrapped', ctx.unwrapResumePayload({ resume: 'x' }).resume.resume === 'x');
-
+// The body is { username, url, resume } (measured 2026-10-27).
+check(
+  'unwraps { username, resume }',
+  ctx.unwrapResumePayload({username: 'u', url: 'x', resume: {basics: {name: 'A'}}})
+    .resume.basics.name === 'A'
+);
+check('keeps the username', ctx.unwrapResumePayload({username: 'u', resume: {}}).username === 'u');
+check(
+  'a bare resume passes through',
+  ctx.unwrapResumePayload({basics: {name: 'B'}}).resume.basics.name === 'B'
+);
+check(
+  'a non-object resume field is not unwrapped',
+  ctx.unwrapResumePayload({resume: 'x'}).resume.resume === 'x'
+);
 
 // ---- Studio action-invocation shape ---------------------------------------
 // THESE TESTS USED TO ENCODE THE BUG. They asserted the generic add-on card
-// shape, formInputs[field].stringInputs.value[0] — which is a real shape, just
-// not the one a Studio step execution delivers — so they passed while the step
-// could never have read its URL in production. A test that agrees with the code
-// about the wrong thing is worse than no test. They now assert the payload
-// Google's own calculator reads:
+// shape, formInputs[field].stringInputs.value[0], which is real but not what
+// a Studio step execution delivers, so they passed while the step could never
+// have read its input in production. A test that agrees with the code about
+// the wrong thing is worse than no test. They now assert the payload Google's
+// own calculator reads:
 //   event.workflow.actionInvocation.inputs["value1"].integerValues[0]
-// THE REAL PAYLOAD, captured from a live run on 2026-09-30 (Apps Script
-// Executions, onExecuteLoadJsonResume, 0.91 s, Completed). This is no longer a
-// guess reconstructed from documentation — it is what Google actually sent.
-// Only the URL is generalised; every key and nesting level is verbatim.
-//
-// Note what `commonEventObject` contains here: platform and hostApp, and NOTHING
-// ELSE. No formInputs. The original implementation read
-// commonEventObject.formInputs[...] and would have resolved undefined against
-// this exact object.
-//
-// Two fields no documentation mentioned and no survey found: `triggerId` on the
-// actionInvocation, and `hostApp` appearing TWICE with different values —
-// "WORKFLOW" inside commonEventObject, "flows" at the top level.
-const LIVE_EVENT = {
-  clientPlatform: 'web',
-  commonEventObject: { platform: 'WEB', hostApp: 'WORKFLOW' },
-  workflow: {
-    triggerEventSource: 'TRIGGER_EVENT_SOURCE_AUTOMATED',
-    actionInvocation: {
-      triggerId: '00000000-0000-0000-0000-000000000000',
-      inputs: { resumeUrl: { stringValues: ['https://example.com/resume.json'] } },
-    },
-    executionMetadata: {},
-  },
-  hostApp: 'flows',
-};
-
-const invocation = (inputs) => ({ workflow: { actionInvocation: { inputs } } });
+const invocation = inputs => ({workflow: {actionInvocation: {inputs}}});
 const readFromEvent = (ev, id) => {
-  const inputs = (ev && ev.workflow && ev.workflow.actionInvocation && ev.workflow.actionInvocation.inputs) || {};
+  const inputs =
+    (ev && ev.workflow && ev.workflow.actionInvocation && ev.workflow.actionInvocation.inputs) ||
+    {};
   return ctx.readActionInput(inputs, id);
 };
 
-check('reads stringValues from an action invocation',
-  readFromEvent(invocation({ resumeUrl: { stringValues: ['https://a/r.json'] } }), 'resumeUrl') === 'https://a/r.json');
-check('trims whitespace',
-  readFromEvent(invocation({ resumeUrl: { stringValues: ['  https://a/r.json  '] } }), 'resumeUrl') === 'https://a/r.json');
-check('missing field yields empty string', readFromEvent(invocation({}), 'resumeUrl') === '');
-check('empty stringValues array yields empty string',
-  readFromEvent(invocation({ resumeUrl: { stringValues: [] } }), 'resumeUrl') === '');
-check('a missing workflow envelope does not throw', readFromEvent({}, 'resumeUrl') === '');
-check('an undefined event does not throw', readFromEvent(undefined, 'resumeUrl') === '');
+check(
+  'reads stringValues from an action invocation',
+  readFromEvent(invocation({title: {stringValues: ['CV for X']}}), 'title') === 'CV for X'
+);
+check(
+  'trims whitespace',
+  readFromEvent(invocation({title: {stringValues: ['  CV for X  ']}}), 'title') === 'CV for X'
+);
+check('missing field yields empty string', readFromEvent(invocation({}), 'title') === '');
+check(
+  'empty stringValues array yields empty string',
+  readFromEvent(invocation({title: {stringValues: []}}), 'title') === ''
+);
+check('a missing workflow envelope does not throw', readFromEvent({}, 'title') === '');
+check('an undefined event does not throw', readFromEvent(undefined, 'title') === '');
 
 // THE LIVE PAYLOAD ITSELF. If this ever stops parsing, the platform changed.
-check('reads the captured live event',
-  readFromEvent(LIVE_EVENT, 'resumeUrl') === 'https://example.com/resume.json');
-check('live event carries no formInputs to fall back on',
-  LIVE_EVENT.commonEventObject.formInputs === undefined);
+check(
+  'reads the captured live event',
+  readFromEvent(LIVE_EVENT, 'resumeUrl') === 'https://example.com/resume.json'
+);
+check(
+  'live event carries no formInputs to fall back on',
+  LIVE_EVENT.commonEventObject.formInputs === undefined
+);
 
-// REGRESSION GUARD. The old generic-card payload must NOT satisfy the reader —
-// if it ever does again, the wrong-object bug has come back.
-check('the generic formInputs shape is NOT accepted',
-  ctx.readActionInput({ resumeUrl: { stringInputs: { value: ['https://a/r.json'] } } }, 'resumeUrl') === '');
-check('an integer input does not masquerade as a string',
-  ctx.readActionInput({ n: { integerValues: [2] } }, 'n') === '');
+// REGRESSION GUARD. The old generic-card payload must NOT satisfy the reader.
+check(
+  'the generic formInputs shape is NOT accepted',
+  ctx.readActionInput({title: {stringInputs: {value: ['x']}}}, 'title') === ''
+);
+check(
+  'an integer input does not masquerade as a string',
+  ctx.readActionInput({n: {integerValues: [2]}}, 'n') === ''
+);
 
-// ---- section shape check ---------------------------------------------------
-check('accepts a sparse but valid resume', ctx.hasAnyKnownSection({ basics: { name: 'A' } }) === true);
-check('accepts a work-only resume', ctx.hasAnyKnownSection({ work: [] }) === true);
-check('rejects an unrelated object', ctx.hasAnyKnownSection({ hello: 'world' }) === false);
+// ---- validation: strict, fails, never repairs ------------------------------
+check('accepts a sparse but valid resume', ctx.hasAnyKnownSection({basics: {name: 'A'}}) === true);
+check('accepts a work-only resume', ctx.hasAnyKnownSection({work: []}) === true);
+check('rejects an unrelated object', ctx.hasAnyKnownSection({hello: 'world'}) === false);
 
-// ---- outputs contract ------------------------------------------------------
-// Workspace Studio errors the step unless EVERY declared output comes back.
-const declared = ['resume', 'resumeText', 'name', 'label', 'email'];
-// buildOutputs is the pure half; outputs() wraps it in AddOnsResponseService,
-// which only exists on Google's servers and so cannot be exercised here.
-const got = ctx.buildOutputs('a', 'b', 'c', 'd', 'e');
-check('returns exactly the declared outputs',
-  declared.every(k => k in got) && Object.keys(got).length === declared.length,
-  JSON.stringify(Object.keys(got)));
+const problem = o => ctx.resumeProblem(o);
+check('a JSON array is an error', /not a JSON object/.test(problem([1, 2])));
+check('null is an error', /not a JSON object/.test(problem(null)));
+check('an unrelated object is an error', /no jsonresume\.org sections/.test(problem({hello: 'world'})));
+check('a plain resume passes', problem({basics: {name: 'A'}}) === '');
+check(
+  'a schema-valid resume passes',
+  problem({
+    basics: {name: 'A'},
+    work: [{name: 'X', startDate: '2024-08', endDate: '2026-03-01', highlights: ['h']}],
+    skills: [{name: 'S', keywords: ['k']}],
+    education: [{startDate: '2006', courses: []}],
+  }) === ''
+);
+check('work as an object is rejected', /work must be an array/.test(problem({work: {name: 'X'}})));
+check('a string entry is rejected', /work\[0\] must be an object/.test(problem({work: ['X']})));
+check(
+  'highlights as a string is rejected',
+  /work\[0\]\.highlights must be an array of strings/.test(problem({work: [{highlights: 'h'}]}))
+);
+check(
+  'a prose date is rejected',
+  /work\[0\]\.startDate must be YYYY/.test(problem({work: [{startDate: 'Aug 2024'}]}))
+);
+check(
+  'an empty endDate (current role) passes',
+  problem({work: [{startDate: '2024', endDate: ''}]}) === ''
+);
+check('basics.name as a number is rejected', /basics\.name must be a string/.test(problem({basics: {name: 1}})));
+check(
+  'extra unknown keys are allowed',
+  problem({basics: {name: 'A'}, meta: {x: 1}, work: [{foo: 'bar'}]}) === ''
+);
+check(
+  'problems are capped at 5 with a count',
+  /\(and 1 more\)/.test(problem({work: ['a', 'b', 'c', 'd', 'e', 'f']}))
+);
+check(
+  'a schema problem names the schema',
+  /^it does not match the jsonresume\.org schema: /.test(problem({work: {}}))
+);
 
-// ---- headline formatting per section ---------------------------------------
-check('work headline carries position, employer and dates',
-  ctx.headlineFor('work', { position: 'Principal Engineer', name: 'Acme', startDate: '2020-01', endDate: '2024-06' })
-    === 'Principal Engineer — Acme  (2020-01 – 2024-06)');
-check('an open-ended role reads as present',
-  ctx.headlineFor('work', { position: 'Engineer', name: 'Acme', startDate: '2024-01' })
-    .includes('present'));
-check('education uses studyType/area/institution',
-  ctx.headlineFor('education', { studyType: 'BSc', area: 'Computer Science', institution: 'A University' })
-    .startsWith('BSc Computer Science — A University'));
-check('skills carry no dates',
-  ctx.headlineFor('skills', { name: 'Nix', level: 'Advanced' }) === 'Nix — Advanced');
-check('certificates use issuer and date',
-  ctx.headlineFor('certificates', { name: 'CKA', issuer: 'CNCF', date: '2023-05' })
-    === 'CKA — CNCF  (2023-05)');
-
-// ---- real resumes from the live registry -----------------------------------
-const people = ['thomasdavis', 'jsonresume'];
-for (const who of people) {
-  const url = `https://registry.jsonresume.org/${who}.json`;
-  let resume;
-  try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(20000) });
-    if (!r.ok) { console.log(`  skip registry/${who} (HTTP ${r.status})`); continue; }
-    resume = await r.json();
-  } catch (e) {
-    console.log(`  skip registry/${who} (${e.message})`);
-    continue;
-  }
-  check(`registry/${who}: recognised as a resume`, ctx.hasAnyKnownSection(resume) === true);
-  const text = ctx.toPlainText(resume);
-  check(`registry/${who}: flattens to non-trivial text`, text.length > 300, `len=${text.length}`);
-  check(`registry/${who}: no undefined/null leaked into the text`,
-    !text.includes('undefined') && !text.includes('null'));
-  check(`registry/${who}: name appears when present`,
-    !resume.basics?.name || text.includes(resume.basics.name));
-  check(`registry/${who}: no run of blank lines`, !/\n{3,}/.test(text));
-  console.log(`       ${who}: ${text.length} chars, ${text.split('\n').length} lines`);
+// ---- connect cards ----------------------------------------------------------
+// Studio renders hint text as HTML, so an <angle> placeholder vanishes. Build
+// every card through the recording stub and read the text.
+function cardsFor({hasAccess}) {
+  const {stub, calls} = recordingCardService();
+  const c = loadProject({
+    CardService: stub,
+    ...fakeOAuth2({hasAccess}),
+    PropertiesService: {
+      getUserProperties: () => propertyStore({JR_USERNAME: 'ada'}),
+      getScriptProperties: () => propertyStore({JR_CLIENT_ID: 'test-client'}),
+    },
+    CacheService: {getUserCache: () => ({})},
+    LockService: {getUserLock: () => ({})},
+  });
+  c.jsonResumeConnectCard();
+  c.onConfigJsonResumeToDoc();
+  return calls;
 }
+const signedOut = cardsFor({hasAccess: false});
+const signedIn = cardsFor({hasAccess: true});
+const texts = calls => calls.filter(([k]) => k === 'setText').map(([, a]) => String(a[0]));
+const hints = [...signedOut, ...signedIn]
+  .filter(([k]) => k === 'setHint' || k === 'setTitle')
+  .map(([, a]) => String(a[0]));
+
+check('card hints were captured', hints.length >= 2, String(hints.length));
+check(
+  'no card hint or title contains "<"',
+  hints.every(h => !h.includes('<')),
+  JSON.stringify(hints.filter(h => h.includes('<')))
+);
+check(
+  'the connect card says to refresh, in bold, without a link',
+  texts(signedOut).includes('After connecting, <b>refresh</b> this page.')
+);
+check(
+  'the connect card offers "Connect JSON Resume" through an AuthorizationAction',
+  texts(signedOut).includes('Connect JSON Resume') &&
+    signedOut.some(([k]) => k === 'setAuthorizationAction')
+);
+check(
+  'signed out, the config throws the AuthorizationException',
+  signedOut.some(([k]) => k === 'throwException')
+);
+check(
+  'signed in, the card names the account and offers Disconnect',
+  texts(signedIn).some(t => t.includes('as <b>@ada</b>')) && texts(signedIn).includes('Disconnect')
+);
+check(
+  'signed in, the card carries the title field, accepting variables',
+  signedIn.some(([k, a]) => k === 'setFieldName' && a[0] === 'title') &&
+    signedIn.some(([k, a]) => k === 'setIncludeVariables' && a[0] === true)
+);
+
+// ---- headline formatting per section (resumeText) ---------------------------
+check(
+  'work headline carries position, employer and dates',
+  ctx.headlineFor('work', {
+    position: 'Principal Engineer',
+    name: 'Acme',
+    startDate: '2020-01',
+    endDate: '2024-06',
+  }) === 'Principal Engineer — Acme  (2020-01 – 2024-06)'
+);
+check(
+  'an open-ended role reads as present',
+  ctx.headlineFor('work', {position: 'Engineer', name: 'Acme', startDate: '2024-01'}).includes('present')
+);
+check(
+  'education uses studyType/area/institution',
+  ctx
+    .headlineFor('education', {studyType: 'BSc', area: 'Computer Science', institution: 'A University'})
+    .startsWith('BSc Computer Science — A University')
+);
+check('skills carry no dates', ctx.headlineFor('skills', {name: 'Nix', level: 'Advanced'}) === 'Nix — Advanced');
+check(
+  'certificates use issuer and date',
+  ctx.headlineFor('certificates', {name: 'CKA', issuer: 'CNCF', date: '2023-05'}) === 'CKA — CNCF  (2023-05)'
+);
 
 // ---- degenerate inputs must not throw --------------------------------------
-for (const [label, value] of [['empty object', {}], ['nulls', { basics: null, work: null }],
-  ['wrong types', { basics: 'x', work: 'y', skills: 42 }],
-  ['array items that are not objects', { work: ['a', null, 3] }]]) {
-  try { ctx.toPlainText(value); check(`degenerate: ${label}`, true); }
-  catch (e) { check(`degenerate: ${label}`, false, e.message); }
+for (const [label, value] of [
+  ['empty object', {}],
+  ['nulls', {basics: null, work: null}],
+  ['wrong types', {basics: 'x', work: 'y', skills: 42}],
+  ['array items that are not objects', {work: ['a', null, 3]}],
+]) {
+  let ok = true;
+  let detail = '';
+  try {
+    ctx.toPlainText(value);
+  } catch (e) {
+    ok = false;
+    detail = e.message;
+  }
+  check(`degenerate: ${label}`, ok, detail);
 }
-
-console.log();
-if (failures.length) { console.log(`${failures.length} FAILED: ${failures.join(', ')}`); process.exit(1); }
-console.log('all LoadJsonResume properties hold');

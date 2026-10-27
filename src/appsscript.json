@@ -33,24 +33,50 @@
     "flows": {
       "workflowElements": [
         {
-          "id": "loadJsonResume",
+          "id": "jsonResumeToDoc",
           "state": "ACTIVE",
-          "name": "Load JSON Resume",
-          "description": "Loads your resume from your JSON Resume account (Connect JSON Resume), validates it against the jsonresume.org schema, and emits it as outputs for later steps.",
+          "name": "JSON Resume to Google Doc",
+          "description": "Loads your resume from your JSON Resume account (Connect JSON Resume), checks it against the jsonresume.org schema, and renders it into a Google Doc in your Drive, with PDF and DOCX download links. It can only see the files it creates.",
           "workflowAction": {
-            "inputs": [],
+            "inputs": [
+              {
+                "id": "title",
+                "description": "Document title",
+                "cardinality": "SINGLE",
+                "required": false,
+                "dataType": {
+                  "basicType": "STRING"
+                }
+              }
+            ],
             "outputs": [
               {
-                "id": "resume",
-                "description": "Resume (JSON)",
+                "id": "docUrl",
+                "description": "Doc URL",
                 "cardinality": "SINGLE",
                 "dataType": {
                   "basicType": "STRING"
                 }
               },
               {
-                "id": "resumeText",
-                "description": "Resume (plain text)",
+                "id": "pdfUrl",
+                "description": "PDF download link",
+                "cardinality": "SINGLE",
+                "dataType": {
+                  "basicType": "STRING"
+                }
+              },
+              {
+                "id": "docxUrl",
+                "description": "DOCX download link",
+                "cardinality": "SINGLE",
+                "dataType": {
+                  "basicType": "STRING"
+                }
+              },
+              {
+                "id": "docId",
+                "description": "Doc file ID",
                 "cardinality": "SINGLE",
                 "dataType": {
                   "basicType": "STRING"
@@ -79,74 +105,26 @@
                 "dataType": {
                   "basicType": "STRING"
                 }
-              }
-            ],
-            "onConfigFunction": "onConfigLoadJsonResume",
-            "onExecuteFunction": "onExecuteLoadJsonResume"
-          }
-        },
-        {
-          "id": "renderResume",
-          "state": "ACTIVE",
-          "name": "Render JSON Resume to Doc",
-          "description": "Renders a resume.json in the jsonresume.org standard - for example the output of Load JSON Resume, or an AI step's tailored version - into a Google Doc in your Drive, with PDF and DOCX download links. It can only see the files it creates.",
-          "workflowAction": {
-            "inputs": [
+              },
+              {
+                "id": "resumeText",
+                "description": "Resume (plain text)",
+                "cardinality": "SINGLE",
+                "dataType": {
+                  "basicType": "STRING"
+                }
+              },
               {
                 "id": "resume",
                 "description": "Resume (JSON)",
                 "cardinality": "SINGLE",
-                "required": true,
-                "dataType": {
-                  "basicType": "STRING"
-                }
-              },
-              {
-                "id": "title",
-                "description": "Document title",
-                "cardinality": "SINGLE",
-                "required": false,
                 "dataType": {
                   "basicType": "STRING"
                 }
               }
             ],
-            "outputs": [
-              {
-                "id": "docId",
-                "description": "Doc file ID",
-                "cardinality": "SINGLE",
-                "dataType": {
-                  "basicType": "STRING"
-                }
-              },
-              {
-                "id": "docUrl",
-                "description": "Doc URL",
-                "cardinality": "SINGLE",
-                "dataType": {
-                  "basicType": "STRING"
-                }
-              },
-              {
-                "id": "pdfUrl",
-                "description": "PDF download link",
-                "cardinality": "SINGLE",
-                "dataType": {
-                  "basicType": "STRING"
-                }
-              },
-              {
-                "id": "docxUrl",
-                "description": "DOCX download link",
-                "cardinality": "SINGLE",
-                "dataType": {
-                  "basicType": "STRING"
-                }
-              }
-            ],
-            "onConfigFunction": "onConfigRenderResume",
-            "onExecuteFunction": "onExecuteRenderResume"
+            "onConfigFunction": "onConfigJsonResumeToDoc",
+            "onExecuteFunction": "onExecuteJsonResumeToDoc"
           }
         }
       ]

@@ -1,14 +1,10 @@
 /**
- * "Render JSON Resume to Doc" — the companion step to Load JSON Resume.
+ * The renderer half of the step: resume.json -> HTML ->
+ * Google Doc. The step itself (connect, fetch, validate, outputs) is
+ * JsonResumeToDoc.gs. Design and measured evidence: RENDERER-DESIGN.md.
  *
- * Takes a resume.json STRING (typically Load JSON Resume's `resume` output, or
- * an AI step's tailored rewrite of it), renders it to HTML, and has Google
- * convert that HTML into a Google Doc. Design and measured evidence:
- * RENDERER-DESIGN.md.
- *
- *   resume string -> resumeToHtml() -> Drive files.create (HTML -> Google Doc)
- *                 -> documents.batchUpdate (margins, Normal text style)
- *   outputs: docId, docUrl, pdfUrl, docxUrl (all STRING)
+ *   resume -> resumeToHtml() -> Drive files.create (HTML -> Google Doc)
+ *          -> documents.batchUpdate (margins, Normal text style)
  *
  * THE DOC IS THE ONLY ARTIFACT. pdfUrl and docxUrl are Docs' own export links,
  * built from the id: they download whatever the Doc says NOW, so a hand edit
@@ -17,7 +13,7 @@
  *
  * WE OWN THE HTML SERIALISER, AND GOOGLE OWNS THE LAYOUT ENGINE. resumeToHtml()
  * is the only real logic here, and it is pure JavaScript, so
- * test-renderresume.mjs tests it off Google's servers.
+ * test/render.test.mjs tests it off Google's servers.
  *
  * SCOPES: drive.file + script.external_request, and NOTHING ELSE. Measured
  * 2026-10-27: with only those two, Drive REST create-with-conversion and Docs
@@ -29,10 +25,10 @@
  * includes scopes that the script currently needs".
  *
  * SHARED GLOBAL SCOPE: Apps Script loads every .gs file of a project into ONE
- * global namespace. This file reuses str(), readActionInput(), failStep(),
- * hasAnyKnownSection() and MAX_BYTES from LoadJsonResume.gs, and so does not redefine them. A second
- * definition would silently replace the first, whichever file loads last. The
- * test loads both files into one context, the same way Apps Script does.
+ * global namespace. This file reuses str() from JsonResumeToDoc.gs, and so
+ * does not redefine it. A second definition would silently replace the first,
+ * whichever file loads last. The tests load every file into one context, the
+ * same way Apps Script does, and fail on a name defined twice.
  */
 
 var DRIVE_UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3/files' +
@@ -43,78 +39,18 @@ var GOOGLE_DOC_MIME = 'application/vnd.google-apps.document';
 var PAGE_MARGIN_PT = 36; // 0.5 inch
 
 /**
- * Configuration card: the resume JSON, plus an optional title.
- *
- * Both fields accept variables (setIncludeVariables). The intended use is to
- * drop Load JSON Resume's `resume` chip, or an AI step's tailored JSON, into
- * the first field. Each setFieldName MUST equal a manifest inputs[].id.
- */
-function onConfigRenderResume() {
-  var variables = function () {
-    return CardService.newHostAppDataSource().setWorkflowDataSource(
-      CardService.newWorkflowDataSource().setIncludeVariables(true)
-    );
-  };
-
-  var resumeInput = CardService.newTextInput()
-    .setFieldName('resume')
-    .setTitle('Resume JSON')
-    .setHint('Pick the "resume" output of Load JSON Resume, or any step that emits resume.json text.')
-    .setMultiline(true)
-    .setHostAppDataSource(variables());
-
-  var titleInput = CardService.newTextInput()
-    .setFieldName('title')
-    .setTitle('Document title (optional)')
-    .setHint('Defaults to "{your name} — Résumé".')
-    .setHostAppDataSource(variables());
-
-  var section = CardService.newCardSection()
-    .addWidget(
-      CardService.newTextParagraph().setText(
-        'Renders a <b>jsonresume.org</b> resume into a Google Doc in your Drive, ' +
-        'with PDF and DOCX download links. This step can only see the files it creates.'
-      )
-    )
-    .addWidget(resumeInput)
-    .addWidget(titleInput);
-
-  return CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader().setTitle('Render JSON Resume to Doc'))
-    .addSection(section)
-    .build();
-}
-
-/**
- * Runs the step. Returns all four declared outputs on success.
+ * Creates the Google Doc for a validated resume and styles it.
+ * Returns { id, webViewLink }.
  *
  * Failure policy:
- * - No resume, bad JSON, or the Doc create fails: the step FAILS (failStep).
- *   There is nothing useful to hand on.
- * - A styling call (batchUpdate) fails: the step SUCCEEDS with the Doc as
- *   imported. The reason goes to the Executions log via console.error.
+ * - The Doc create fails: THROWS. The caller fails the step; there is nothing
+ *   useful to hand on.
+ * - A styling call (batchUpdate) fails: logged with console.error, and the Doc
+ *   is returned as imported. Cosmetic, so it never costs the user the Doc.
  */
-function onExecuteRenderResume(event) {
-  // Log the envelope, not the payload: the résumé is personal data, and the
-  // Executions log keeps it. The live payload shape is pinned in the tests.
-  var invocation = (event && event.workflow && event.workflow.actionInvocation) || {};
-  var inputs = invocation.inputs || {};
-  console.log('RenderResume inputs present: ' + JSON.stringify(Object.keys(inputs)));
-
-  var parsed = parseResumeInput(readActionInput(inputs, 'resume'));
-  if (parsed.error) return failStep('Could not render resume: ' + parsed.error);
-
-  var resume = parsed.resume;
-  var title = docTitleFor(resume, readActionInput(inputs, 'title'));
-  var token = ScriptApp.getOAuthToken();
-
-  var doc;
-  try {
-    doc = driveCreate(token, { name: title, mimeType: GOOGLE_DOC_MIME },
-      'text/html; charset=UTF-8', utf8Bytes(resumeToHtml(resume)));
-  } catch (err) {
-    return failStep('Could not create the Google Doc: ' + err.message);
-  }
+function renderResumeDoc(token, resume, title) {
+  var doc = driveCreate(token, { name: title, mimeType: GOOGLE_DOC_MIME },
+    'text/html; charset=UTF-8', utf8Bytes(resumeToHtml(resume)));
 
   // Page margins. How the HTML import treats CSS @page is undocumented, so
   // set them explicitly through the
@@ -123,17 +59,16 @@ function onExecuteRenderResume(event) {
   try {
     docsBatchUpdate(token, doc.id, marginRequests(PAGE_MARGIN_PT));
   } catch (err) {
-    console.error('RenderResume: margins not applied: ' + err.message);
+    console.error('JsonResumeToDoc: margins not applied: ' + err.message);
   }
   // Normal text's paragraph-level size and spacing (see namedStyleRequests).
   // A separate call, so a rejection here cannot cost the margins above.
   try {
     docsBatchUpdate(token, doc.id, namedStyleRequests());
   } catch (err) {
-    console.error('RenderResume: Normal text style not applied: ' + err.message);
+    console.error('JsonResumeToDoc: Normal text style not applied: ' + err.message);
   }
-
-  return renderOutputs(buildRenderOutputs(doc.id, doc.webViewLink));
+  return doc;
 }
 
 // ---- Drive REST (Apps Script only; not reachable from the tests) ----------
@@ -190,28 +125,7 @@ function utf8Bytes(s) {
   return Utilities.newBlob('').setDataFromString(s, 'UTF-8').getBytes();
 }
 
-function renderOutputs(plain) {
-  var variableDataMap = {};
-  Object.keys(plain).forEach(function (key) {
-    variableDataMap[key] = AddOnsResponseService.newVariableData().addStringValue(plain[key]);
-  });
-  var workflowAction = AddOnsResponseService.newReturnOutputVariablesAction()
-    .setVariableDataMap(variableDataMap);
-  var hostAppAction = AddOnsResponseService.newHostAppAction().setWorkflowAction(workflowAction);
-  return AddOnsResponseService.newRenderActionBuilder().setHostAppAction(hostAppAction).build();
-}
-
-// ---- Pure half: tested by test-renderresume.mjs ----------------------------
-
-/** Every declared output, every time, as a plain map. */
-function buildRenderOutputs(docId, docUrl) {
-  return {
-    docId: str(docId),
-    docUrl: str(docUrl),
-    pdfUrl: exportUrl(docId, 'pdf'),
-    docxUrl: exportUrl(docId, 'docx')
-  };
-}
+// ---- Pure half: tested by test/render.test.mjs ----------------------------
 
 /**
  * Docs' own export link for a format. It downloads the Doc as it is when the
@@ -241,109 +155,6 @@ function multipartFrame(boundary, metadata, mediaType) {
   return { head: head, tail: tail };
 }
 
-/**
- * Parses the resume input. Returns {resume} or {error}, and never throws.
- */
-function parseResumeInput(text) {
-  var got = parseJsonObjectInput(text,
-    'no resume JSON was given. Open the step and pick the "resume" output of Load JSON Resume.');
-  if (got.error) return got;
-  var resume = got.value;
-  if (!hasAnyKnownSection(resume)) {
-    return { error: 'no jsonresume.org sections found (expected basics, work, education, skills or projects).' };
-  }
-  var problems = resumeShapeProblems(resume);
-  if (problems.length) {
-    return { error: 'the input does not match the jsonresume.org schema: ' + problems.slice(0, 5).join('; ') +
-      (problems.length > 5 ? ' (and ' + (problems.length - 5) + ' more)' : '') + '.' };
-  }
-  return { resume: resume };
-}
-
-/**
- * One JSON object from a step input: {value} or {error}; never throws.
- *
- * The input is often an AI step's output, so it is wrapped in a ```json fence
- * more often than not. The fence is stripped rather than rejected.
- */
-function parseJsonObjectInput(text, emptyMessage) {
-  var raw = str(text).trim();
-  if (!raw) return { error: emptyMessage || 'no JSON was given.' };
-  if (raw.length > MAX_BYTES) return { error: 'the input exceeds the ' + Math.round(MAX_BYTES / 1024 / 1024) + ' MB limit.' };
-
-  var fenced = /^```[a-zA-Z]*\s*\n([\s\S]*?)\n?```$/.exec(raw);
-  if (fenced) raw = fenced[1].trim();
-
-  var value;
-  try {
-    value = JSON.parse(raw);
-  } catch (e) {
-    // An AI step may add a sentence around its fenced JSON. Take the one
-    // fenced block if there is exactly one; anything else stays an error.
-    var blocks = raw.match(/```[a-zA-Z]*\s*\n[\s\S]*?\n?```/g) || [];
-    if (blocks.length !== 1) return { error: 'the input is not valid JSON.' };
-    try {
-      value = JSON.parse(/^```[a-zA-Z]*\s*\n([\s\S]*?)\n?```$/.exec(blocks[0])[1]);
-    } catch (e2) {
-      return { error: 'the input is not valid JSON.' };
-    }
-  }
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return { error: 'the input is not a JSON object.' };
-  }
-  return { value: value };
-}
-
-// The jsonresume.org v1 schema's sections that are arrays of objects.
-var RESUME_ARRAY_SECTIONS = ['work', 'volunteer', 'education', 'awards', 'certificates', 'publications',
-  'skills', 'languages', 'interests', 'references', 'projects'];
-// Its fields that are arrays of strings, wherever they appear.
-var RESUME_STRING_LIST_FIELDS = ['highlights', 'keywords', 'courses', 'roles'];
-// Its date fields, which the schema constrains to the "iso8601" pattern.
-var RESUME_DATE_FIELDS = ['startDate', 'endDate', 'date', 'releaseDate'];
-var ISO8601_PARTIAL = /^([1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]|[1-2][0-9]{3}-[0-1][0-9]|[1-2][0-9]{3})$/;
-
-/**
- * Structural check against the jsonresume.org v1 schema, for input that an AI
- * step rewrote. Studio's Gemini steps cannot enforce a response schema, so the
- * renderer rejects a drifted shape LOUDLY instead of rendering it quietly.
- * Unknown extra keys are allowed (the schema allows them too).
- */
-function resumeShapeProblems(resume) {
-  var problems = [];
-  if ('basics' in resume && !isPlainObject(resume.basics)) problems.push('basics must be an object');
-  if (isPlainObject(resume.basics) && 'name' in resume.basics && typeof resume.basics.name !== 'string') {
-    problems.push('basics.name must be a string');
-  }
-  RESUME_ARRAY_SECTIONS.forEach(function (section) {
-    if (!(section in resume)) return;
-    var list = resume[section];
-    if (!Array.isArray(list)) { problems.push(section + ' must be an array'); return; }
-    list.forEach(function (entry, i) {
-      var at = section + '[' + i + ']';
-      if (!isPlainObject(entry)) { problems.push(at + ' must be an object'); return; }
-      RESUME_STRING_LIST_FIELDS.forEach(function (field) {
-        if (!(field in entry)) return;
-        var v = entry[field];
-        if (!Array.isArray(v) || v.some(function (s) { return typeof s !== 'string'; })) {
-          problems.push(at + '.' + field + ' must be an array of strings');
-        }
-      });
-      RESUME_DATE_FIELDS.forEach(function (field) {
-        if (!(field in entry) || entry[field] === '') return;
-        if (typeof entry[field] !== 'string' || !ISO8601_PARTIAL.test(entry[field])) {
-          problems.push(at + '.' + field + ' must be YYYY, YYYY-MM or YYYY-MM-DD');
-        }
-      });
-    });
-  });
-  return problems;
-}
-
-function isPlainObject(v) {
-  return !!v && typeof v === 'object' && !Array.isArray(v);
-}
-
 function docTitleFor(resume, configured) {
   var t = str(configured).trim();
   if (t) return t.slice(0, 200);
@@ -353,8 +164,8 @@ function docTitleFor(resume, configured) {
 
 /**
  * The HTML escape. EVERY résumé value goes through it, because the résumé is
- * untrusted. It arrives from a URL or from an AI step that read a job posting
- * from an inbox.
+ * untrusted: it is whatever the jsonresume.org account holds, and anyone can
+ * write anything into a gist.
  */
 function escapeHtml(v) {
   return str(v)

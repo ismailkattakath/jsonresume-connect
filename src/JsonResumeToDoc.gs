@@ -1,29 +1,26 @@
 /**
- * "Load JSON Resume" — a custom step for Google Workspace Studio.
+ * The add-on's one custom step for Google Workspace Studio.
+ * (Its display name lives in ONE place, appsscript.json; nothing here repeats
+ * it, and a test fails if anything does.)
  *
- * Loads the signed-in user's resume from jsonresume.org ("Connect JSON
- * Resume", OAuth 2.1), validates it, and emits it as flow outputs.
+ * Each run: loads the signed-in user's resume from jsonresume.org ("Connect
+ * JSON Resume", OAuth 2.1 + PKCE), checks it against the jsonresume.org schema
+ * (an invalid shape FAILS the step; it is never repaired), and renders it into
+ * a Google Doc in the user's Drive (RenderDoc.gs). Outputs: the Doc's id, its
+ * link and its PDF/DOCX export links, plus the resume's name, headline and
+ * email, the resume as JSON and as plain text.
  *
- * WHAT THIS STEP DELIBERATELY DOES NOT DO: tailor the resume. Workspace Studio
- * flows already have a native "ask Gemini" step, so the tailoring belongs
- * there, not here. Keeping the LLM out buys four things — users need no API key
- * and pay nothing for this step, it composes with whatever AI step they prefer,
- * it stays deterministic and therefore testable, and — the important one — this
- * code never interprets the job posting. A posting arriving from an inbox is
- * attacker-controlled text; here it is simply never read.
- *
- * The intended flow shape:
- *
- *   [starter: posting arrives] -> [Load JSON Resume] -> [ask Gemini: tailor to
- *   this posting] -> [Gmail: create draft]
+ * WHAT THIS STEP DELIBERATELY DOES NOT DO: tailor the resume, or read a job
+ * posting. Tailoring lives in another tool. A posting is attacker-controlled
+ * text; this code never touches one.
  *
  * Schema: https://github.com/jsonresume/resume-schema (verified 2026-09-30 —
  * top-level sections basics, work, volunteer, education, awards, certificates,
  * publications, skills, languages, interests, references, projects, meta).
  */
 
-// Hard caps. A configuration field is user-supplied and a remote document is
-// not under our control, so both are bounded rather than trusted.
+// Hard cap. A remote document is not under our control, so it is bounded
+// rather than trusted.
 var MAX_BYTES = 2 * 1024 * 1024; // a resume.json far past this is not a resume
 
 // Sections rendered into resumeText, in the order a reader expects them.
@@ -44,7 +41,15 @@ var TEXT_SECTIONS = ['work', 'projects', 'education', 'skills', 'certificates', 
  */
 var JR_ORIGIN = 'https://jsonresume.org';
 
-function onConfigLoadJsonResume() {
+/**
+ * Configuration card. Not connected: the Connect JSON Resume card (thrown as
+ * an AuthorizationException, the shape Studio rendered live). Connected: who
+ * is connected, the optional title field, and Disconnect.
+ *
+ * Takes no event and does not prefill: Studio re-renders a saved value itself
+ * through the field binding (see connectedCard).
+ */
+function onConfigJsonResumeToDoc() {
   var service = jsonResumeService();
   if (!service.hasAccess()) {
     CardService.newAuthorizationException()
@@ -56,17 +61,29 @@ function onConfigLoadJsonResume() {
   return connectedCard();
 }
 
+/**
+ * The connected card. The title field's setFieldName MUST equal a manifest
+ * inputs[].id: that binding is how the value reaches onExecute. It accepts
+ * variables (setIncludeVariables), so an earlier step can supply the title.
+ */
 function connectedCard() {
   var who = PropertiesService.getUserProperties().getProperty('JR_USERNAME');
+  var titleInput = CardService.newTextInput()
+    .setFieldName('title')
+    .setTitle('Document title (optional)')
+    .setHint('Defaults to "{your name} — Résumé".')
+    .setHostAppDataSource(CardService.newHostAppDataSource().setWorkflowDataSource(
+      CardService.newWorkflowDataSource().setIncludeVariables(true)));
   var section = CardService.newCardSection()
     .addWidget(CardService.newTextParagraph().setText(
       'Connected to <b>JSON Resume</b>' + (who ? ' as <b>@' + escapeHtml(who) + '</b>' : '') +
-      '. This step loads your resume from jsonresume.org each time the flow runs.'))
+      '. Each run loads your resume from jsonresume.org and renders it into a Google Doc ' +
+      'in your Drive, with PDF and DOCX download links. This step can only see the files it creates.'))
+    .addWidget(titleInput)
     .addWidget(CardService.newTextButton()
       .setText('Disconnect')
       .setOnClickAction(CardService.newAction().setFunctionName('disconnectJsonResume')));
   return CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader().setTitle('Load JSON Resume'))
     .addSection(section)
     .build();
 }
@@ -87,7 +104,6 @@ function jsonResumeConnectCard() {
       // (measured live 2026-10-27).
       'After connecting, <b>refresh</b> this page.'));
   return [CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader().setTitle('Load JSON Resume'))
     .addSection(section)
     .build()];
 }
@@ -152,16 +168,44 @@ function jsonResumeClientId() {
  *
  * MUST return every output declared in appsscript.json, or fail the step with
  * a message the user can act on (failStep).
+ *
+ * Failure policy:
+ * - Not connected, the fetch fails, the resume is invalid, or the Doc create
+ *   fails: the step FAILS. There is nothing useful to hand on.
+ * - A styling call fails: the step SUCCEEDS with the Doc as imported
+ *   (renderResumeDoc logs the reason to Executions).
  */
-function onExecuteLoadJsonResume(event) {
+function onExecuteJsonResumeToDoc(event) {
   // The envelope only: the resume itself is personal data and never logged.
+  // The live payload shape is pinned in the tests (LIVE_EVENT).
   var inputs = (event && event.workflow && event.workflow.actionInvocation &&
                 event.workflow.actionInvocation.inputs) || {};
-  console.log('LoadJsonResume inputs present: ' + JSON.stringify(Object.keys(inputs)));
+  console.log('JsonResumeToDoc inputs present: ' + JSON.stringify(Object.keys(inputs)));
 
+  var loaded = loadResume();
+  if (loaded.error) return failStep('Could not load resume: ' + loaded.error);
+  var resume = loaded.resume;
+
+  var doc;
+  try {
+    doc = renderResumeDoc(ScriptApp.getOAuthToken(), resume,
+      docTitleFor(resume, readActionInput(inputs, 'title')));
+  } catch (err) {
+    return failStep('Could not create the Google Doc: ' + err.message);
+  }
+
+  return outputs(buildOutputs(doc.id, doc.webViewLink, resume));
+}
+
+/**
+ * The signed-in user's resume from jsonresume.org, validated.
+ * Returns { resume } or { error }, where error completes the sentence
+ * "Could not load resume: ...". Never throws.
+ */
+function loadResume() {
   var service = jsonResumeService();
   if (!service.hasAccess()) {
-    return failStep('Could not load resume: not connected to JSON Resume. Open this step and click "Connect JSON Resume".');
+    return { error: 'not connected to JSON Resume. Open this step and click "Connect JSON Resume".' };
   }
 
   var raw;
@@ -173,78 +217,78 @@ function onExecuteLoadJsonResume(event) {
     var status = response.getResponseCode();
     if (status === 401) {
       service.reset();
-      return failStep('Could not load resume: the JSON Resume connection expired or was revoked. Open this step and connect again.');
+      return { error: 'the JSON Resume connection expired or was revoked. Open this step and connect again.' };
     }
     if (status === 404) {
-      return failStep('Could not load resume: your JSON Resume account has no resume yet. Create it in the jsonresume.org dashboard.');
+      return { error: 'your JSON Resume account has no resume yet. Create it in the jsonresume.org dashboard.' };
     }
     if (status < 200 || status >= 300) {
-      return failStep('Could not load resume: jsonresume.org returned HTTP ' + status + '.');
+      return { error: 'jsonresume.org returned HTTP ' + status + '.' };
     }
     raw = response.getContentText();
   } catch (err) {
-    return failStep('Could not load resume: ' + err.message);
+    return { error: err.message };
   }
 
   if (raw.length > MAX_BYTES) {
-    return failStep('Could not load resume: the document exceeds the ' +
-      Math.round(MAX_BYTES / 1024 / 1024) + ' MB limit.');
+    return { error: 'the document exceeds the ' + Math.round(MAX_BYTES / 1024 / 1024) + ' MB limit.' };
   }
 
   var payload;
   try {
     payload = JSON.parse(raw);
   } catch (err) {
-    return failStep('Could not load resume: jsonresume.org did not return JSON.');
+    return { error: 'jsonresume.org did not return JSON.' };
   }
   // The endpoint wraps it: { username, url, resume } (measured 2026-10-27).
   var unwrapped = unwrapResumePayload(payload);
   if (unwrapped.username) PropertiesService.getUserProperties().setProperty('JR_USERNAME', unwrapped.username);
-  var resume = unwrapped.resume;
 
-  if (!resume || typeof resume !== 'object' || Array.isArray(resume)) {
-    return failStep('Could not load resume: the document is not a JSON object.');
-  }
-  // Shape check, not full schema validation. Every field in JSON Resume is
-  // optional, so the only honest assertion is that at least one known section
-  // is present — a stricter gate would reject legitimate sparse resumes.
-  if (!hasAnyKnownSection(resume)) {
-    return failStep('Could not load resume: no jsonresume.org sections found ' +
-      '(expected at least one of basics, work, education, skills, projects).');
-  }
-  // The base resume FAILS on a drifted shape rather than being repaired
-  // (operator decision, 2026-10-27): the fix belongs in the source.
-  // resumeShapeProblems lives in RenderResume.gs (one global scope).
-  var problems = resumeShapeProblems(resume);
-  if (problems.length) {
-    return failStep('Could not load resume: it does not match the jsonresume.org schema: ' +
-      problems.slice(0, 5).join('; ') + (problems.length > 5 ? ' (and ' + (problems.length - 5) + ' more)' : '') + '.');
-  }
-
-  var basics = (resume.basics && typeof resume.basics === 'object') ? resume.basics : {};
-  return outputs(
-    JSON.stringify(resume),
-    toPlainText(resume),
-    str(basics.name),
-    str(basics.label),
-    str(basics.email)
-  );
+  var problem = resumeProblem(unwrapped.resume);
+  return problem ? { error: problem } : { resume: unwrapped.resume };
 }
 
 /**
- * Every declared output, every time — as a PLAIN MAP.
+ * Why a value is not a usable jsonresume.org resume, or '' when it is.
+ * The resume FAILS on a drifted shape rather than being repaired (operator
+ * decision, 2026-10-27): the fix belongs in the source.
+ */
+function resumeProblem(resume) {
+  if (!isPlainObject(resume)) return 'the document is not a JSON object.';
+  // Every field in JSON Resume is optional, so presence of one known section
+  // is the floor; resumeShapeProblems then checks the types of what is there.
+  if (!hasAnyKnownSection(resume)) {
+    return 'no jsonresume.org sections found ' +
+      '(expected at least one of basics, work, education, skills, projects).';
+  }
+  var problems = resumeShapeProblems(resume);
+  if (problems.length) {
+    return 'it does not match the jsonresume.org schema: ' + problems.slice(0, 5).join('; ') +
+      (problems.length > 5 ? ' (and ' + (problems.length - 5) + ' more)' : '') + '.';
+  }
+  return '';
+}
+
+/**
+ * Every declared output, every time — as a PLAIN MAP of strings.
  *
- * Split from the Apps Script envelope below on purpose: this half is pure
+ * Split from the Apps Script envelope (outputs) on purpose: this half is pure
  * JavaScript and can therefore be tested off Google's servers, which is where
  * the output contract actually gets checked.
  */
-function buildOutputs(resume, resumeText, name, label, email) {
+function buildOutputs(docId, docUrl, resume) {
+  var r = isPlainObject(resume) ? resume : {};
+  var basics = isPlainObject(r.basics) ? r.basics : {};
   return {
-    resume: resume,
-    resumeText: resumeText,
-    name: name,
-    label: label,
-    email: email
+    docId: str(docId),
+    docUrl: str(docUrl),
+    pdfUrl: exportUrl(docId, 'pdf'),
+    docxUrl: exportUrl(docId, 'docx'),
+    name: str(basics.name),
+    label: str(basics.label),
+    email: str(basics.email),
+    resumeText: toPlainText(r),
+    resume: JSON.stringify(r)
   };
 }
 
@@ -255,8 +299,8 @@ function buildOutputs(resume, resumeText, name, label, email) {
  * That is wrong twice over: the flow carries on as if it had a resume, and the
  * Activity tab — the only place a non-developer looks — shows nothing but the
  * step's name. ACTIONABLE + NOT_RETRYABLE is the honest pair here: every failure
- * this step can have (no URL, bad URL, not JSON, not a resume) is fixed by the
- * user editing their configuration, and none of them get better on a retry.
+ * this step can have (not connected, no resume, an invalid resume) is fixed by
+ * the user, and none of them get better on a retry.
  */
 function failStep(message) {
   var workflowAction = AddOnsResponseService.newReturnElementErrorAction()
@@ -280,8 +324,7 @@ function failStep(message) {
  * `AddOnsResponseService.newVariableData().addStringValue(...)` and
  * `newReturnOutputVariablesAction().setVariableDataMap(...)`.
  */
-function outputs(resume, resumeText, name, label, email) {
-  var plain = buildOutputs(resume, resumeText, name, label, email);
+function outputs(plain) {
   var variableDataMap = {};
   Object.keys(plain).forEach(function (key) {
     variableDataMap[key] = AddOnsResponseService.newVariableData().addStringValue(plain[key]);
@@ -300,6 +343,56 @@ function hasAnyKnownSection(resume) {
     if (Object.prototype.hasOwnProperty.call(resume, known[i])) return true;
   }
   return false;
+}
+
+// The jsonresume.org v1 schema's sections that are arrays of objects.
+var RESUME_ARRAY_SECTIONS = ['work', 'volunteer', 'education', 'awards', 'certificates', 'publications',
+  'skills', 'languages', 'interests', 'references', 'projects'];
+// Its fields that are arrays of strings, wherever they appear.
+var RESUME_STRING_LIST_FIELDS = ['highlights', 'keywords', 'courses', 'roles'];
+// Its date fields, which the schema constrains to the "iso8601" pattern.
+var RESUME_DATE_FIELDS = ['startDate', 'endDate', 'date', 'releaseDate'];
+var ISO8601_PARTIAL = /^([1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]|[1-2][0-9]{3}-[0-1][0-9]|[1-2][0-9]{3})$/;
+
+/**
+ * Structural check against the jsonresume.org v1 schema. A drifted shape
+ * FAILS the step, loudly, rather than rendering quietly or being repaired
+ * (operator decision, 2026-10-27): the fix belongs in the source.
+ * Unknown extra keys are allowed (the schema allows them too).
+ */
+function resumeShapeProblems(resume) {
+  var problems = [];
+  if ('basics' in resume && !isPlainObject(resume.basics)) problems.push('basics must be an object');
+  if (isPlainObject(resume.basics) && 'name' in resume.basics && typeof resume.basics.name !== 'string') {
+    problems.push('basics.name must be a string');
+  }
+  RESUME_ARRAY_SECTIONS.forEach(function (section) {
+    if (!(section in resume)) return;
+    var list = resume[section];
+    if (!Array.isArray(list)) { problems.push(section + ' must be an array'); return; }
+    list.forEach(function (entry, i) {
+      var at = section + '[' + i + ']';
+      if (!isPlainObject(entry)) { problems.push(at + ' must be an object'); return; }
+      RESUME_STRING_LIST_FIELDS.forEach(function (field) {
+        if (!(field in entry)) return;
+        var v = entry[field];
+        if (!Array.isArray(v) || v.some(function (s) { return typeof s !== 'string'; })) {
+          problems.push(at + '.' + field + ' must be an array of strings');
+        }
+      });
+      RESUME_DATE_FIELDS.forEach(function (field) {
+        if (!(field in entry) || entry[field] === '') return;
+        if (typeof entry[field] !== 'string' || !ISO8601_PARTIAL.test(entry[field])) {
+          problems.push(at + '.' + field + ' must be YYYY, YYYY-MM or YYYY-MM-DD');
+        }
+      });
+    });
+  });
+  return problems;
+}
+
+function isPlainObject(v) {
+  return !!v && typeof v === 'object' && !Array.isArray(v);
 }
 
 /**
