@@ -27,16 +27,16 @@
   ],
   "addOns": {
     "common": {
-      "name": "JSON Resume",
-      "logoUrl": "https://avatars.githubusercontent.com/u/7943272?s=200&v=4"
+      "name": "JSON Resume Connect",
+      "logoUrl": "https://raw.githubusercontent.com/ismailkattakath/jsonresume-connect/main/assets/icon-128.png"
     },
     "flows": {
       "workflowElements": [
         {
           "id": "jsonResumeToDoc",
           "state": "ACTIVE",
-          "name": "JSON Resume to Google Doc",
-          "description": "Loads your resume from your JSON Resume account (Connect JSON Resume), checks it against the jsonresume.org schema, and renders it into a Google Doc in your Drive, with PDF and DOCX download links. It can only see the files it creates.",
+          "name": "JSON Resume Connect",
+          "description": "Loads your resume from your JSON Resume account (Connect JSON Resume), checks it against the jsonresume.org schema, and renders it as a document for Google Docs™ in your Drive, with PDF and DOCX download links. It can only see the files it creates.",
           "workflowAction": {
             "inputs": [
               {

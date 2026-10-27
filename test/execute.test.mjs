@@ -45,6 +45,7 @@ function run({
     webViewLink: `https://docs.google.com/document/d/${DOC_ID}/edit`,
   }),
   docs = json(200, {}),
+  register = null,
   event = LIVE_EVENT,
 } = {}) {
   const oauth = fakeOAuth2({hasAccess});
@@ -59,7 +60,8 @@ function run({
     OAuth2: oauth.OAuth2,
     PropertiesService: {
       getUserProperties: () => userProps,
-      getScriptProperties: () => propertyStore({JR_CLIENT_ID: 'test-client'}),
+      getScriptProperties: () =>
+        propertyStore(register ? {} : {JR_CLIENT_ID: 'test-client'}),
     },
     CacheService: {getUserCache: () => ({})},
     LockService: {getUserLock: () => ({})},
@@ -86,6 +88,8 @@ function run({
         let r;
         if (url === 'https://jsonresume.org/api/oauth/resume')
           r = resumeResponse;
+        else if (url === 'https://jsonresume.org/api/oauth/register')
+          r = register;
         else if (
           url.startsWith('https://www.googleapis.com/upload/drive/v3/files')
         )
@@ -104,13 +108,24 @@ function run({
   return {result, fetches, driveCalls, docsCalls, logs, oauth, userProps};
 }
 
-const failsWith = (r, re) => {
+// What the user reads must never carry an HTTP code, Google's error text or
+// an exception message (design review items 2-5; style guide: "Don't let the
+// user see any exceptions your code throws").
+const RAW = /HTTP \d|\d{3}\b|Error:|DNS|returned|has not been used/;
+
+const failsWith = (r, re, {retry = false} = {}) => {
   assert.equal(r.result.kind, 'error', JSON.stringify(r.result));
   assert.match(r.result.message, re);
-  assert.equal(r.result.actionability, 'ACTIONABLE');
-  assert.equal(r.result.retryability, 'NOT_RETRYABLE');
+  assert.doesNotMatch(r.result.message, RAW, 'raw detail reached the user');
+  assert.equal(r.result.actionability, retry ? 'NOT_ACTIONABLE' : 'ACTIONABLE');
+  assert.equal(r.result.retryability, retry ? 'RETRYABLE' : 'NOT_RETRYABLE');
   assert.equal(r.driveCalls.length, 0, 'no Doc may be created on a failure');
 };
+const logged = (r, re) =>
+  assert.ok(
+    r.logs.some(([k, l]) => k === 'error' && re.test(l)),
+    `no Executions log matching ${re}`
+  );
 
 describe('fails the step, never renders, when', () => {
   it('not connected', () => {
@@ -142,18 +157,49 @@ describe('fails the step, never renders, when', () => {
     );
   });
 
-  it('jsonresume.org errors (500)', () => {
+  for (const status of [500, 503, 429]) {
+    it(`jsonresume.org answers ${status}: retryable, the code only in the log`, () => {
+      const r = run({resumeResponse: json(status, 'oops')});
+      failsWith(
+        r,
+        /jsonresume\.org is not responding\. The step will try again\.$/,
+        {
+          retry: true,
+        }
+      );
+      logged(r, new RegExp(`HTTP ${status}`));
+    });
+  }
+
+  it('jsonresume.org refuses another way (400): says what to do', () => {
+    const r = run({resumeResponse: json(400, 'bad')});
     failsWith(
-      run({resumeResponse: json(500, 'oops')}),
-      /jsonresume\.org returned HTTP 500\.$/
+      r,
+      /refused the request\. Open this step, click Disconnect, then connect JSON Resume again\.$/
     );
+    logged(r, /HTTP 400/);
   });
 
-  it('the fetch throws', () => {
+  it('the fetch throws: retryable, the exception only in the log', () => {
+    const r = run({resumeResponse: new Error('DNS error')});
     failsWith(
-      run({resumeResponse: new Error('DNS error')}),
-      /^Could not load resume: DNS error$/
+      r,
+      /^Could not load resume: could not reach jsonresume\.org\. The step will try again\.$/,
+      {retry: true}
     );
+    logged(r, /DNS error/);
+  });
+
+  it('client registration fails: retryable, no raw error', () => {
+    const r = run({register: json(503, 'down')});
+    failsWith(
+      r,
+      /JSON Resume sign-in is unavailable\. The step will try again\.$/,
+      {
+        retry: true,
+      }
+    );
+    logged(r, /registration returned HTTP 503/);
   });
 
   it('the body is not JSON', () => {
@@ -200,19 +246,57 @@ describe('fails the step, never renders, when', () => {
       /work\[0\]\.startDate must be YYYY, YYYY-MM or YYYY-MM-DD/
     );
   });
+});
 
-  it("Drive refuses the create: Google's own message reaches Activity", () => {
+describe('a failed Doc create', () => {
+  const docFails = (r, re, opts) => {
+    assert.equal(r.driveCalls.length, 1);
+    assert.equal(r.docsCalls.length, 0);
+    r = {...r, driveCalls: []};
+    failsWith(r, re, opts);
+  };
+
+  it("Drive 403: a plain sentence, Google's text only in the log", () => {
     const r = run({
       drive: json(403, {
         error: {message: 'Google Drive API has not been used in project 1'},
       }),
     });
-    assert.equal(r.result.kind, 'error');
-    assert.equal(
-      r.result.message,
-      'Could not create the Google Doc: files.create returned HTTP 403: Google Drive API has not been used in project 1'
+    docFails(
+      r,
+      /^Google refused to create the Doc\. Check that the add-on is still allowed to create files in your Drive\.$/
     );
-    assert.equal(r.docsCalls.length, 0);
+    logged(
+      r,
+      /files\.create returned HTTP 403: Google Drive API has not been used in project 1/
+    );
+  });
+
+  it('Drive 503: retryable', () => {
+    docFails(
+      run({drive: json(503, 'x')}),
+      /^Google Drive is not responding\. The step will try again\.$/,
+      {
+        retry: true,
+      }
+    );
+  });
+
+  it('Drive unreachable: retryable', () => {
+    docFails(
+      run({drive: new Error('Address unavailable')}),
+      /^Google Drive is not responding/,
+      {
+        retry: true,
+      }
+    );
+  });
+
+  it('Drive 400: says what to check, not retried', () => {
+    docFails(
+      run({drive: json(400, 'x')}),
+      /^Google Drive could not create the Doc from this resume\./
+    );
   });
 });
 
@@ -279,7 +363,7 @@ describe('a valid resume', () => {
     const body = Buffer.from(options.payload).toString('utf8');
     assert.ok(
       body.includes(
-        '{"name":"Ada Lovelace — Résumé","mimeType":"application/vnd.google-apps.document"}'
+        '{"name":"Ada Lovelace — Resume","mimeType":"application/vnd.google-apps.document"}'
       )
     );
     assert.ok(body.includes('Content-Type: text/html; charset=UTF-8'));
@@ -330,10 +414,10 @@ describe('the title input', () => {
     assert.ok(body.includes('{"name":"CV for Analytical Engines",'));
   });
 
-  it('defaults to "<name> — Résumé" when empty', () => {
+  it('defaults to "<name> — Resume" when empty', () => {
     const r = run({event: eventWith({title: ''})});
     const body = Buffer.from(r.driveCalls[0].options.payload).toString('utf8');
-    assert.ok(body.includes('{"name":"Ada Lovelace — Résumé",'));
+    assert.ok(body.includes('{"name":"Ada Lovelace — Resume",'));
   });
 });
 

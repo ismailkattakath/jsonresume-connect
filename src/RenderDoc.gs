@@ -132,9 +132,13 @@ function checkResponse(response, what) {
   } catch (e) {
     /* not JSON */
   }
-  throw new Error(
+  // For the Executions log only: the caller maps `status` to a sentence for
+  // the user and never shows them this text.
+  var err = new Error(
     what + ' returned HTTP ' + status + ': ' + str(detail).slice(0, 300)
   );
+  err.status = status;
+  throw err;
 }
 
 function utf8Bytes(s) {
@@ -186,7 +190,8 @@ function docTitleFor(resume, configured) {
     resume && resume.basics && typeof resume.basics === 'object'
       ? str(resume.basics.name).trim()
       : '';
-  return name ? name + ' — Résumé' : 'Résumé';
+  // "Resume", not "Résumé": one spelling in everything the user reads.
+  return name ? name + ' — Resume' : 'Resume';
 }
 
 /**

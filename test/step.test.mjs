@@ -11,7 +11,9 @@
 import {
   LIVE_EVENT,
   check,
+  fakeAddOnsResponseService,
   fakeOAuth2,
+  manifest,
   loadProject,
   propertyStore,
   recordingCardService,
@@ -245,6 +247,124 @@ check(
   signedIn.some(([k, a]) => k === 'setFieldName' && a[0] === 'title') &&
     signedIn.some(([k, a]) => k === 'setIncludeVariables' && a[0] === true)
 );
+
+// Design review item 8: one label per thing. The card field's title is the
+// manifest input's description.
+const fieldTitle = (calls, field) => {
+  const at = calls.findIndex(
+    ([k, a]) => k === 'setFieldName' && a[0] === field
+  );
+  const next = calls.slice(at).find(([k]) => k === 'setTitle');
+  return at >= 0 && next ? String(next[1][0]) : '';
+};
+for (const input of manifest.addOns.flows.workflowElements[0].workflowAction
+  .inputs) {
+  check(
+    `card field "${input.id}" is titled as the manifest describes it`,
+    fieldTitle(signedIn, input.id) === input.description,
+    fieldTitle(signedIn, input.id)
+  );
+}
+check(
+  'the connected and the connect section share one id (Disconnect swaps them)',
+  signedIn.filter(([k, a]) => k === 'setId' && a[0] === 'jsonresume_connection')
+    .length >= 1 &&
+    signedOut.filter(
+      ([k, a]) => k === 'setId' && a[0] === 'jsonresume_connection'
+    ).length >= 1
+);
+
+// ---- Disconnect: a modifyCard action, not CardService navigation -----------
+// Studio's guides: navigation is not supported in Studio add-ons; a button
+// returns AddOnsResponseService.newRenderActionBuilder().setAction(
+// newAction().addModifyCard(newModifyCard().setReplaceSection(section))).
+// NOT YET RUN LIVE.
+{
+  const {stub, calls} = recordingCardService();
+  const oauth = fakeOAuth2({hasAccess: true});
+  const user = propertyStore({JR_USERNAME: 'ada'});
+  const c = loadProject({
+    CardService: stub,
+    AddOnsResponseService: fakeAddOnsResponseService(),
+    OAuth2: oauth.OAuth2,
+    PropertiesService: {
+      getUserProperties: () => user,
+      getScriptProperties: () => propertyStore({JR_CLIENT_ID: 'test-client'}),
+    },
+    CacheService: {getUserCache: () => ({})},
+    LockService: {getUserLock: () => ({})},
+  });
+  const r = c.disconnectJsonResume();
+  check('Disconnect forgets the tokens', oauth.state.resets === 1);
+  check(
+    'Disconnect forgets the account name',
+    user.getProperty('JR_USERNAME') === null
+  );
+  check(
+    'Disconnect returns one modifyCard that replaces the section',
+    r.kind === 'action' &&
+      r.action.modifications.length === 1 &&
+      r.action.modifications[0].replaceSection !== undefined
+  );
+  check(
+    'the replacement is the Connect section, under the same id',
+    calls.some(([k, a]) => k === 'setText' && a[0] === 'Connect JSON Resume') &&
+      calls.some(([k, a]) => k === 'setId' && a[0] === 'jsonresume_connection')
+  );
+  check(
+    'Disconnect uses no CardService navigation',
+    !calls.some(
+      ([k]) => k === 'setNavigation' || k === 'updateCard' || k === 'pushCard'
+    )
+  );
+}
+
+// ---- sign-in unavailable: a sentence, not a raw error (review item 4) -------
+{
+  const {stub, calls} = recordingCardService();
+  const c = loadProject({
+    CardService: stub,
+    console: {log() {}, error() {}},
+    ...fakeOAuth2({hasAccess: false}),
+    PropertiesService: {
+      getUserProperties: () => propertyStore(),
+      getScriptProperties: () => propertyStore(),
+    },
+    ScriptApp: {getScriptId: () => 'script-id'},
+    UrlFetchApp: {
+      fetch: () => ({getResponseCode: () => 503, getContentText: () => 'down'}),
+    },
+    CacheService: {getUserCache: () => ({})},
+    LockService: {getUserLock: () => ({})},
+  });
+  let threw = '';
+  try {
+    c.onConfigJsonResumeToDoc();
+    c.jsonResumeConnectCard();
+  } catch (e) {
+    threw = e.message;
+  }
+  check(
+    'a failed client registration does not throw from the config card',
+    threw === '',
+    threw
+  );
+  check(
+    'it shows a plain sentence instead',
+    calls.filter(
+      ([k, a]) =>
+        k === 'setText' &&
+        a[0] ===
+          'JSON Resume sign-in is unavailable right now. Try again in a few minutes.'
+    ).length === 2
+  );
+  check(
+    'and offers no Connect button it cannot honour',
+    !calls.some(
+      ([k]) => k === 'throwException' || k === 'setAuthorizationAction'
+    )
+  );
+}
 
 // ---- headline formatting per section (resumeText) ---------------------------
 check(

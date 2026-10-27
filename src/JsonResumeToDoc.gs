@@ -1,12 +1,11 @@
 /**
  * The add-on's one custom step for Google Workspace Studio.
- * (Its display name lives in ONE place, appsscript.json; nothing here repeats
- * it, and a test fails if anything does.)
+ * (Its display name is APP_NAME below, kept equal to appsscript.json by a test.)
  *
  * Each run: loads the signed-in user's resume from jsonresume.org ("Connect
  * JSON Resume", OAuth 2.1 + PKCE), checks it against the jsonresume.org schema
  * (an invalid shape FAILS the step; it is never repaired), and renders it into
- * a Google Doc in the user's Drive (RenderDoc.gs). Outputs: the Doc's id, its
+ * a document for Google Docs in the user's Drive (RenderDoc.gs). Outputs: the Doc's id, its
  * link and its PDF/DOCX export links, plus the resume's name, headline and
  * email, the resume as JSON and as plain text.
  *
@@ -49,6 +48,17 @@ var TEXT_SECTIONS = [
 var JR_ORIGIN = 'https://jsonresume.org';
 
 /**
+ * The add-on's display name. It must equal addOns.common.name and the step's
+ * name in appsscript.json; a test fails if the three drift. It is repeated in
+ * code only because jsonresume.org's consent screen shows it (client_name),
+ * and Apps Script cannot read the manifest at run time.
+ */
+var APP_NAME = 'JSON Resume Connect';
+
+// Section ids, so Disconnect can replace the connected section in place.
+var CARD_SECTION_ID = 'jsonresume_connection';
+
+/**
  * Configuration card. Not connected: the Connect JSON Resume card (thrown as
  * an AuthorizationException, the shape Studio rendered live). Connected: who
  * is connected, the optional title field, and Disconnect.
@@ -57,10 +67,21 @@ var JR_ORIGIN = 'https://jsonresume.org';
  * through the field binding (see connectedCard).
  */
 function onConfigJsonResumeToDoc() {
-  var service = jsonResumeService();
-  if (!service.hasAccess()) {
+  var service;
+  var authorizationUrl = '';
+  try {
+    service = jsonResumeService();
+    if (!service.hasAccess()) authorizationUrl = service.getAuthorizationUrl();
+  } catch (err) {
+    // Client registration can fail (jsonresume.org down). An uncaught throw
+    // would show the user a raw error; show a sentence instead.
+    console.error('JsonResumeToDoc: sign-in unavailable: ' + err.message);
+    return unavailableCard();
+  }
+  if (authorizationUrl) {
+    // Outside the try: throwException IS a throw, and Studio needs it.
     CardService.newAuthorizationException()
-      .setAuthorizationUrl(service.getAuthorizationUrl())
+      .setAuthorizationUrl(authorizationUrl)
       .setResourceDisplayName('JSON Resume')
       .setCustomUiCallback('jsonResumeConnectCard')
       .throwException();
@@ -70,27 +91,30 @@ function onConfigJsonResumeToDoc() {
 
 /**
  * The connected card. The title field's setFieldName MUST equal a manifest
- * inputs[].id: that binding is how the value reaches onExecute. It accepts
- * variables (setIncludeVariables), so an earlier step can supply the title.
+ * inputs[].id: that binding is how the value reaches onExecute, and its title
+ * matches that input's manifest description. It accepts variables
+ * (setIncludeVariables), so an earlier step can supply the title.
  */
 function connectedCard() {
   var who = PropertiesService.getUserProperties().getProperty('JR_USERNAME');
   var titleInput = CardService.newTextInput()
     .setFieldName('title')
-    .setTitle('Document title (optional)')
-    .setHint('Defaults to "{your name} — Résumé".')
+    .setTitle('Document title')
+    .setHint('Optional. Defaults to "{your name} — Resume".')
     .setHostAppDataSource(
       CardService.newHostAppDataSource().setWorkflowDataSource(
         CardService.newWorkflowDataSource().setIncludeVariables(true)
       )
     );
   var section = CardService.newCardSection()
+    .setId(CARD_SECTION_ID)
     .addWidget(
       CardService.newTextParagraph().setText(
         'Connected to <b>JSON Resume</b>' +
           (who ? ' as <b>@' + escapeHtml(who) + '</b>' : '') +
-          '. Each run loads your resume from jsonresume.org and renders it into a Google Doc ' +
-          'in your Drive, with PDF and DOCX download links. This step can only see the files it creates.'
+          '. Each run loads your resume from jsonresume.org and renders it as a document ' +
+          'for Google Docs™ in your Drive, with PDF and DOCX download links. ' +
+          'This step can only see the files it creates.'
       )
     )
     .addWidget(titleInput)
@@ -106,8 +130,20 @@ function connectedCard() {
 
 /** The custom sign-in card a public add-on needs instead of Google's generic one. */
 function jsonResumeConnectCard() {
-  var url = jsonResumeService().getAuthorizationUrl();
-  var section = CardService.newCardSection()
+  var url;
+  try {
+    url = jsonResumeService().getAuthorizationUrl();
+  } catch (err) {
+    console.error('JsonResumeToDoc: sign-in unavailable: ' + err.message);
+    return [unavailableCard()];
+  }
+  return [CardService.newCardBuilder().addSection(connectSection(url)).build()];
+}
+
+/** The Connect JSON Resume section, shared by the sign-in card and Disconnect. */
+function connectSection(url) {
+  return CardService.newCardSection()
+    .setId(CARD_SECTION_ID)
     .addWidget(
       CardService.newTextParagraph().setText(
         'Connect your <b>JSON Resume</b> account to load your resume. ' +
@@ -129,16 +165,44 @@ function jsonResumeConnectCard() {
         'After connecting, <b>refresh</b> this page.'
       )
     );
-  return [CardService.newCardBuilder().addSection(section).build()];
 }
 
-function disconnectJsonResume() {
-  jsonResumeService().reset();
-  PropertiesService.getUserProperties().deleteProperty('JR_USERNAME');
-  return CardService.newActionResponseBuilder()
-    .setNavigation(
-      CardService.newNavigation().updateCard(jsonResumeConnectCard()[0])
+/** Shown instead of a raw error when sign-in cannot be offered right now. */
+function unavailableCard() {
+  return CardService.newCardBuilder()
+    .addSection(
+      CardService.newCardSection()
+        .setId(CARD_SECTION_ID)
+        .addWidget(
+          CardService.newTextParagraph().setText(
+            'JSON Resume sign-in is unavailable right now. Try again in a few minutes.'
+          )
+        )
     )
+    .build();
+}
+
+/**
+ * Disconnect: forget the tokens, then swap the connected section for the
+ * Connect section IN PLACE.
+ *
+ * Not CardService navigation: Studio's configuration-card guide says
+ * navigation methods are not supported in Studio add-ons, and its update-cards
+ * guide returns AddOnsResponseService modifyCard actions instead
+ * (https://developers.google.com/workspace/add-ons/studio/update-cards,
+ * read 2026-10-27). NOT YET RUN LIVE.
+ */
+function disconnectJsonResume() {
+  var service = jsonResumeService();
+  service.reset();
+  PropertiesService.getUserProperties().deleteProperty('JR_USERNAME');
+  var modify = AddOnsResponseService.newAction().addModifyCard(
+    AddOnsResponseService.newModifyCard().setReplaceSection(
+      connectSection(service.getAuthorizationUrl())
+    )
+  );
+  return AddOnsResponseService.newRenderActionBuilder()
+    .setAction(modify)
     .build();
 }
 
@@ -169,6 +233,9 @@ function jsonResumeAuthCallback(request) {
  * The client id, registered once per deployment through jsonresume.org's
  * self-serve dynamic client registration (public client, no secret; measured
  * 2026-10-27). Kept in Script Properties: an identifier, not a secret.
+ * client_name is what jsonresume.org's consent screen shows; a client
+ * registered before the rename keeps its old name until re-registered.
+ * Throws when registration fails; callers turn that into a sentence.
  */
 function jsonResumeClientId() {
   var props = PropertiesService.getScriptProperties();
@@ -179,7 +246,7 @@ function jsonResumeClientId() {
     contentType: 'application/json',
     muteHttpExceptions: true,
     payload: JSON.stringify({
-      client_name: 'JSON Resume for Workspace Studio',
+      client_name: APP_NAME,
       redirect_uris: [
         'https://script.google.com/macros/d/' +
           ScriptApp.getScriptId() +
@@ -198,6 +265,11 @@ function jsonResumeClientId() {
   return id;
 }
 
+/** HTTP statuses that a retry can cure: rate limits and server errors. */
+function isTransientStatus(status) {
+  return status === 429 || status >= 500;
+}
+
 /**
  * Runs when the step executes.
  *
@@ -205,10 +277,16 @@ function jsonResumeClientId() {
  * a message the user can act on (failStep).
  *
  * Failure policy:
- * - Not connected, the fetch fails, the resume is invalid, or the Doc create
- *   fails: the step FAILS. There is nothing useful to hand on.
+ * - Not connected, no resume, an invalid resume: the step FAILS, actionable,
+ *   not retried. The user fixes it.
+ * - jsonresume.org or Drive unreachable, 429 or 5xx: the step FAILS as
+ *   RETRYABLE (Studio reruns it up to five times) and not actionable.
  * - A styling call fails: the step SUCCEEDS with the Doc as imported
  *   (renderResumeDoc logs the reason to Executions).
+ *
+ * The user sees plain sentences only. HTTP codes, Google's error text and
+ * exception messages go to Executions (console.error), never the resume or
+ * a token.
  */
 function onExecuteJsonResumeToDoc(event) {
   // The envelope only: the resume itself is personal data and never logged.
@@ -224,7 +302,11 @@ function onExecuteJsonResumeToDoc(event) {
   );
 
   var loaded = loadResume();
-  if (loaded.error) return failStep('Could not load resume: ' + loaded.error);
+  if (loaded.error) {
+    return failStep('Could not load resume: ' + loaded.error, {
+      retry: !!loaded.retry,
+    });
+  }
   var resume = loaded.resume;
 
   var doc;
@@ -235,19 +317,47 @@ function onExecuteJsonResumeToDoc(event) {
       docTitleFor(resume, readActionInput(inputs, 'title'))
     );
   } catch (err) {
-    return failStep('Could not create the Google Doc: ' + err.message);
+    console.error('JsonResumeToDoc: Doc create failed: ' + err.message);
+    return docCreateFailure(err.status);
   }
 
   return outputs(buildOutputs(doc.id, doc.webViewLink, resume));
 }
 
+/** A failed Doc create, in the user's terms. `status` is unset for a network error. */
+function docCreateFailure(status) {
+  if (status === 401 || status === 403) {
+    return failStep(
+      'Google refused to create the Doc. Check that the add-on is still allowed to create files in your Drive.'
+    );
+  }
+  if (!status || isTransientStatus(status)) {
+    return failStep(
+      'Google Drive is not responding. The step will try again.',
+      {retry: true}
+    );
+  }
+  return failStep(
+    'Google Drive could not create the Doc from this resume. Try again later, or check the resume in the jsonresume.org dashboard.'
+  );
+}
+
 /**
  * The signed-in user's resume from jsonresume.org, validated.
- * Returns { resume } or { error }, where error completes the sentence
- * "Could not load resume: ...". Never throws.
+ * Returns { resume } or { error, retry }, where error completes the sentence
+ * "Could not load resume: ..." in the user's terms. Never throws.
  */
 function loadResume() {
-  var service = jsonResumeService();
+  var service;
+  try {
+    service = jsonResumeService();
+  } catch (err) {
+    console.error('JsonResumeToDoc: sign-in unavailable: ' + err.message);
+    return {
+      error: 'JSON Resume sign-in is unavailable. The step will try again.',
+      retry: true,
+    };
+  }
   if (!service.hasAccess()) {
     return {
       error:
@@ -279,11 +389,27 @@ function loadResume() {
       };
     }
     if (status < 200 || status >= 300) {
-      return {error: 'jsonresume.org returned HTTP ' + status + '.'};
+      console.error('JsonResumeToDoc: jsonresume.org answered HTTP ' + status);
+      if (isTransientStatus(status)) {
+        return {
+          error: 'jsonresume.org is not responding. The step will try again.',
+          retry: true,
+        };
+      }
+      return {
+        error:
+          'jsonresume.org refused the request. Open this step, click Disconnect, then connect JSON Resume again.',
+      };
     }
     raw = response.getContentText();
   } catch (err) {
-    return {error: err.message};
+    console.error(
+      'JsonResumeToDoc: jsonresume.org fetch failed: ' + err.message
+    );
+    return {
+      error: 'could not reach jsonresume.org. The step will try again.',
+      retry: true,
+    };
   }
 
   if (raw.length > MAX_BYTES) {
@@ -369,20 +495,31 @@ function buildOutputs(docId, docUrl, resume) {
  * The first version smuggled the reason into `resumeText` and returned success.
  * That is wrong twice over: the flow carries on as if it had a resume, and the
  * Activity tab — the only place a non-developer looks — shows nothing but the
- * step's name. ACTIONABLE + NOT_RETRYABLE is the honest pair here: every failure
- * this step can have (not connected, no resume, an invalid resume) is fixed by
- * the user, and none of them get better on a retry.
+ * step's name.
+ *
+ * Two pairs (Studio "handle errors" guide, read 2026-10-27):
+ * - default ACTIONABLE + NOT_RETRYABLE: the user fixes it (connect, create or
+ *   fix the resume); a retry cannot help.
+ * - {retry: true} NOT_ACTIONABLE + RETRYABLE: a service was unreachable or
+ *   overloaded; Studio "attempts to run the step again up to five times".
  */
-function failStep(message) {
+function failStep(message, opts) {
+  var retry = !!(opts && opts.retry);
   var workflowAction = AddOnsResponseService.newReturnElementErrorAction()
     .setErrorLog(
       AddOnsResponseService.newWorkflowTextFormat().addTextFormatElement(
         AddOnsResponseService.newTextFormatElement().setText(message)
       )
     )
-    .setErrorActionability(AddOnsResponseService.ErrorActionability.ACTIONABLE)
+    .setErrorActionability(
+      retry
+        ? AddOnsResponseService.ErrorActionability.NOT_ACTIONABLE
+        : AddOnsResponseService.ErrorActionability.ACTIONABLE
+    )
     .setErrorRetryability(
-      AddOnsResponseService.ErrorRetryability.NOT_RETRYABLE
+      retry
+        ? AddOnsResponseService.ErrorRetryability.RETRYABLE
+        : AddOnsResponseService.ErrorRetryability.NOT_RETRYABLE
     );
   var hostAppAction =
     AddOnsResponseService.newHostAppAction().setWorkflowAction(workflowAction);

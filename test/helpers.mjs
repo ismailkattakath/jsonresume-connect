@@ -145,8 +145,30 @@ export function fakeOAuth2({hasAccess = false} = {}) {
 export function fakeAddOnsResponseService() {
   const self = obj => obj;
   return {
-    ErrorActionability: {ACTIONABLE: 'ACTIONABLE'},
-    ErrorRetryability: {NOT_RETRYABLE: 'NOT_RETRYABLE'},
+    ErrorActionability: {
+      ACTIONABLE: 'ACTIONABLE',
+      NOT_ACTIONABLE: 'NOT_ACTIONABLE',
+    },
+    ErrorRetryability: {
+      RETRYABLE: 'RETRYABLE',
+      NOT_RETRYABLE: 'NOT_RETRYABLE',
+    },
+    newAction: () => {
+      const a = {modifications: []};
+      a.addModifyCard = m => {
+        a.modifications.push(m);
+        return a;
+      };
+      return a;
+    },
+    newModifyCard: () => {
+      const m = {};
+      m.setReplaceSection = section => {
+        m.replaceSection = section;
+        return m;
+      };
+      return m;
+    },
     newVariableData: () => {
       const d = {values: []};
       d.addStringValue = v => {
@@ -209,7 +231,12 @@ export function fakeAddOnsResponseService() {
         b.host = h;
         return b;
       };
-      b.build = () => b.host.workflow;
+      b.setAction = a => {
+        b.action = a;
+        return b;
+      };
+      b.build = () =>
+        b.host ? b.host.workflow : {kind: 'action', action: b.action};
       return b;
     },
   };

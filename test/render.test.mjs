@@ -54,13 +54,13 @@ for (const bad of [
 // ---- title ------------------------------------------------------------------
 check(
   'title defaults to the name',
-  ctx.docTitleFor({basics: {name: 'Ada'}}, '') === 'Ada — Résumé'
+  ctx.docTitleFor({basics: {name: 'Ada'}}, '') === 'Ada — Resume'
 );
 check(
   'configured title wins',
   ctx.docTitleFor({basics: {name: 'Ada'}}, ' CV for X ') === 'CV for X'
 );
-check('no name falls back to Résumé', ctx.docTitleFor({}, '') === 'Résumé');
+check('no name falls back to Resume', ctx.docTitleFor({}, '') === 'Resume');
 
 // ---- multipart frame -------------------------------------------------------
 const frame = ctx.multipartFrame(

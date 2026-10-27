@@ -58,16 +58,59 @@ check(
   'the step has a name',
   typeof step.name === 'string' && step.name.trim().length > 0
 );
-// The display name lives in appsscript.json only. A copy in code would drift.
-test('no source file repeats the step name', () => {
-  const found = OWN_FILES.filter(f => own[f].includes(step.name));
-  assert.deepEqual(found, []);
+// The display name: addOns.common.name, the step's name, and APP_NAME (the
+// one code copy, which jsonresume.org's consent screen shows) must agree, and
+// the literal may appear in code nowhere else. A rename is the manifest plus
+// that constant, and this test says if either was missed.
+check(
+  "the step's name is the add-on's name",
+  step.name === manifest.addOns.common.name,
+  `${step.name} vs ${manifest.addOns.common.name}`
+);
+check(
+  'no "Google" in the name (Workspace add-on naming rules)',
+  !/google/i.test(manifest.addOns.common.name)
+);
+test('the name appears in code once: the APP_NAME constant', () => {
+  const hits = OWN_FILES.flatMap(f =>
+    stripComments(own[f])
+      .split('\n')
+      .filter(l => l.includes(`'${manifest.addOns.common.name}'`))
+      .map(l => `${f}: ${l.trim()}`)
+  );
+  assert.deepEqual(hits, [
+    `JsonResumeToDoc.gs: var APP_NAME = '${manifest.addOns.common.name}';`,
+  ]);
+});
+check(
+  'the logo is a repo-hosted https image',
+  /^https:\/\/raw\.githubusercontent\.com\/ismailkattakath\/jsonresume-connect\/main\/assets\/[\w-]+\.png$/.test(
+    manifest.addOns.common.logoUrl
+  ),
+  manifest.addOns.common.logoUrl
+);
+
+// Design review item 9: ONE spelling in everything the user reads. "resume"
+// (ASCII, as in the JSON Resume name); the accented form only in comments.
+test('user-facing text spells it "resume", never with accents', () => {
+  const accented = /r[ée]sum[ée]/i;
+  const offenders = [
+    ...OWN_FILES.filter(f =>
+      /résumé|resumé|résume/i.test(stripComments(own[f]))
+    ),
+    ...(JSON.stringify(manifest)
+      .match(/r[ée]sum[ée]/gi)
+      ?.filter(m => m !== 'resume' && m !== 'Resume') || []),
+  ];
+  assert.ok(accented.test('résumé'));
+  assert.deepEqual(offenders, []);
 });
 
 // ---- callbacks ---------------------------------------------------------------
 const {stub: CardService} = recordingCardService();
 const ctx = loadProject({
   CardService,
+  AddOnsResponseService: {},
   ...fakeOAuth2(),
   PropertiesService: {
     getUserProperties: () => propertyStore(),
