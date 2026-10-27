@@ -2,12 +2,13 @@
 
 ## Verdict
 
-- **Sensitive-scope verification is probably not needed.** `drive.file` is confirmed
-  **non-sensitive**. The class of `script.external_request` is **not published** in any Google
-  page found; **read it in the console** (step 6).
-- If both are non-sensitive, Google says: "If your app utilizes only non-sensitive scopes, it is
-  not mandatory for your app to complete the app verification process"
-  ([verification overview][vo]).
+- **Sensitive-scope verification IS needed.** Read in the console on 2026-10-27 (Data Access):
+  `drive.file` is **non-sensitive**, but **`script.external_request` is listed under "Your
+  sensitive scopes"** ("Connect to an external service"). An earlier draft of this file guessed
+  it was not sensitive; the console settled it. So publishing the app needs Google's
+  sensitive-scope review: the justifications below **and the demo video** (§ Demo video script).
+- Until verified, the app stays usable by test users only (Audience › Test users), and
+  external users would see the unverified-app screen.
 - **Do brand verification anyway.** Without it the consent screen does not show the app name and
   logo ([branding help][cbrand]). Marketplace review also checks that "The app has passed OAuth
   verification" ([review]).
@@ -20,7 +21,7 @@ Paste these into **Google Auth platform › Data Access** justifications and the
 | Scope | Class | Justification (paste) |
 |---|---|---|
 | `https://www.googleapis.com/auth/drive.file` | **Non-sensitive**, "recommended for most use cases" ([Drive scopes][drive]) | Creates one Google Doc per run in the user's Drive, styles it through the Docs API, and returns its link plus PDF and DOCX export links. It can open only files the add-on created. Full Drive access (`drive`) or read access (`drive.readonly`) would grant far more than the add-on uses, so the narrowest Drive scope was chosen. |
-| `https://www.googleapis.com/auth/script.external_request` | **Check the indicator in the console** (no published class found) | Lets the add-on call jsonresume.org, the user's chosen résumé host, to read the user's own résumé after the user connects their account through OAuth (scope `resume:read`), and to call the Google Docs and Drive APIs. The manifest `urlFetchWhitelist` limits requests to `https://jsonresume.org/`, `https://docs.googleapis.com/` and `https://www.googleapis.com/`. |
+| `https://www.googleapis.com/auth/script.external_request` | **Sensitive** (console, Data Access, 2026-10-27) | Lets the add-on call jsonresume.org, the user's chosen résumé host, to read the user's own résumé after the user connects their account through OAuth (scope `resume:read`), and to call the Google Docs and Drive APIs. The manifest `urlFetchWhitelist` limits requests to `https://jsonresume.org/`, `https://docs.googleapis.com/` and `https://www.googleapis.com/`. |
 
 **Why `drive.file` is the right Drive scope:** it is the only Drive scope that covers "Create new
 Drive files, or modify existing files, that you open with an app" without reaching the user's other
