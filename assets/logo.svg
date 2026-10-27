@@ -3,13 +3,26 @@
   <!-- Original mark: a page with a folded corner holding a pair of JSON braces.
        Colours are deliberately NOT Google's (#4285F4 #EA4335 #FBBC05 #34A853)
        nor JSON Resume's (#FFF18F). Background is transparent (Marketplace icon rule).
-       Geometry follows the Google Workspace product-icon grid, measured on the official
-       Docs icon (gstatic docs_2020q4_48dp): page 32x44 on a 48 canvas = aspect 8:11,
-       91.7% of the height, centred (16.7% side, 4.2% top/bottom margins). Scaled to 128:
-       page x 21.33-106.67, y 5.33-122.67. Shape and colours stay our own. -->
-  <path d="M27.33 5.33 H80.67 L106.67 31.33 V116.67 a6 6 0 0 1 -6 6 H27.33 a6 6 0 0 1 -6 -6 V11.33 a6 6 0 0 1 6 -6 Z" fill="#3D2C8D"/>
-  <path d="M80.67 5.33 V23.33 a8 8 0 0 0 8 8 H106.67 Z" fill="#9D8DF1"/>
-  <g transform="translate(64 72) scale(1.048) translate(-63 -72)" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+       Geometry follows the Google Workspace product-icon grid, measured on the Docs icon
+       Studio serves (48 px, 2026-10-27): page 32x44 = aspect 8:11, centred (16.7% side,
+       4.2% top/bottom margins); fold leg 15.5 px (~48% of the page width); corner radius
+       ~4.5 px; a lavender glow rising from the bottom, centred ~30% across, fading out
+       ~55% up the page. Scaled to 128: page x 21.33-106.67, y 5.33-122.67, fold leg 41.33,
+       radius 12. Shape and colours stay our own. -->
+  <defs>
+    <clipPath id="page">
+      <path id="page-shape" d="M33.33 5.33 H65.33 L106.67 46.67 V110.67 a12 12 0 0 1 -12 12 H33.33 a12 12 0 0 1 -12 -12 V17.33 a12 12 0 0 1 12 -12 Z"/>
+    </clipPath>
+    <radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="48" cy="124" r="72" gradientTransform="translate(48 124) scale(1 0.92) translate(-48 -124)">
+      <stop offset="0" stop-color="#B9A8FF" stop-opacity="0.62"/>
+      <stop offset="0.55" stop-color="#B9A8FF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#B9A8FF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <use href="#page-shape" fill="#3D2C8D"/>
+  <rect x="0" y="0" width="128" height="128" fill="url(#glow)" clip-path="url(#page)"/>
+  <path d="M65.33 5.33 V38.67 a8 8 0 0 0 8 8 H106.67 Z" fill="#9D8DF1"/>
+  <g transform="translate(64 84) scale(1.048) translate(-63 -72)" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
     <path d="M55 46 C46 46 48 54 48 62 C48 68 46 72 40 72 C46 72 48 76 48 82 C48 90 46 98 55 98"/>
     <path d="M71 46 C80 46 78 54 78 62 C78 68 80 72 86 72 C80 72 78 76 78 82 C78 90 80 98 71 98"/>
   </g>
