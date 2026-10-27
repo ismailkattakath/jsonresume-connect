@@ -93,19 +93,27 @@ Click **Connect JSON Resume** again.
 
 ## Outputs
 
-All `STRING`, `SINGLE`. Kept as the union of both former steps; each has a use:
+All `STRING`, `SINGLE`. The chip labels follow Google's built-in **Create a doc** step (measured
+live 2026-10-27: "Link to doc", "Doc name", "Doc location", "Document ID") and the Gmail
+starter's "Sender email address". A test pins every id and label, in order. Ids stay stable:
+users never see them, and renaming one breaks every flow bound to it.
 
-| Output | Chip | Use | Keep? |
-|---|---|---|---|
-| `docUrl` | Doc URL | link to the Doc, for a Gmail or Chat step | yes |
-| `pdfUrl` | PDF download link | `https://docs.google.com/document/d/{id}/export?format=pdf` | yes |
-| `docxUrl` | DOCX download link | `https://docs.google.com/document/d/{id}/export?format=docx` | yes |
-| `docId` | Doc file ID | for a Drive step (share, move); Google's own Drive picker outputs IDs too | yes |
-| `name` | Name | `basics.name`, for addressing a message | yes |
-| `label` | Headline | `basics.label` | yes |
-| `email` | Email | `basics.email` | yes |
-| `resumeText` | Resume (plain text) | flattened text for any AI step (summary, cover letter) | yes |
-| `resume` | Resume (JSON) | the validated `resume.json`, for a step that wants structure | **weakest**: no native step consumes JSON, and it can be up to 2 MB. Drop it if fewer chips matter more |
+| Id | Chip | Use |
+|---|---|---|
+| `docUrl` | Link to doc | the Doc, for a Gmail or Chat step |
+| `docName` | Doc name | the name Drive stored (the configured title, or `<name> — Resume`) |
+| `pdfUrl` | Link to PDF | `https://docs.google.com/document/d/{id}/export?format=pdf` |
+| `docxUrl` | Link to DOCX | `https://docs.google.com/document/d/{id}/export?format=docx` |
+| `docId` | Document ID | for a Drive step (share, move) |
+| `name` | Name | `basics.name`, for addressing a message |
+| `label` | Headline | `basics.label` |
+| `email` | Email address | `basics.email` |
+| `resumeText` | Resume (plain text) | flattened text for any AI step (summary, cover letter) |
+| `resume` | Resume (JSON) | the validated `resume.json`. **Weakest case:** no native step consumes JSON, and it can be up to 2 MB |
+
+**No "Doc location".** The Doc is always created in My Drive's root, so that chip would be a
+constant (`https://drive.google.com/drive/my-drive`) that tells the user nothing. Add it if a
+folder input ever appears.
 
 `resumeText` renders `basics` then `work`, `projects`, `education`, `skills`, `certificates`,
 `awards`, each entry as a headline plus summary plus highlights. Measured on a real registry

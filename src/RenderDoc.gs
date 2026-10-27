@@ -36,7 +36,7 @@
 
 var DRIVE_UPLOAD_URL =
   'https://www.googleapis.com/upload/drive/v3/files' +
-  '?uploadType=multipart&fields=id,webViewLink';
+  '?uploadType=multipart&fields=id,name,webViewLink';
 var DOCS_EXPORT_URL = 'https://docs.google.com/document/d/';
 var DOCS_API_URL = 'https://docs.googleapis.com/v1/documents/';
 var GOOGLE_DOC_MIME = 'application/vnd.google-apps.document';
@@ -44,7 +44,7 @@ var PAGE_MARGIN_PT = 36; // 0.5 inch
 
 /**
  * Creates the Google Doc for a validated resume and styles it.
- * Returns { id, webViewLink }.
+ * Returns { id, name, webViewLink }.
  *
  * Failure policy:
  * - The Doc create fails: THROWS. The caller fails the step; there is nothing
@@ -100,7 +100,11 @@ function driveCreate(token, metadata, mediaType, mediaBytes) {
     muteHttpExceptions: true,
   });
   var file = JSON.parse(checkResponse(response, 'files.create'));
-  return {id: str(file.id), webViewLink: str(file.webViewLink)};
+  return {
+    id: str(file.id),
+    name: str(file.name) || str(metadata.name),
+    webViewLink: str(file.webViewLink),
+  };
 }
 
 /** documents.batchUpdate: Docs REST v1, same token, same no-DocumentApp rule. */

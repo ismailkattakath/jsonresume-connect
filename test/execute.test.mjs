@@ -327,6 +327,7 @@ describe('a valid resume', () => {
 
   it('returns the Doc and its export links', () => {
     assert.equal(out.docId[0], DOC_ID);
+    assert.equal(out.docName[0], 'Ada Lovelace — Resume');
     assert.equal(
       out.docUrl[0],
       `https://docs.google.com/document/d/${DOC_ID}/edit`
@@ -415,6 +416,26 @@ describe('the title input', () => {
     const r = run({event: eventWith({title: '  CV for Analytical Engines  '})});
     const body = Buffer.from(r.driveCalls[0].options.payload).toString('utf8');
     assert.ok(body.includes('{"name":"CV for Analytical Engines",'));
+  });
+
+  it('docName is the configured title when Drive echoes no name', () => {
+    const r = run({event: eventWith({title: 'CV for X'})});
+    assert.equal(r.result.map.docName.values[0], 'CV for X');
+  });
+
+  it('docName is the name Drive stored, when it returns one', () => {
+    const r = run({
+      drive: json(200, {
+        id: DOC_ID,
+        name: 'Ada Lovelace — Resume (1)',
+        webViewLink: 'https://docs.google.com/document/d/x/edit',
+      }),
+    });
+    assert.equal(r.result.map.docName.values[0], 'Ada Lovelace — Resume (1)');
+  });
+
+  it('asks Drive for the stored name', () => {
+    assert.match(run().driveCalls[0].url, /fields=id,name,webViewLink$/);
   });
 
   it('defaults to "<name> — Resume" when empty', () => {

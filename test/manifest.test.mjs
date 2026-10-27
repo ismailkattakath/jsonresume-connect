@@ -157,24 +157,27 @@ check(
     o => o.dataType.basicType === 'STRING' && o.cardinality === 'SINGLE'
   )
 );
-check(
-  'the merged step keeps the Doc links and the resume metadata',
-  JSON.stringify(declaredOut) ===
-    JSON.stringify(
-      [
-        'docId',
-        'docUrl',
-        'pdfUrl',
-        'docxUrl',
-        'name',
-        'label',
-        'email',
-        'resume',
-        'resumeText',
-      ].sort()
-    ),
-  JSON.stringify(declaredOut)
-);
+// The chip labels users see, pinned EXACTLY, in order. They follow Google's
+// built-in "Create a doc" step (measured live 2026-10-27: "Link to doc",
+// "Doc name", "Doc location", "Document ID") and the Gmail starter's "Sender
+// email address". "Doc location" is deliberately absent (see buildOutputs).
+test('output ids and chip labels are exactly the agreed set', () => {
+  assert.deepEqual(
+    action.outputs.map(o => [o.id, o.description]),
+    [
+      ['docUrl', 'Link to doc'],
+      ['docName', 'Doc name'],
+      ['pdfUrl', 'Link to PDF'],
+      ['docxUrl', 'Link to DOCX'],
+      ['docId', 'Document ID'],
+      ['name', 'Name'],
+      ['label', 'Headline'],
+      ['email', 'Email address'],
+      ['resumeText', 'Resume (plain text)'],
+      ['resume', 'Resume (JSON)'],
+    ]
+  );
+});
 
 // ---- inputs: card fields bind to manifest inputs BY NAME --------------------
 check(

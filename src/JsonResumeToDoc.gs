@@ -327,7 +327,7 @@ function onExecuteJsonResumeToDoc(event) {
     return docCreateFailure(err.status);
   }
 
-  return outputs(buildOutputs(doc.id, doc.webViewLink, resume));
+  return outputs(buildOutputs(doc.id, doc.webViewLink, resume, doc.name));
 }
 
 /** A failed Doc create, in the user's terms. `status` is unset for a network error. */
@@ -479,14 +479,22 @@ function resumeProblem(resume) {
  *
  * Split from the Apps Script envelope (outputs) on purpose: this half is pure
  * JavaScript and can therefore be tested off Google's servers, which is where
- * the output contract actually gets checked.
+ * the output contract actually gets checked. docName is the name Drive stored
+ * (files.create returns it), so a chip shows the title actually used.
+ *
+ * The chip labels (manifest descriptions) follow Google's built-in "Create a
+ * doc" step, measured live 2026-10-27: "Link to doc", "Doc name", "Document
+ * ID". Its fourth, "Doc location", is left out: the Doc is always created in
+ * My Drive's root, so the value would be a constant that tells the user
+ * nothing.
  */
-function buildOutputs(docId, docUrl, resume) {
+function buildOutputs(docId, docUrl, resume, docName) {
   var r = isPlainObject(resume) ? resume : {};
   var basics = isPlainObject(r.basics) ? r.basics : {};
   return {
     docId: str(docId),
     docUrl: str(docUrl),
+    docName: str(docName),
     pdfUrl: exportUrl(docId, 'pdf'),
     docxUrl: exportUrl(docId, 'docx'),
     name: str(basics.name),

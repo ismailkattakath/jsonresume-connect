@@ -52,7 +52,15 @@
             "outputs": [
               {
                 "id": "docUrl",
-                "description": "Doc URL",
+                "description": "Link to doc",
+                "cardinality": "SINGLE",
+                "dataType": {
+                  "basicType": "STRING"
+                }
+              },
+              {
+                "id": "docName",
+                "description": "Doc name",
                 "cardinality": "SINGLE",
                 "dataType": {
                   "basicType": "STRING"
@@ -60,7 +68,7 @@
               },
               {
                 "id": "pdfUrl",
-                "description": "PDF download link",
+                "description": "Link to PDF",
                 "cardinality": "SINGLE",
                 "dataType": {
                   "basicType": "STRING"
@@ -68,7 +76,7 @@
               },
               {
                 "id": "docxUrl",
-                "description": "DOCX download link",
+                "description": "Link to DOCX",
                 "cardinality": "SINGLE",
                 "dataType": {
                   "basicType": "STRING"
@@ -76,7 +84,7 @@
               },
               {
                 "id": "docId",
-                "description": "Doc file ID",
+                "description": "Document ID",
                 "cardinality": "SINGLE",
                 "dataType": {
                   "basicType": "STRING"
@@ -100,7 +108,7 @@
               },
               {
                 "id": "email",
-                "description": "Email",
+                "description": "Email address",
                 "cardinality": "SINGLE",
                 "dataType": {
                   "basicType": "STRING"
