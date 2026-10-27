@@ -46,7 +46,7 @@ Create the `production` environment first (next section) — `--env` needs it to
 echoed):
 
 ```bash
-R=ismailkattakath/jsonresume-google-docs
+R=ismailkattakath/jsonresume-connect
 gh secret set CLASPRC_JSON --repo "$R" --env production < ~/.clasprc.json
 gh secret set SCRIPT_ID    --repo "$R" --env production          # paste at the prompt
 gh variable set DEPLOYMENT_ID --repo "$R" --env production --body "<deployment id>"
@@ -79,7 +79,7 @@ Create it with the owner as required reviewer, deployable only from protected br
 (user id `8927166` = `ismailkattakath`, from `gh api users/ismailkattakath -q .id`):
 
 ```bash
-gh api -X PUT repos/ismailkattakath/jsonresume-google-docs/environments/production \
+gh api -X PUT repos/ismailkattakath/jsonresume-connect/environments/production \
   --input - <<'JSON'
 {
   "wait_timer": 0,
@@ -98,7 +98,7 @@ merges the release PR. Required check context = the CI job name `lint-format-tes
 `integration_id: 15368` is the GitHub Actions app.
 
 ```bash
-gh api -X POST repos/ismailkattakath/jsonresume-google-docs/rulesets --input - <<'JSON'
+gh api -X POST repos/ismailkattakath/jsonresume-connect/rulesets --input - <<'JSON'
 {
   "name": "main",
   "target": "branch",
@@ -124,7 +124,8 @@ gh api -X POST repos/ismailkattakath/jsonresume-google-docs/rulesets --input - <
       "parameters": {
         "strict_required_status_checks_policy": true,
         "required_status_checks": [
-          { "context": "lint-format-test", "integration_id": 15368 }
+          { "context": "lint-format-test", "integration_id": 15368 },
+          { "context": "dco", "integration_id": 15368 }
         ]
       } }
   ]
@@ -138,7 +139,7 @@ JSON
 was moved to another `main` commit. Block that (apply with the branch ruleset):
 
 ```bash
-gh api -X POST repos/ismailkattakath/jsonresume-google-docs/rulesets --input - <<'JSON'
+gh api -X POST repos/ismailkattakath/jsonresume-connect/rulesets --input - <<'JSON'
 {
   "name": "release tags",
   "target": "tag",
@@ -157,7 +158,17 @@ JSON
   signed by GitHub.
 - **Not required checks:** `analyze (javascript-typescript)`, `scorecard`, `dependency-review`
   — they are skipped while private, and a skipped required check never reports.
-- Check the result: `gh api repos/ismailkattakath/jsonresume-google-docs/rulesets`.
+- Check the result: `gh api repos/ismailkattakath/jsonresume-connect/rulesets`.
+
+## DCO (Developer Certificate of Origin)
+
+- `dco.yml` (job `dco`) fails a PR when any non-merge commit lacks a `Signed-off-by:` trailer
+  naming its author (`git commit -s`). Bot commits (`*[bot]@users.noreply.github.com`:
+  release-please, Dependabot) are exempt.
+- It is plain `git` in a pinned checkout: no third-party action holds the PR.
+- **Alternative: the DCO GitHub App** (github.com/apps/dco, CNCF's standard). It needs no
+  workflow and offers a "remediation commit" flow. If you install it, delete `dco.yml` and make
+  the App's `DCO` check required instead of `dco` — one check, not two.
 
 ## Supply-chain choices (and what they beat)
 
