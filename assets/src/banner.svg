@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 220 140" width="220" height="140">
+  <!-- Marketplace application card banner, 220x140. Text-free so it renders identically everywhere. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EEEAFE"/>
+      <stop offset="1" stop-color="#D9D2FB"/>
+    </linearGradient>
+  </defs>
+  <rect width="220" height="140" fill="url(#bg)"/>
+  <g transform="translate(62 22) scale(0.75)">
+    <path d="M30 8 H80 L106 34 V110 a10 10 0 0 1 -10 10 H30 a10 10 0 0 1 -10 -10 V18 a10 10 0 0 1 10 -10 Z" fill="#3D2C8D"/>
+    <path d="M80 8 V26 a8 8 0 0 0 8 8 H106 Z" fill="#9D8DF1"/>
+    <g fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M55 46 C46 46 48 54 48 62 C48 68 46 72 40 72 C46 72 48 76 48 82 C48 90 46 98 55 98"/>
+      <path d="M71 46 C80 46 78 54 78 62 C78 68 80 72 86 72 C80 72 78 76 78 82 C78 90 80 98 71 98"/>
+    </g>
+  </g>
+</svg>
