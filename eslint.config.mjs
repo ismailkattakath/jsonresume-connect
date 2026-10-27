@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Ismail Kattakath
+// SPDX-License-Identifier: MIT
+
 /**
  * ESLint flat config.
  *

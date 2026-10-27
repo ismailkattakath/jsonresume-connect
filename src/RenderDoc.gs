@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Ismail Kattakath
+// SPDX-License-Identifier: MIT
+
 /**
  * The renderer half of the step: resume.json -> HTML ->
  * Google Doc. The step itself (connect, fetch, validate, outputs) is

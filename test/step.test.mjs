@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Ismail Kattakath
+// SPDX-License-Identifier: MIT
+
 /**
  * Tests for the step half (src/JsonResumeToDoc.gs): the Studio payload shape,
  * the /api/oauth/resume body, strict validation, the connect cards and the

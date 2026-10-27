@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Ismail Kattakath
+// SPDX-License-Identifier: MIT
+
 /**
  * Real résumés from the public JSON Resume registry, rather than fixtures
  * written to match the code. Network-dependent: each résumé that cannot be

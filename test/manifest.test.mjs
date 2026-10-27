@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Ismail Kattakath
+// SPDX-License-Identifier: MIT
+
 /**
  * The manifest contract and the project-wide source rules.
  *

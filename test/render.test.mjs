@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Ismail Kattakath
+// SPDX-License-Identifier: MIT
+
 /**
  * Tests for the renderer half (src/RenderDoc.gs): resumeToHtml(), the URL
  * guards, the export links, the Docs API request shapes and the live-run

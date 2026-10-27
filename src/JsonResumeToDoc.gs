@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Ismail Kattakath
+// SPDX-License-Identifier: MIT
+
 /**
  * The add-on's one custom step for Google Workspace Studio.
  * (Its display name is APP_NAME below, kept equal to appsscript.json by a test.)

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Ismail Kattakath
+// SPDX-License-Identifier: MIT
+
 /**
  * The merged execute path, end to end, against fakes of the Apps Script
  * services it touches: OAuth2 (the vendored library's public surface),
