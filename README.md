@@ -1,58 +1,48 @@
-# JSON Resume steps for Google Workspace Studio
+<!-- brand-intro -->
 
-Two custom steps in one add-on:
+# JSON Resume to Google Doc
 
-| Step | Does | File |
-|---|---|---|
-| **Load JSON Resume** | loads your résumé from your JSON Resume account (**Connect JSON Resume**), validates it, and emits it as outputs | `LoadJsonResume.gs` |
-| **Render JSON Resume to Doc** | renders a `resume.json` string into a Google Doc, with PDF and DOCX download links | `RenderResume.gs` |
+One custom step for Google Workspace Studio. It loads **your** résumé from your
+[jsonresume.org](https://jsonresume.org) account (**Connect JSON Resume**), checks it against the
+[jsonresume.org schema](https://github.com/jsonresume/resume-schema), and renders it into a
+**Google Doc** in your Drive, with PDF and DOCX download links.
 
-## Load JSON Resume
+| | |
+|---|---|
+| Step name | set in `src/appsscript.json` (the one place it lives) |
+| Code | `src/JsonResumeToDoc.gs` (connect, fetch, validate, outputs) · `src/RenderDoc.gs` (HTML → Doc) |
+| Vendored | `src/third_party/apps-script-oauth2/OAuth2.gs` |
 
-Loads **your own** résumé from your [jsonresume.org](https://jsonresume.org) account through
-**Connect JSON Resume** ("Sign in with JSON Resume", OAuth 2.1), and hands it to the rest of
-your flow. **That is the only source**, on purpose (2026-10-27): no URL, paste or Drive field.
-Connecting tells a new user they need a JSON Resume account, and its dashboard keeps the résumé
-for them.
+**One source on purpose** (2026-10-27): the signed-in jsonresume.org account. No URL, paste or
+Drive field. **An invalid résumé fails the step** with the first problems listed. It is never
+repaired: the fix belongs at the source.
 
-**The résumé must match the [jsonresume.org schema](https://github.com/jsonresume/resume-schema).**
-An invalid shape **fails the step** with the first problems listed. It is never repaired: this is
-the base résumé, so the fix belongs at the source.
-
-## What it does, and what it deliberately doesn't
-
-**It does not tailor your résumé.** Workspace Studio flows already have a native *"ask Gemini"*
-step, so the tailoring belongs there. That split is the whole design:
-
-- **no API key** for you to obtain, store or pay for
-- **composes** with whatever AI step you prefer
-- **deterministic**, so it can actually be tested
-- and — the important one — **this step never reads the job posting**. A posting arriving from
-  an inbox is attacker-controlled text. Here it is simply never touched; the AI step does the
-  matching.
+**Out of scope:** tailoring to a job posting lives in another tool. This step never reads a
+posting, which is attacker-controlled text when it arrives from an inbox.
 
 ## The flow
 
 ```
-[starter: posting arrives]
-        ↓
-[Load JSON Resume]  ← this step
-        ↓
-[ask Gemini: tailor this résumé to this posting]
-        ↓
-[Render JSON Resume to Doc]  ← optional: the tailored résumé as a Google Doc
-        ↓
+[starter]
+    ↓
+[JSON Resume to Google Doc]   ← this step
+    ↓
 [Gmail: create draft]   ← put docUrl / pdfUrl / docxUrl in the body
 ```
 
 ## Configuration: Connect JSON Resume
 
-The step has **no fields**. Its card shows one button:
-
 | Card state | Shows |
 |---|---|
-| Not connected | **Connect JSON Resume**, plus "After connecting, refresh this page" |
-| Connected | "Connected to JSON Resume as @username", plus **Disconnect** |
+| Not connected | **Connect JSON Resume**, plus "After connecting, **refresh** this page" |
+| Connected | "Connected to JSON Resume as @username", the **Document title** field, and **Disconnect** |
+
+| Input | Required | Notes |
+|---|---|---|
+| `title` | no | the Doc's name. Defaults to `<basics.name> — Résumé`. Accepts a variable from an earlier step |
+
+The card headers do not repeat the step name: it lives in `src/appsscript.json` only (a test
+fails on a copy in code). Dropping the header is **not yet run live**.
 
 1. **No account yet?** Create one at jsonresume.org. **Sign in with GitHub:** the dashboard stores
    your résumé as a GitHub gist it creates for you, using your GitHub sign-in (upstream
@@ -75,7 +65,7 @@ Click **Connect JSON Resume** again.
 
 | Piece | Value | Evidence |
 |---|---|---|
-| Library | [OAuth2 for Apps Script](https://github.com/googleworkspace/apps-script-oauth2), vendored as `OAuth2.gs` at `aae9287` (Apache-2.0) | that commit fixes token refresh for clients without a secret (#513) |
+| Library | [OAuth2 for Apps Script](https://github.com/googleworkspace/apps-script-oauth2), vendored as `src/third_party/apps-script-oauth2/OAuth2.gs` at `aae9287` (Apache-2.0, byte-identical to upstream `dist/OAuth2.gs`; a test pins its sha256) | that commit fixes token refresh for clients without a secret (#513) |
 | Client | registered once per deployment through jsonresume.org's self-serve dynamic client registration (`/api/oauth/register`): a public client, **no secret** | measured 2026-10-27 |
 | Security | PKCE S256 (required by jsonresume.org) | measured |
 | Redirect | `https://script.google.com/macros/d/{scriptId}/usercallback` | measured: accepted |
@@ -85,39 +75,33 @@ Click **Connect JSON Resume** again.
 
 ## Outputs
 
-| Output | Type | Use |
-|---|---|---|
-| `resume` | STRING | the raw `resume.json`, for any step that wants structure |
-| `resumeText` | STRING | flattened plain text — **this is what you feed the AI step** |
-| `name` | STRING | `basics.name`, for addressing replies |
-| `label` | STRING | `basics.label` — the headline |
-| `email` | STRING | `basics.email` |
+All `STRING`, `SINGLE`. Kept as the union of both former steps; each has a use:
+
+| Output | Chip | Use | Keep? |
+|---|---|---|---|
+| `docUrl` | Doc URL | link to the Doc, for a Gmail or Chat step | yes |
+| `pdfUrl` | PDF download link | `https://docs.google.com/document/d/{id}/export?format=pdf` | yes |
+| `docxUrl` | DOCX download link | `https://docs.google.com/document/d/{id}/export?format=docx` | yes |
+| `docId` | Doc file ID | for a Drive step (share, move); Google's own Drive picker outputs IDs too | yes |
+| `name` | Name | `basics.name`, for addressing a message | yes |
+| `label` | Headline | `basics.label` | yes |
+| `email` | Email | `basics.email` | yes |
+| `resumeText` | Resume (plain text) | flattened text for any AI step (summary, cover letter) | yes |
+| `resume` | Resume (JSON) | the validated `resume.json`, for a step that wants structure | **weakest**: no native step consumes JSON, and it can be up to 2 MB. Drop it if fewer chips matter more |
 
 `resumeText` renders `basics` then `work`, `projects`, `education`, `skills`, `certificates`,
 `awards`, each entry as a headline plus summary plus highlights. Measured on a real registry
 résumé: 10,605 characters over 123 lines.
 
-## Render JSON Resume to Doc
+## Rendering
 
-Takes a résumé as JSON text, usually Load JSON Resume's `resume` output or an AI step's tailored
-rewrite of it. It renders the résumé to a single-column HTML document. Google converts that into
+
+The step renders the résumé to a single-column HTML document. Google converts that into
 a **Google Doc** in your Drive. **The Doc is the only file the step creates.**
 
 PDF and DOCX come from Docs' own export links, built from the Doc's id. A link downloads the Doc
 **as it is when you open it**, so a hand edit to the Doc is never out of step with a stored copy.
 The step fetches nothing to build them.
-
-| Input | Required | Notes |
-|---|---|---|
-| `resume` | yes | JSON text in the jsonresume.org standard. A ```` ```json ```` fence from an AI step is stripped |
-| `title` | no | defaults to `<basics.name> — Résumé` |
-
-| Output | Type | Use |
-|---|---|---|
-| `docId` | STRING | Drive file ID of the Doc |
-| `docUrl` | STRING | link to the Doc, for a Gmail or Chat step |
-| `pdfUrl` | STRING | `https://docs.google.com/document/d/{id}/export?format=pdf` |
-| `docxUrl` | STRING | `https://docs.google.com/document/d/{id}/export?format=docx` |
 
 The export links open for anyone who can open the Doc, i.e. the owner by default. Share the Doc
 to share them.
@@ -127,7 +111,8 @@ and links, which is the same pattern Google's own Drive picker uses.
 
 **Failure policy:**
 
-- No résumé, bad JSON, or a failed Doc create → the step **fails**, with the reason in Activity.
+- Not connected, no résumé, an invalid résumé, or a failed Doc create → the step **fails**, with
+  the reason in Activity.
 - A failed styling call (`documents.batchUpdate`) → the step **succeeds** with the Doc as
   imported. The reason goes to the Executions log.
 
@@ -135,8 +120,7 @@ and links, which is the same pattern Google's own Drive picker uses.
 contact, profiles, summary), work, projects, education, skills, certificates, awards,
 publications, volunteer, languages, interests, references.
 
-**The résumé is untrusted input.** It may come from an AI step that read a job posting from an
-inbox. So every value is HTML-escaped. A link becomes an `href` only for `http(s)://` URLs
+**The résumé is untrusted input:** anyone can write anything into a gist. So every value is HTML-escaped. A link becomes an `href` only for `http(s)://` URLs
 without credentials, so `javascript:` and `data:` URLs render as plain text. `basics.image` is
 left out on purpose: an external image URL is a tracking beacon.
 
@@ -144,10 +128,10 @@ left out on purpose: an external image URL is a tracking beacon.
 
 | Scope | Needed by | Grants |
 |---|---|---|
-| `script.external_request` | both steps | outbound HTTPS (jsonresume.org sign-in and fetch; Drive/Docs REST) |
-| `drive.file` | Render JSON Resume to Doc | **only the files this add-on creates** |
+| `script.external_request` | the step | outbound HTTPS (jsonresume.org sign-in and fetch; Drive/Docs REST) |
+| `drive.file` | the Doc create and styling | **only the files this add-on creates** |
 
-Neither step reads your mail or calendar. The renderer cannot see any Drive file it did not
+The step does not read your mail or calendar. The renderer cannot see any Drive file it did not
 create itself.
 
 **Measured 2026-10-27, with only those two scopes:**
@@ -161,38 +145,57 @@ create itself.
 | `DocumentApp.create` / `openById` | **fails**: needs `auth/documents` |
 | `DriveApp.getFileById` | **fails**: needs `drive.readonly` or `drive` |
 
-So `RenderResume.gs` uses **no `DocumentApp` and no `DriveApp`**. It calls REST through
+So the add-on uses **no `DocumentApp` and no `DriveApp`**. It calls REST through
 `UrlFetchApp` with `ScriptApp.getOAuthToken()`. The tests assert that.
 
 ## Install
 
-1. Create an Apps Script project, set it to the **V8** runtime.
-2. Copy `LoadJsonResume.gs`, `RenderResume.gs`, `OAuth2.gs` and `appsscript.json` into it.
-3. Deploy as a Workspace add-on and add the steps to a flow.
+**Web editor** (first run; *Deploy → Test deployments → Install* is editor-only):
 
-`RenderResume.gs` reuses `str()`, `readActionInput()`, `failStep()`, `hasAnyKnownSection()` and
-`MAX_BYTES` from `LoadJsonResume.gs`, and Load uses `resumeShapeProblems()` and `escapeHtml()`
-from `RenderResume.gs`. Apps Script loads every `.gs` file into **one global
-scope**, so both files must be in the project, and neither may redefine the other's functions.
+1. Create an Apps Script project, runtime **V8**.
+2. Copy every file under `src/` into it: `appsscript.json`, `JsonResumeToDoc.gs`, `RenderDoc.gs`
+   and `third_party/apps-script-oauth2/OAuth2.gs`.
+3. Deploy as a Workspace add-on and add the step to a flow.
+
+**clasp** (after first light): `cp .clasp.json.example .clasp.json`, put your `scriptId` in it,
+then `npx @google/clasp push`. `rootDir` is `src/`, so only the add-on is pushed. `.clasp.json`
+is gitignored: a script id is yours, not the repo's.
+
+The `.gs` files share **one global scope** in Apps Script. `RenderDoc.gs` uses `str()` from
+`JsonResumeToDoc.gs`, and the step uses the renderer's functions, so every file must be in the
+project and none may redefine another's names. A test fails on a name defined twice. Load order
+does not matter: `OAuth2` is defined at load and used only at call time.
+
+**Why `third_party/` sits inside `src/`:** Google's convention keeps vendored code under
+`third_party/<project>/` with its `LICENSE`. clasp pushes only `rootDir`, so the directory lives
+under `src/`; nested files push as `third_party/apps-script-oauth2/OAuth2`. Prettier and ESLint
+skip it.
 
 ## Tests
 
 ```bash
-nix run nixpkgs#nodejs -- addon/test-loadjsonresume.mjs
-nix run nixpkgs#nodejs -- addon/test-renderresume.mjs
+npm ci
+npm test               # node --test; NODE_OPTIONS=--test-reporter=tap npm test for TAP
+npm run lint           # ESLint, Google style
+npm run format:check   # Prettier, Google settings (npm run format to fix)
 ```
 
-`test-renderresume.mjs` loads both `.gs` files into one context, the way Apps Script does. It
-checks HTML escaping against a hostile résumé, the `href` guard, section order and absence, and
-the manifest contract: declared outputs, callbacks, card-field bindings, the two-scope bill and
-the URL allowlist. All of it runs inside `nix flake check`; only the live-registry renders skip
-offline.
+Node 24 (`.nvmrc`). Without a global Node: `nix shell nixpkgs#nodejs_24`.
 
-Apps Script cannot run off Google's servers, so the Workspace Studio integration itself has to
-be verified by installing the add-on. Everything that does **not** touch `CardService` or
-`UrlFetchApp` is plain JavaScript, and that is where the bugs live — so the sign-in response
-unwrapping, the `formInputs` shape and the per-section headline formatting are tested against **real résumés
-fetched from the live registry**, not fixtures written to match the code.
+| Suite | Checks |
+|---|---|
+| `test/manifest.test.mjs` | each file parses; no name defined twice; one step, its name in no source file; callbacks defined; declared outputs == returned; card field == manifest input; exactly two scopes; no DocumentApp/DriveApp/advanced-service call; allowlist rules; OAuth2.gs hash |
+| `test/execute.test.mjs` | the whole execute path against fakes: not connected, 401 (resets the connection), 404, HTTP 500, fetch error, non-JSON, over 2 MB, invalid résumé, Drive 403, valid run (one HTML upload, two styling calls, every output), title input, best-effort styling, envelope-only logging, allowlisted URLs only |
+| `test/render.test.mjs` | HTML escaping against a hostile résumé, the `href` guard, export links, section order and absence, the live-run styling findings |
+| `test/step.test.mjs` | the live event payload shape, strict validation, connect cards, plain-text flattening |
+| `test/registry.test.mjs` | real résumés from the live registry; each **skips** when it cannot be fetched |
+
+`npm test -- --test-reporter=tap` does **not** work: npm appends the flag after the glob, and Node
+ignores it. Use `NODE_OPTIONS`.
+
+Apps Script cannot run off Google's servers, so the Studio integration itself has to be verified
+by installing the add-on. The fakes prove the step's own control flow; the service shapes they
+fake were measured live (below).
 
 ## Notes from building it
 
@@ -225,8 +228,13 @@ have stopped the next person re-checking.
   pipe a variable from an earlier step into the field.
 - **Shape check, not schema validation.** Every JSON Resume field is optional, so the only
   honest assertion is that one known section exists. A stricter gate rejects sparse résumés.
-- **HTTPS only, no credentials in the URL**, and name the HTML-instead-of-JSON case explicitly —
-  pasting a GitHub *page* URL rather than the raw one is the commonest mistake.
+- **One step, not two (2026-10-27).** Load JSON Resume and Render JSON Resume to Doc became one
+  step. The step id changed to `jsonResumeToDoc`, so a flow built on either old step must re-add
+  it. The OAuth service name, `JR_CLIENT_ID` and `JR_USERNAME` did not change, so a connection
+  carries over. The JSON-text input and its ```` ```json ```` fence stripping went with the merge:
+  their only sources were AI steps, and `/api/oauth/resume` returns JSON.
+- **Parse Job Description and Apply Tailoring were removed** (2026-10-27). Tailoring lives in
+  another tool.
 
 ### Why the tests did not catch any of this
 
@@ -237,8 +245,8 @@ test.** They now assert the `actionInvocation` payload and carry two regression 
 
 ## The renderer: built, and run live
 
-[`RENDERER-DESIGN.md`](RENDERER-DESIGN.md) is the design for **Render JSON Resume to Doc**, which is
-now **built** (`RenderResume.gs`). It waited until Load JSON Resume had run for real, and that
+[`RENDERER-DESIGN.md`](RENDERER-DESIGN.md) is the design for the renderer, which is
+now **built** (`src/RenderDoc.gs`). It waited until Load JSON Resume had run for real, and that
 happened on 2026-09-30. The design also records two dead ends, verified by running them: the
 JSON Resume registry's `.pdf` endpoint is broken in production, and the registry is
 username-keyed, so it can never render a *tailored* résumé.
@@ -332,16 +340,16 @@ first light, when `clasp push` beats re-pasting.
 
 1. Create an Apps Script project, runtime **V8**.
 2. Project Settings → tick *Show `appsscript.json` manifest file in editor*.
-3. Paste `appsscript.json`, `LoadJsonResume.gs`, `RenderResume.gs` and `OAuth2.gs`.
+3. Paste every file under `src/` (§ Install).
 4. **Deploy → Test deployments → Install → Done.**
 5. Refresh Workspace Studio and authorise the add-on.
 
-**First-run flow that gives an unambiguous verdict:** *starter → Load JSON Resume → Notify me in
-Chat*, with `name`, `label` and `resumeText` as variable chips in the message.
+**First-run flow that gives an unambiguous verdict:** *starter → JSON Resume to Google Doc →
+Notify me in Chat*, with `name`, `docUrl` and `pdfUrl` as variable chips in the message.
 
 | What you see | Meaning |
 |---|---|
-| The real name and headline from your résumé | **works** |
+| Your real name and a Doc link that opens | **works** |
 | "not connected to JSON Resume" | open the step, click **Connect JSON Resume**, refresh the page |
 | "connection expired or was revoked" | connect again |
 | "your JSON Resume account has no resume yet" | create it in the jsonresume.org dashboard |
@@ -388,7 +396,7 @@ to fall back on, so the original implementation would have read `undefined` and 
 appearing **twice with different values** — `"WORKFLOW"` inside `commonEventObject`, `"flows"`
 at the top level.
 
-This exact payload is pinned in `test-loadjsonresume.mjs` as `LIVE_EVENT`. If it stops parsing,
+This exact payload is pinned in `test/helpers.mjs` as `LIVE_EVENT`. If it stops parsing,
 the platform changed.
 
 ### Also learned in the deploy

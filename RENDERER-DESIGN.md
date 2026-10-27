@@ -1,10 +1,12 @@
-# Design: "Render Resume to Doc" — the companion step
+# Design: the renderer (résumé → Google Doc)
 
 **Status: BUILT and RUN LIVE (2026-10-27).** Live-run findings and fixes: README § The
-renderer. The code is `RenderResume.gs`; the tests are
-`test-renderresume.mjs`. The blocker cleared first: `Load JSON Resume` ran on Google's servers on
+renderer. The code is `src/RenderDoc.gs`; the tests are
+`test/render.test.mjs` and `test/execute.test.mjs`. Since 2026-10-27 the renderer is half of the
+one step, "JSON Resume to Google Doc" (README); it renders the validated jsonresume.org résumé,
+no longer a JSON string from another step. The blocker cleared first: `Load JSON Resume` ran on Google's servers on
 2026-09-30 (`onExecute`, 0.91 s, Completed), and its real event payload is pinned in
-`test-loadjsonresume.mjs`.
+`test/helpers.mjs`.
 
 **Measured 2026-10-27**, with only `drive.file` + `script.external_request`:
 
@@ -148,7 +150,7 @@ Text, HTML, RTF, plain text, Markdown → Google Docs"*. The export endpoint is 
 **10 MB** cap on exported content.
 
 Errors use `newReturnElementErrorAction().setErrorLog(...)`, matching the pattern
-`LoadJsonResume.gs` already adopted.
+`src/JsonResumeToDoc.gs` uses.
 
 ## Live run 3 (2026-10-27, on 770ea6f)
 
