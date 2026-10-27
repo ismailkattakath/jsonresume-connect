@@ -27,7 +27,16 @@ Drive files, or modify existing files, that you open with an app" without reachi
 files ([Drive scopes][drive]). The README records the add-on working end to end with **only these
 two scopes** (measured 2026-10-27).
 
-## Weakest assumption: a GitHub Pages homepage
+## Decided: a custom domain the operator owns
+
+**Resolved 2026-10-27:** the pages are served at **https://jsonresume-connect.kattakath.com/**
+(GitHub Pages custom domain, `docs/CNAME`; Cloudflare DNS-only `CNAME` → `ismailkattakath.github.io`).
+The authorized domain is **`kattakath.com`**, which is the operator's Google Workspace domain, so it
+is already verified with Google. A subdomain dedicated to this app matches the repo slug and
+survives a repo rename or transfer (the `CNAME` file moves with the repo). The analysis below is
+kept for the record.
+
+## Previously the weakest assumption: a GitHub Pages homepage
 
 - Brand verification requires: "The homepage must be hosted on a verified domain you own", and the
   privacy policy "should be hosted within the domain that hosts your homepage"
@@ -66,7 +75,7 @@ two scopes** (measured 2026-10-27).
    - App name: `JSON Resume Connect`
    - User support email: `<operator>`
    - App logo: `assets/icon-120.png` ("120px by 120px", ≤ 1 MB — [branding help][cbrand])
-   - Application home page: `https://ismailkattakath.github.io/jsonresume-connect/`
+   - Application home page: `https://jsonresume-connect.kattakath.com/`
    - Privacy policy: `…/privacy/` · Terms of service: `…/terms/`
    - Authorized domains: see "Weakest assumption"
    - Developer contact email: `<operator>`

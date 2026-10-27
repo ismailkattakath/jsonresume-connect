@@ -106,8 +106,8 @@ if the repo is renamed (see [`naming.md`](naming.md)) — **Pages URLs do not fo
 
 | Field | URL |
 |---|---|
-| Terms of service | `https://ismailkattakath.github.io/jsonresume-connect/terms/` |
-| Privacy policy | `https://ismailkattakath.github.io/jsonresume-connect/privacy/` |
+| Terms of service | `https://jsonresume-connect.kattakath.com/terms/` |
+| Privacy policy | `https://jsonresume-connect.kattakath.com/privacy/` |
 | Support | `https://github.com/ismailkattakath/jsonresume-connect/issues` |
 | Help (optional) | `https://github.com/ismailkattakath/jsonresume-connect#readme` |
 | Report issue (optional) | `https://github.com/ismailkattakath/jsonresume-connect/issues/new/choose` |
