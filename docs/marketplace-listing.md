@@ -14,7 +14,7 @@ Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 
 | Field | Limit ([listing]) | Value |
 |---|---|---|
-| Application name | ≤ 50 chars | `JSON Resume to Doc` (18) — rationale: [`naming.md`](naming.md) |
+| Application name | ≤ 50 chars | `JSON Resume Connect` (19) — rationale: [`naming.md`](naming.md) |
 | Short description | ≤ 200 chars | see below (measured length noted) |
 | Detailed description | < 16,000 chars | see below (1,808 chars, measured) |
 | Category | console dropdown | **Productivity** if offered; otherwise the closest office/productivity entry |
@@ -29,7 +29,7 @@ Load your JSON Resume in a Workspace Studio flow, check it against the schema, a
 ### Detailed description
 
 ```text
-JSON Resume to Doc adds résumé steps to your Google Workspace Studio™ flows.
+JSON Resume Connect adds résumé steps to your Google Workspace Studio™ flows.
 
 Keep one résumé in the open JSON Resume standard (jsonresume.org). Let a flow turn it into a clean document in Google Docs™ whenever you need one — for example, each time a job posting arrives.
 
@@ -49,7 +49,7 @@ YOU NEED
 • A Google Workspace account with access to Workspace Studio.
 • A jsonresume.org account with a résumé (sign in with GitHub).
 
-Open source (Apache-2.0): https://github.com/ismailkattakath/jsonresume-google-docs
+Open source (Apache-2.0): https://github.com/ismailkattakath/jsonresume-connect
 
 Independent project. Not affiliated with or endorsed by the JSON Resume project or Google LLC. Google Docs™, Google Drive™, Google Workspace™ and Google Workspace Studio™ are trademarks of Google LLC.
 ```
@@ -86,11 +86,11 @@ if the repo is renamed (see [`naming.md`](naming.md)) — **Pages URLs do not fo
 
 | Field | URL |
 |---|---|
-| Terms of service | `https://ismailkattakath.github.io/jsonresume-google-docs/terms/` |
-| Privacy policy | `https://ismailkattakath.github.io/jsonresume-google-docs/privacy/` |
-| Support | `https://github.com/ismailkattakath/jsonresume-google-docs/issues` |
-| Help (optional) | `https://github.com/ismailkattakath/jsonresume-google-docs#readme` |
-| Report issue (optional) | `https://github.com/ismailkattakath/jsonresume-google-docs/issues/new/choose` |
+| Terms of service | `https://ismailkattakath.github.io/jsonresume-connect/terms/` |
+| Privacy policy | `https://ismailkattakath.github.io/jsonresume-connect/privacy/` |
+| Support | `https://github.com/ismailkattakath/jsonresume-connect/issues` |
+| Help (optional) | `https://github.com/ismailkattakath/jsonresume-connect#readme` |
+| Report issue (optional) | `https://github.com/ismailkattakath/jsonresume-connect/issues/new/choose` |
 
 The privacy URL must also go into the OAuth consent screen ([policies][pol]: "In the designated
 field in the Google Marketplace SDK" and "In your OAuth client configuration").

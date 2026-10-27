@@ -1,22 +1,22 @@
 <!-- Content for the README's <!-- brand-intro --> slot. The lead splices it in.
      Badge workflow files exist on origin/ci/pipelines (ci.yml, scorecard.yml); the CI and
      Scorecard badges resolve once that branch is merged and the repo is public.
-     If the repo is renamed (docs/naming.md recommends jsonresume-to-doc), replace
-     `ismailkattakath/jsonresume-google-docs` everywhere below. -->
+     If the repo is transferred (e.g. to the jsonresume org), replace
+     `ismailkattakath/jsonresume-connect` everywhere below. -->
 
 <p align="center">
-  <img src="assets/icon-128.png" width="96" height="96" alt="JSON Resume to Doc logo: a pair of braces on a folded page">
+  <img src="assets/icon-128.png" width="96" height="96" alt="JSON Resume Connect logo: a pair of braces on a folded page">
 </p>
 
-<h1 align="center">JSON Resume to Doc</h1>
+<h1 align="center">JSON Resume Connect</h1>
 
 <p align="center"><b>Your <a href="https://jsonresume.org">JSON Resume</a>, rendered as a document in Google Docs™ — from a Google Workspace Studio™ flow.</b></p>
 
 <p align="center">
-  <a href="https://github.com/ismailkattakath/jsonresume-google-docs/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ismailkattakath/jsonresume-google-docs/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://scorecard.dev/viewer/?uri=github.com/ismailkattakath/jsonresume-google-docs"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/ismailkattakath/jsonresume-google-docs/badge"></a>
+  <a href="https://github.com/ismailkattakath/jsonresume-connect/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ismailkattakath/jsonresume-connect/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/ismailkattakath/jsonresume-connect"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/ismailkattakath/jsonresume-connect/badge"></a>
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue.svg"></a>
-  <a href="https://github.com/ismailkattakath/jsonresume-google-docs/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ismailkattakath/jsonresume-google-docs?sort=semver"></a>
+  <a href="https://github.com/ismailkattakath/jsonresume-connect/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ismailkattakath/jsonresume-connect?sort=semver"></a>
 </p>
 
 ## What it does — in 30 seconds

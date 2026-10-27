@@ -3,12 +3,12 @@ title: Privacy policy
 permalink: /privacy/
 ---
 
-# Privacy policy — JSON Resume to Doc
+# Privacy policy — JSON Resume Connect
 
 *Last updated: 2026-10-27. Changes are tracked in this file's
-[git history](https://github.com/ismailkattakath/jsonresume-google-docs/commits/main/docs/privacy.md).*
+[git history](https://github.com/ismailkattakath/jsonresume-connect/commits/main/docs/privacy.md).*
 
-**JSON Resume to Doc** ("the add-on") is an independent open-source Google Workspace add-on. It
+**JSON Resume Connect** ("the add-on") is an independent open-source Google Workspace add-on. It
 adds steps to Google Workspace Studio™ flows. It is maintained by
 [Ismail Kattakath](https://github.com/ismailkattakath). The source code is public, so every
 statement below can be checked against it.
@@ -50,15 +50,13 @@ bugs, and Google Cloud deletes them on its own retention schedule.
 
 ## Google API Services — Limited Use
 
-JSON Resume to Doc's use and transfer of information received from Google APIs adhere to the
-[Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy),
-including the [Limited Use requirements](https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes).
-
 The use of information received from Google Workspace scopes will adhere to the
 [Google User Data Policy](https://developers.google.com/terms/api-services-user-data-policy),
 including the
 [Limited Use requirements](https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes)
-([Google Workspace API User Data and Developer Policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy)).
+(statement as worded in Google's
+[Google Workspace API User Data and Developer Policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy)).
+This applies to all information JSON Resume Connect receives from Google APIs.
 
 In particular, the add-on:
 
@@ -80,7 +78,7 @@ feature, governed by Google's terms, not by this add-on.
 | To remove | Do this |
 |---|---|
 | Your JSON Resume tokens and username | Open the **Load JSON Resume** step and click **Disconnect** |
-| The add-on's access to your Google account | [Google Account › Third-party connections](https://myaccount.google.com/connections) › JSON Resume to Doc › Delete all connections |
+| The add-on's access to your Google account | [Google Account › Third-party connections](https://myaccount.google.com/connections) › JSON Resume Connect › Delete all connections |
 | The add-on's access to jsonresume.org | Revoke it in your jsonresume.org account |
 | Résumé Docs it created | Delete them in Google Drive. They are ordinary Docs that you own |
 
@@ -92,7 +90,7 @@ The add-on is not directed at children.
 
 - Changes to this policy are published on this page and in its git history.
 - Questions: open an issue at
-  [github.com/ismailkattakath/jsonresume-google-docs/issues](https://github.com/ismailkattakath/jsonresume-google-docs/issues),
+  [github.com/ismailkattakath/jsonresume-connect/issues](https://github.com/ismailkattakath/jsonresume-connect/issues),
   or contact [the maintainer on GitHub](https://github.com/ismailkattakath).
 
 ---

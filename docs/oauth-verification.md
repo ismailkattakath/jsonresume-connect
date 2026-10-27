@@ -43,8 +43,8 @@ two scopes** (measured 2026-10-27).
   - **Refused** → give GitHub Pages a **custom domain the operator owns** (Settings › Pages ›
     Custom domain) and use that domain everywhere below.
 - **A rename or transfer changes the Pages URL.** That changes the homepage and privacy URLs on
-  the consent screen, which means brand re-verification. **Rename first** (see `naming.md`), then
-  register the URLs.
+  the consent screen, which means brand re-verification. The repo is already renamed to
+  `jsonresume-connect`; a later transfer to the jsonresume org repeats this.
 
 ## Click-list (in order)
 
@@ -52,7 +52,7 @@ two scopes** (measured 2026-10-27).
 
 ### A. Cloud project
 
-1. **Cloud console › project picker › New project.** Name it `json-resume-to-doc`. Attach a
+1. **Cloud console › project picker › New project.** Name it `json-resume-connect`. Attach a
    billing account: the [Configure OAuth][coauth] prerequisites list "Enable billing".
 2. **APIs & Services › Library.** Enable **Google Workspace Marketplace SDK**, **Google Drive
    API** and **Google Docs API** (the manifest uses the Drive v3 and Docs v1 advanced services).
@@ -63,10 +63,10 @@ two scopes** (measured 2026-10-27).
 ### B. OAuth consent screen (Google Auth platform)
 
 4. **Google Auth platform › Branding.**
-   - App name: `JSON Resume to Doc`
+   - App name: `JSON Resume Connect`
    - User support email: `<operator>`
    - App logo: `assets/icon-120.png` ("120px by 120px", ≤ 1 MB — [branding help][cbrand])
-   - Application home page: `https://ismailkattakath.github.io/jsonresume-google-docs/`
+   - Application home page: `https://ismailkattakath.github.io/jsonresume-connect/`
    - Privacy policy: `…/privacy/` · Terms of service: `…/terms/`
    - Authorized domains: see "Weakest assumption"
    - Developer contact email: `<operator>`
@@ -87,7 +87,8 @@ two scopes** (measured 2026-10-27).
 
 ### C. Apps Script deployment
 
-9. **Apps Script editor › Deploy › New deployment › type: Add-on.** Describe it `v1.0.0`.
+9. **Apps Script editor › Deploy › New deployment**, and pick the add-on deployment type shown
+   in the **Select type** dropdown. Describe it `v1.0.0`.
    Then **Deploy › Manage deployments** and copy the **Deployment ID**.
 10. **Testing before publishing:** a Workspace admin enables **Admin console › Apps › Google
     Workspace › Workspace Studio › custom steps settings › Allow unpublished (test) custom
@@ -117,7 +118,7 @@ Use a **test** Google account and a **test** résumé. Show the browser address 
 
 | t | Show | Say (caption) |
 |---|---|---|
-| 0:00 | Marketplace listing or the install dialog | "JSON Resume to Doc adds résumé steps to Google Workspace Studio." |
+| 0:00 | Marketplace listing or the install dialog | "JSON Resume Connect adds résumé steps to Google Workspace Studio." |
 | 0:10 | **Google consent screen** with both scopes visible | "It asks for two permissions: files it creates in Drive (drive.file) and outbound requests to jsonresume.org and Google APIs." |
 | 0:30 | Studio: add **Load JSON Resume** → **Connect JSON Resume** → jsonresume.org approval "Read your resume" → refresh | "The user connects their own JSON Resume account." |
 | 0:55 | Connected card "Connected to JSON Resume as @username" | — |

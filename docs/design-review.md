@@ -39,8 +39,8 @@ Line numbers are from that commit.
 | 7 | Manifest step names and card headers: `Apply Tailoring`, `Parse Job Description` | Title Case | Style guide: "Use sentence case (especially for buttons, labels, and card actions)" | `Apply tailoring`, `Parse job description`. `Load JSON Resume` and `Render JSON Resume to Doc` stay as they are: "JSON Resume" is a proper noun. |
 | 8 | Field titles vs manifest | card `Resume JSON` (`RenderResume.gs:61`), `Job posting as JSON` (`ParseJobDescription.gs`); manifest `Resume (JSON)`, `Job posting (JSON)` | one label per thing | Use the manifest's wording on the cards: `Resume (JSON)`, `Job posting (JSON)`. |
 | 9 | Spelling | UI and manifest say **resume**; README says **résumé** | consistency | Keep **resume** in UI strings (ASCII, matches the JSON Resume name). The README may keep résumé in prose. |
-| 10 | `addOns.common.name` = `JSON Resume`; `logoUrl` = the jsonresume org avatar | borrows another project's name and logo | Marketplace policies: "Do not represent that you or your product is authorized by, endorsed by or produced by another company"; review: "The icon properly represents the app's name or functionality" | Name `JSON Resume to Doc`; `logoUrl` → repo-hosted `assets/icon-128.png`. See `docs/naming.md` and `assets/README.md`. |
-| 11 | `LoadJsonResume.gs:138` `client_name: 'JSON Resume for Workspace Studio'` | shown on jsonresume.org's consent screen; carries a Google mark | Google trademark guidelines: "Don't incorporate Google Brand Features into your own product names" | `client_name: 'JSON Resume to Doc'`. It applies to new registrations only; the stored `JR_CLIENT_ID` keeps the old name until re-registered. |
+| 10 | `addOns.common.name` = `JSON Resume`; `logoUrl` = the jsonresume org avatar | borrows another project's name and logo | Marketplace policies: "Do not represent that you or your product is authorized by, endorsed by or produced by another company"; review: "The icon properly represents the app's name or functionality" | Name `JSON Resume Connect`; `logoUrl` → repo-hosted `assets/icon-128.png`. See `docs/naming.md` and `assets/README.md`. |
+| 11 | `LoadJsonResume.gs:138` `client_name: 'JSON Resume for Workspace Studio'` | shown on jsonresume.org's consent screen; carries a Google mark | Google trademark guidelines: "Don't incorporate Google Brand Features into your own product names" | `client_name: 'JSON Resume Connect'`. It applies to new registrations only; the stored `JR_CLIENT_ID` keeps the old name until re-registered. |
 
 ## Nice to have
 
@@ -48,7 +48,7 @@ Line numbers are from that commit.
 |---|---|---|---|
 | 12 | Connect card (`LoadJsonResume.gs:78-80`) | Make "jsonresume.org" a link to `https://jsonresume.org`. Studio opens card links in a new tab (README, measured), which suits a sign-up. | One click instead of typing a URL. |
 | 13 | Connect card "After connecting, **refresh** this page." | Keep it. Add "(your browser's reload button)" only if users ask. | The bold is a deliberate workaround, already documented (Studio strips bold in links and opens links in a new tab). |
-| 14 | Any future card image (`CardHeader.setImageUrl`) | Always pair it with `setImageAltText('JSON Resume to Doc')`. | Style guide: hosted images must be "accessible by everyone who may use your add-on". |
+| 14 | Any future card image (`CardHeader.setImageUrl`) | Always pair it with `setImageAltText('JSON Resume Connect')`. | Style guide: hosted images must be "accessible by everyone who may use your add-on". |
 | 15 | Hints that name "the Ask Gemini step" | Fine as is. | Naming a Google feature in **body text** is nominative use; the trademark rules apply to the add-on's **name**, logo and listing. |
 
 ## Already compliant

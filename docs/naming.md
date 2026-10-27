@@ -4,9 +4,11 @@
 
 - **"JSON Resume to Google Doc" is non-compliant.** It puts a Google product name inside the
   add-on's own name.
-- **Recommended name: `JSON Resume to Doc`** (18 characters). Use it for the manifest
-  `addOns.common.name`, the Marketplace app name and the OAuth consent-screen app name.
-- **Recommended repo slug: `jsonresume-to-doc`** (it is now `jsonresume-google-docs`).
+- **Name: `JSON Resume Connect`** (19 characters), chosen by the lead. It **passes** every rule
+  below. Use it for the manifest `addOns.common.name`, the Marketplace app name and the OAuth
+  consent-screen app name.
+- **Repo slug: `jsonresume-connect`** (already renamed from `jsonresume-google-docs`). Compliant:
+  no Google mark.
 - Google products appear **in descriptions only**, as "for Google Docs™", with an attribution
   line.
 
@@ -28,19 +30,19 @@
 - **Weakest assumption:** the branding page might win if a reviewer reads it as the governing
   rule. Nothing is lost by the Google-free name, so the safe option costs nothing.
 
-## Why `JSON Resume to Doc`
+## Why `JSON Resume Connect`
 
 | Option | Google-free | Says what it does | Implies official JSON Resume product | Verdict |
 |---|---|---|---|---|
 | JSON Resume to Google Doc | no | yes | somewhat | **rejected**: Google mark |
 | JSON Resume for Google Docs™ | no (allowed in descriptions only) | yes | somewhat | **rejected** as the name; fine as a tagline |
 | JSON Resume (current manifest name) | yes | no | **yes**: it is the project's own name | **rejected** until the JSON Resume org adopts this repo |
-| JSON Resume Steps | yes | weak | somewhat | runner-up: fits four steps, but says nothing about the Doc |
-| **JSON Resume to Doc** | yes | yes | names the standard it reads, not who makes it | **chosen** |
+| JSON Resume Steps | yes | weak | somewhat | considered: fits four steps, says nothing about the Doc |
+| JSON Resume to Doc | yes | yes | names the standard it reads | alternative considered: describes the output more than the connection |
+| **JSON Resume Connect** | yes | yes (the connect-and-render step) | names the standard it reads, not who makes it | **chosen by the lead** |
 
-- "Doc" is a common English word for a document. It is not "Google Docs".
-- It matches the existing step name "Render JSON Resume to Doc".
-- The style guide prefers "15 or fewer characters"; 18 is a soft miss, accepted for clarity.
+- The style guide prefers "15 or fewer characters"; 19 is a soft miss, not a rule break.
+- The repo description already uses "for Google Docs™" correctly: in a description, with ™.
 
 ## The JSON Resume name
 
@@ -56,22 +58,23 @@
   or produced by another company" ([policies][pol]). Until the JSON Resume org adopts the
   project, every listing and the README carry:
   > *Independent project. Not affiliated with or endorsed by the JSON Resume project.*
-- If the org adopts it, drop the disclaimer. The repo then moves to `jsonresume/jsonresume-to-doc`.
+- If the org adopts it, drop the disclaimer. The repo may then move to the `jsonresume` org, which changes the Pages URL (see below).
 
 ## Attribution line (descriptions, README footer, Pages footer)
 
 > Google Docs™, Google Drive™, Google Workspace™ and Google Workspace Studio™ are trademarks of
-> Google LLC. JSON Resume to Doc is not affiliated with or endorsed by Google LLC.
+> Google LLC. JSON Resume Connect is not affiliated with or endorsed by Google LLC.
 
 ## Places to rename (for agent "core" and the lead; not done here)
 
 | Where | Now | Change to |
 |---|---|---|
-| `appsscript.json` › `addOns.common.name` | `JSON Resume` | `JSON Resume to Doc` |
+| `appsscript.json` › `addOns.common.name` | `JSON Resume` | `JSON Resume Connect` |
 | `appsscript.json` › `addOns.common.logoUrl` | jsonresume org avatar | repo-hosted `assets/icon-128.png` (see `assets/README.md`) |
-| `LoadJsonResume.gs` › `client_name` in dynamic client registration | `JSON Resume for Workspace Studio` | `JSON Resume to Doc` (jsonresume.org's consent screen shows it; "Workspace Studio" is a Google mark) |
-| README H1 | `JSON Resume steps for Google Workspace Studio` | `JSON Resume to Doc` + "for Google Workspace Studio™" in the tagline |
-| GitHub repo slug | `jsonresume-google-docs` | `jsonresume-to-doc` (GitHub redirects the old URL; **Pages URLs do not redirect**, so rename before registering the consent-screen URLs) |
+| `LoadJsonResume.gs` › `client_name` in dynamic client registration | `JSON Resume for Workspace Studio` | `JSON Resume Connect` (jsonresume.org's consent screen shows it; "Workspace Studio" is a Google mark) |
+| README H1 | `JSON Resume steps for Google Workspace Studio` | `JSON Resume Connect` + "for Google Workspace Studio™" in the tagline |
+| GitHub repo slug | `jsonresume-connect` | done. A later **transfer** to the jsonresume org changes the Pages URL; GitHub redirects repo URLs but **not Pages URLs**, so the consent screen and Marketplace links must be updated (and brand re-verified) |
+| Worktree `origin` remote | still the old `jsonresume-google-docs` URL (works through GitHub's redirect) | `git remote set-url origin https://github.com/ismailkattakath/jsonresume-connect.git` — the lead's call, not done here |
 
 [style]: https://developers.google.com/workspace/add-ons/guides/workspace-style
 [review]: https://developers.google.com/workspace/marketplace/about-app-review

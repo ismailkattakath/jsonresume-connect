@@ -1,10 +1,10 @@
 ---
-title: JSON Resume to Doc
+title: JSON Resume Connect
 ---
 
-<img src="https://raw.githubusercontent.com/ismailkattakath/jsonresume-google-docs/main/assets/icon-128.png" width="96" height="96" alt="JSON Resume to Doc logo: a pair of braces on a folded page">
+<img src="https://raw.githubusercontent.com/ismailkattakath/jsonresume-connect/main/assets/icon-128.png" width="96" height="96" alt="JSON Resume Connect logo: a pair of braces on a folded page">
 
-# JSON Resume to Doc
+# JSON Resume Connect
 
 **Résumé steps for Google Workspace Studio™ flows.** Keep your résumé in the open
 [JSON Resume](https://jsonresume.org) standard. A flow loads it, checks it, and writes it into a
@@ -29,8 +29,8 @@ clean document in Google Docs™, with PDF and DOCX links.
 
 - [Privacy policy](privacy/)
 - [Terms of service](terms/)
-- [Source code and documentation](https://github.com/ismailkattakath/jsonresume-google-docs)
-- [Support: open an issue](https://github.com/ismailkattakath/jsonresume-google-docs/issues)
+- [Source code and documentation](https://github.com/ismailkattakath/jsonresume-connect)
+- [Support: open an issue](https://github.com/ismailkattakath/jsonresume-connect/issues)
 
 ---
 

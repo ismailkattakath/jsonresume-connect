@@ -3,16 +3,16 @@ title: Terms of service
 permalink: /terms/
 ---
 
-# Terms of service — JSON Resume to Doc
+# Terms of service — JSON Resume Connect
 
 *Last updated: 2026-10-27.*
 
-By installing or using **JSON Resume to Doc** ("the add-on") you agree to these terms.
+By installing or using **JSON Resume Connect** ("the add-on") you agree to these terms.
 
 ## 1. What it is
 
 - A free, open-source Google Workspace add-on that adds steps to Google Workspace Studio™ flows.
-- Source code: [github.com/ismailkattakath/jsonresume-google-docs](https://github.com/ismailkattakath/jsonresume-google-docs),
+- Source code: [github.com/ismailkattakath/jsonresume-connect](https://github.com/ismailkattakath/jsonresume-connect),
   under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). The licence
   governs the code; these terms govern use of the published add-on.
 
@@ -64,7 +64,7 @@ By installing or using **JSON Resume to Doc** ("the add-on") you agree to these 
 ## 10. Contact
 
 - Open an issue at
-  [github.com/ismailkattakath/jsonresume-google-docs/issues](https://github.com/ismailkattakath/jsonresume-google-docs/issues),
+  [github.com/ismailkattakath/jsonresume-connect/issues](https://github.com/ismailkattakath/jsonresume-connect/issues),
   or contact [the maintainer on GitHub](https://github.com/ismailkattakath).
 
 ---
