@@ -18,7 +18,7 @@ import { dirname, join } from 'node:path';
 import { createContext, runInContext } from 'node:vm';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, 'LoadJsonResume.gs'), 'utf8');
+const src = readFileSync(join(here, '..', 'src', 'JsonResumeToDoc.gs'), 'utf8');
 
 // Load the script's pure half into a fresh context.
 //

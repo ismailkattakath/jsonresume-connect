@@ -17,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { createContext, runInContext } from 'node:vm';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const read = (f) => readFileSync(join(here, f), 'utf8');
+const read = (f) => readFileSync(join(here, '..', 'src', f), 'utf8');
 
 // BOTH files into ONE context, in manifest order. That is how Apps Script
 // loads a project: one shared global scope. RenderResume.gs reuses str(),
@@ -42,8 +42,8 @@ const ctx = createContext({
   CacheService: { getUserCache: () => ({}) }, LockService: { getUserLock: () => ({}) },
 });
 let loadGlobals = [];
-for (const f of ['LoadJsonResume.gs', 'RenderResume.gs']) {
-  if (f === 'RenderResume.gs') loadGlobals = Object.keys(ctx);
+for (const f of ['JsonResumeToDoc.gs', 'RenderDoc.gs']) {
+  if (f === 'RenderDoc.gs') loadGlobals = Object.keys(ctx);
   try {
     runInContext(read(f), ctx, { filename: f });
     console.log(`  ok   ${f} parses`);
@@ -61,7 +61,7 @@ const check = (name, cond, detail = '') => {
 
 // ONE global scope: a function RenderResume.gs redefines would silently
 // replace LoadJsonResume.gs's copy in production. Detect it from the source.
-const redefined = [...read('RenderResume.gs').matchAll(/^(?:function|var)\s+([A-Za-z_$][\w$]*)/gm)]
+const redefined = [...read('RenderDoc.gs').matchAll(/^(?:function|var)\s+([A-Za-z_$][\w$]*)/gm)]
   .map((m) => m[1]).filter((n) => loadGlobals.includes(n));
 check('RenderResume.gs redefines nothing from LoadJsonResume.gs', redefined.length === 0, JSON.stringify(redefined));
 
@@ -92,7 +92,7 @@ check('every output is a STRING scalar',
 
 // Each card field binds to a manifest input BY NAME. A typo leaves the field
 // orphaned, and the value never reaches onExecute.
-const renderSrc = read('RenderResume.gs');
+const renderSrc = read('RenderDoc.gs');
 const fieldNames = [...renderSrc.matchAll(/setFieldName\('([^']+)'\)/g)].map((m) => m[1]).sort();
 const inputIds = render.workflowAction.inputs.map((i) => i.id).sort();
 check('every card field matches a manifest input',
