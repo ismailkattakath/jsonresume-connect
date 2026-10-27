@@ -61,6 +61,11 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      - name: Require urlFetchWhitelist
+        if: env.HAS_CLASP == 'true'
+        # A versioned deployment enforces the URL allowlist (README, Deploying it).
+        run: jq -e '(.urlFetchWhitelist | length) > 0' src/appsscript.json > /dev/null || { echo "::error::src/appsscript.json has no urlFetchWhitelist; a versioned deployment would block UrlFetchApp"; exit 1; }
+
       - name: Write clasp credentials and project file
         if: env.HAS_CLASP == 'true'
         env:

@@ -44,6 +44,9 @@ jobs:
     uses: ./.github/workflows/deploy.yml # zizmor: ignore[self-repository]
     with:
       tag: ${{ needs.release.outputs.tag_name }}
+    # These live in the production environment. A caller may pass an environment-only
+    # secret by name; deploy.yml's job sets `environment`, so it receives the environment
+    # value (GitHub docs, "Reuse workflows" > environment secrets).
     secrets:
       CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
       SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
