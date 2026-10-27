@@ -9,11 +9,14 @@
  * IS the design. None of that needs Google's servers to check.
  */
 
+import {readFileSync, readdirSync} from 'node:fs';
+import {join, relative} from 'node:path';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {
   OAUTH2_FILE,
   OWN_FILES,
+  SRC,
   check,
   fakeOAuth2,
   loadProject,
@@ -286,6 +289,37 @@ check(
   'output descriptions are chip-sized (<= 24 chars, no sentence)',
   outDescs.every(d => d.length <= 24 && !d.endsWith('.')),
   JSON.stringify(outDescs)
+);
+
+// ---- licence headers ---------------------------------------------------------
+// MIT, as SPDX headers (REUSE convention), on every file the project wrote.
+// The vendored OAuth2.gs keeps upstream's Apache-2.0 header, untouched.
+const SPDX =
+  '// SPDX-FileCopyrightText: 2026 Ismail Kattakath\n// SPDX-License-Identifier: MIT\n';
+const repo = join(SRC, '..');
+const ownJs = [
+  ...OWN_FILES.map(f => join(SRC, f)),
+  ...readdirSync(join(repo, 'test'))
+    .filter(f => f.endsWith('.mjs'))
+    .map(f => join(repo, 'test', f)),
+  ...readdirSync(repo)
+    .filter(f => /\.(m?js|cjs)$/.test(f))
+    .map(f => join(repo, f)),
+];
+check(
+  'licence headers: files were found',
+  ownJs.length >= 9,
+  String(ownJs.length)
+);
+for (const f of ownJs) {
+  check(
+    `${relative(repo, f)} starts with the MIT SPDX header`,
+    readFileSync(f, 'utf8').startsWith(SPDX)
+  );
+}
+check(
+  'the vendored OAuth2.gs carries no project SPDX header',
+  !readSrc(OAUTH2_FILE).includes('SPDX-License-Identifier: MIT')
 );
 
 // ---- vendored OAuth2 for Apps Script ----------------------------------------

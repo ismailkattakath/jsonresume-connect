@@ -150,7 +150,8 @@ function connectSection(url) {
     .addWidget(
       CardService.newTextParagraph().setText(
         'Connect your <b>JSON Resume</b> account to load your resume. ' +
-          'No account yet? Create one at jsonresume.org (sign in with GitHub) and add your resume in its dashboard.'
+          'No account yet? Create one at <a href="https://jsonresume.org">jsonresume.org</a> ' +
+          '(sign in with GitHub) and add your resume in its dashboard.'
       )
     )
     .addWidget(
@@ -306,9 +307,11 @@ function onExecuteJsonResumeToDoc(event) {
 
   var loaded = loadResume();
   if (loaded.error) {
-    return failStep('Could not load resume: ' + loaded.error, {
-      retry: !!loaded.retry,
-    });
+    // A retryable failure is a whole sentence of its own (design review
+    // wording); the rest complete "Could not load resume: ...".
+    return loaded.retry
+      ? failStep(loaded.error, {retry: true})
+      : failStep('Could not load resume: ' + loaded.error);
   }
   var resume = loaded.resume;
 
@@ -347,8 +350,9 @@ function docCreateFailure(status) {
 
 /**
  * The signed-in user's resume from jsonresume.org, validated.
- * Returns { resume } or { error, retry }, where error completes the sentence
- * "Could not load resume: ..." in the user's terms. Never throws.
+ * Returns { resume } or { error, retry }. A non-retryable error completes the
+ * sentence "Could not load resume: ..."; a retryable one is a whole sentence.
+ * Both are in the user's terms. Never throws.
  */
 function loadResume() {
   var service;
@@ -357,7 +361,8 @@ function loadResume() {
   } catch (err) {
     console.error('JsonResumeToDoc: sign-in unavailable: ' + err.message);
     return {
-      error: 'JSON Resume sign-in is unavailable. The step will try again.',
+      error:
+        'JSON Resume sign-in is unavailable right now. The step will try again.',
       retry: true,
     };
   }
@@ -410,7 +415,7 @@ function loadResume() {
       'JsonResumeToDoc: jsonresume.org fetch failed: ' + err.message
     );
     return {
-      error: 'could not reach jsonresume.org. The step will try again.',
+      error: 'Could not reach jsonresume.org. The step will try again.',
       retry: true,
     };
   }

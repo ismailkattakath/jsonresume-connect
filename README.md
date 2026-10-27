@@ -50,6 +50,11 @@ supported in Studio add-ons ([update cards](https://developers.google.com/worksp
 The earlier `CardService` navigation call was replaced. **Not yet run live:** neither the
 replacement, nor cards without a header.
 
+**Labels are sentence case** (Google's add-on style guide), except proper nouns: "Connect JSON
+Resume", "Disconnect", "Document title". The connect card links `jsonresume.org` for sign-up; Studio
+opens card links in a new tab, which suits it. The bold **refresh** stays text, not a link. A test
+checks every card and manifest label.
+
 **If client registration fails** (jsonresume.org down), the card says "JSON Resume sign-in is
 unavailable right now. Try again in a few minutes." instead of showing a raw error.
 

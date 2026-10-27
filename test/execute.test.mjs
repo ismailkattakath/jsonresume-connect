@@ -165,7 +165,7 @@ describe('fails the step, never renders, when', () => {
       const r = run({resumeResponse: json(status, 'oops')});
       failsWith(
         r,
-        /jsonresume\.org is not responding\. The step will try again\.$/,
+        /^jsonresume\.org is not responding\. The step will try again\.$/,
         {
           retry: true,
         }
@@ -187,7 +187,7 @@ describe('fails the step, never renders, when', () => {
     const r = run({resumeResponse: new Error('DNS error')});
     failsWith(
       r,
-      /^Could not load resume: could not reach jsonresume\.org\. The step will try again\.$/,
+      /^Could not reach jsonresume\.org\. The step will try again\.$/,
       {retry: true}
     );
     logged(r, /DNS error/);
@@ -197,7 +197,7 @@ describe('fails the step, never renders, when', () => {
     const r = run({register: json(503, 'down')});
     failsWith(
       r,
-      /JSON Resume sign-in is unavailable\. The step will try again\.$/,
+      /^JSON Resume sign-in is unavailable right now\. The step will try again\.$/,
       {
         retry: true,
       }

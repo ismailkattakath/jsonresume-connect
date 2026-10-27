@@ -277,6 +277,60 @@ check(
     ).length >= 1
 );
 
+// Style guide: "Use sentence case (especially for buttons, labels, and card
+// actions)". Words after the first stay lowercase, except proper nouns and
+// acronyms. "Connect JSON Resume" keeps its capitals: JSON Resume is a name.
+const PROPER = new Set([
+  'JSON',
+  'Resume',
+  'PDF',
+  'DOCX',
+  'URL',
+  'ID',
+  'Doc',
+  'Docs',
+  'Drive',
+  'Google',
+]);
+const sentenceCase = label =>
+  label
+    .split(/\s+/)
+    .slice(1)
+    .every(w => !/^[A-Z]/.test(w) || PROPER.has(w.replace(/[^\w]/g, '')));
+const labels = [];
+for (const calls of [signedOut, signedIn]) {
+  calls.forEach(([k, a], n) => {
+    if (k === 'setTitle') labels.push(String(a[0]));
+    if (k === 'newTextButton') {
+      const t = calls.slice(n).find(([k2]) => k2 === 'setText');
+      if (t) labels.push(String(t[1][0]));
+    }
+  });
+}
+check(
+  'button and field labels were captured',
+  labels.length >= 3,
+  JSON.stringify(labels)
+);
+check(
+  'button and field labels are sentence case',
+  labels.every(sentenceCase),
+  JSON.stringify(labels.filter(l => !sentenceCase(l)))
+);
+const io = manifest.addOns.flows.workflowElements[0].workflowAction;
+const ioDescs = [...io.inputs, ...io.outputs].map(x => x.description);
+check(
+  'manifest input and output labels are sentence case',
+  ioDescs.every(sentenceCase),
+  JSON.stringify(ioDescs.filter(l => !sentenceCase(l)))
+);
+check(
+  'the connect card links jsonresume.org for sign-up',
+  texts(signedOut).some(t =>
+    t.includes('<a href="https://jsonresume.org">jsonresume.org</a>')
+  )
+);
+
 // ---- Disconnect: a modifyCard action, not CardService navigation -----------
 // Studio's guides: navigation is not supported in Studio add-ons; a button
 // returns AddOnsResponseService.newRenderActionBuilder().setAction(
