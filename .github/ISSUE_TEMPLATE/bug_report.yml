@@ -1,0 +1,83 @@
+name: Bug report
+description: Something in the add-on does not work as documented.
+title: "bug: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Security problems do not go here** — see SECURITY.md.
+        **Never paste a real résumé, an OAuth token, or an execution log with personal data.** Redact first.
+  - type: dropdown
+    id: step
+    attributes:
+      label: Which step?
+      options:
+        - Load JSON Resume
+        - Render JSON Resume to Doc
+        - Parse Job Description
+        - Apply Tailoring
+        - Connect / Disconnect JSON Resume (sign-in)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Include the exact error text from the flow's Activity tab, if any.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The flow's shape (starter → steps) and a minimal, made-up resume.json fragment that triggers it.
+      placeholder: |
+        1. Starter: Start manually
+        2. Load JSON Resume
+        3. Render JSON Resume to Doc
+        4. …
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: How is the add-on installed?
+      options:
+        - Test deployment (my own Apps Script project)
+        - Versioned deployment
+        - Installed from Google Workspace Marketplace
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: The release tag, or the commit SHA you deployed.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Apps Script execution log (redacted)
+      description: From the Apps Script editor → Executions. Remove names, emails, tokens and résumé content.
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and the README's troubleshooting table.
+          required: true
+        - label: This report contains no real personal data, résumé content or tokens.
+          required: true

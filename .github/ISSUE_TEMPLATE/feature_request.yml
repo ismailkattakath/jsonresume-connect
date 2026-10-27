@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a new capability or a change to an existing step.
+title: "feat: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Big changes (a new step, a new OAuth scope, a new outbound host) are agreed here before any code is written — see GOVERNANCE.md.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the flow you are trying to build and where it falls short today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What do you propose?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Including doing it with an existing Workspace Studio step (for example the built-in Gemini step).
+    validations:
+      required: false
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Does it need any of these?
+      description: Each one needs extra review.
+      options:
+        - label: A new or wider OAuth scope
+        - label: A new outbound host in urlFetchWhitelist
+        - label: A change to an existing step's outputs (may break users' flows)
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to implement this myself.

@@ -1,0 +1,12 @@
+# Normalise line endings to LF in the repository.
+* text=auto eol=lf
+
+# Apps Script files are JavaScript. Linguist maps ".gs" to GLSL, Genie, Gosu
+# and JavaScript and picks by heuristic; pin it so language stats are right.
+*.gs linguist-language=JavaScript
+
+# OAuth2.gs is vendored from googleworkspace/apps-script-oauth2 (see NOTICE).
+OAuth2.gs linguist-vendored
+
+# Keep the licence text byte-for-byte as published.
+LICENSE -text
