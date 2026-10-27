@@ -1,0 +1,13 @@
+version = 1
+
+[[annotations]]
+path = "src/third_party/apps-script-oauth2/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2014 Google LLC"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["**/*.md", "**/*.json", "**/*.yml", "**/*.yaml", "assets/**", "docs/**", ".github/**", ".nvmrc", ".clasp.json.example", ".gitignore", ".gitattributes", ".editorconfig", ".prettierignore", ".prettierrc.json", "LICENSE", "NOTICE"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Ismail Kattakath"
+SPDX-License-Identifier = "MIT"

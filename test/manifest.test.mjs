@@ -297,6 +297,8 @@ check(
 // ---- licence headers ---------------------------------------------------------
 // MIT, as SPDX headers (REUSE convention), on every file the project wrote.
 // The vendored OAuth2.gs keeps upstream's Apache-2.0 header, untouched.
+// The header text below is data, not this file's licence:
+// REUSE-IgnoreStart
 const SPDX =
   '// SPDX-FileCopyrightText: 2026 Ismail Kattakath\n// SPDX-License-Identifier: MIT\n';
 const repo = join(SRC, '..');
@@ -324,6 +326,7 @@ check(
   'the vendored OAuth2.gs carries no project SPDX header',
   !readSrc(OAUTH2_FILE).includes('SPDX-License-Identifier: MIT')
 );
+// REUSE-IgnoreEnd
 
 // ---- vendored OAuth2 for Apps Script ----------------------------------------
 // googleworkspace/apps-script-oauth2 dist/OAuth2.gs at aae9287 (the #513

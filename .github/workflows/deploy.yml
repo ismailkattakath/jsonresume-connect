@@ -43,7 +43,7 @@ jobs:
       HAS_CLASP: ${{ secrets.CLASPRC_JSON != '' && secrets.SCRIPT_ID != '' }}
       TAG: ${{ inputs.tag }}
       # Pinned exactly; v3 reads ~/.clasprc.json (google/clasp src/auth/auth.ts).
-      CLASP: "@google/clasp@3.4.1"
+      CLASP: '@google/clasp@3.4.1'
     steps:
       - name: Skip when credentials are absent
         if: env.HAS_CLASP != 'true'
