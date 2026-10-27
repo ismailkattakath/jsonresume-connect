@@ -28,7 +28,7 @@
   "addOns": {
     "common": {
       "name": "JSON Resume Connect",
-      "logoUrl": "https://raw.githubusercontent.com/ismailkattakath/jsonresume-connect/main/assets/icon-128.png"
+      "logoUrl": "https://raw.githubusercontent.com/ismailkattakath/jsonresume-connect/58ecc75d795a15e689165d59529eba34a6beb4e0/assets/icon-128.png"
     },
     "flows": {
       "workflowElements": [

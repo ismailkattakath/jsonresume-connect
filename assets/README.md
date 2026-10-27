@@ -48,7 +48,10 @@ $RV assets/src/screenshot-placeholder.svg assets/screenshot-placeholder-1280x800
   (or the GitHub Pages copy). The [manifest reference][manifest] only says "**Required.** The
   public URL of the toolbar image" — it names no size; 128×128 PNG over HTTPS matches the
   Marketplace icon. **The URL changes if the repo is renamed or transferred** — update both.
-- Pin to a tag (`/v1.0.0/assets/icon-128.png`) rather than `main` if the image must never move.
+- **Now pinned to a commit SHA** (`/<40-hex sha>/assets/icon-128.png`). Studio and GitHub's raw CDN
+  cache the image by URL, so after the icon was resized on 2026-10-27 the `main` URL kept showing the
+  old one. A new SHA is a new URL, which no cache has seen. **When the icon changes:** commit the
+  new PNGs, then set `logoUrl` to that commit's SHA (a test requires the 40-hex form).
 
 ## Colours
 

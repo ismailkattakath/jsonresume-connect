@@ -89,8 +89,8 @@ test('the name appears in code once: the APP_NAME constant', () => {
   ]);
 });
 check(
-  'the logo is a repo-hosted https image',
-  /^https:\/\/raw\.githubusercontent\.com\/ismailkattakath\/jsonresume-connect\/main\/assets\/[\w-]+\.png$/.test(
+  'the logo is a repo-hosted https image pinned to a commit (a new SHA busts every cache)',
+  /^https:\/\/raw\.githubusercontent\.com\/ismailkattakath\/jsonresume-connect\/[0-9a-f]{40}\/assets\/[\w-]+\.png$/.test(
     manifest.addOns.common.logoUrl
   ),
   manifest.addOns.common.logoUrl
