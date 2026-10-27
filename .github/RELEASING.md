@@ -59,6 +59,10 @@ gh variable set DEPLOYMENT_ID --repo "$R" --env production --body "<deployment i
   `npx @google/clasp@3.4.1 login`. Rejected alternative: `--adc` with a service account — Apps
   Script API calls run as the user who owns the project, and a service account would need
   domain-wide delegation for a consumer account; the user token is simpler and revocable.
+- **Who can deploy.** The deploy job runs only on `refs/heads/main` and only for a tag whose
+  commit is on `main`. Anyone with write access could still edit `deploy.yml` on a branch and
+  dispatch it; the **protected-branches policy** of `production` is what stops that, and it is
+  only enforced once the repo is public. Keep write access to the owner until then.
 - **The token is a refresh token for your Google account.** Revoke it at
   myaccount.google.com → Security → Third-party access if it leaks, then re-run `clasp login`.
 - **`DEPLOYMENT_ID` keeps one deployment.** A Studio custom-step install is bound to a
@@ -127,6 +131,26 @@ gh api -X POST repos/ismailkattakath/jsonresume-google-docs/rulesets --input - <
 }
 JSON
 ```
+
+### Tag ruleset — release tags are immutable
+
+`deploy.yml` checks that the tag's commit is on `main`, but a moved tag would still pass if it
+was moved to another `main` commit. Block that (apply with the branch ruleset):
+
+```bash
+gh api -X POST repos/ismailkattakath/jsonresume-google-docs/rulesets --input - <<'JSON'
+{
+  "name": "release tags",
+  "target": "tag",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["refs/tags/v*"], "exclude": [] } },
+  "bypass_actors": [],
+  "rules": [ { "type": "deletion" }, { "type": "non_fast_forward" }, { "type": "update" } ]
+}
+JSON
+```
+
+### Notes on the branch ruleset
 
 - **Optional, add to `rules`:** `{ "type": "required_signatures" }` — only if every committer
   (including release-please's bot commits) signs; the default `GITHUB_TOKEN` API commits are

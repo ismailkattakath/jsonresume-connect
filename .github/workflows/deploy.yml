@@ -34,6 +34,10 @@ jobs:
     name: clasp push + deployment
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Only from main (release-please call, or a dispatch from main). A workflow edited on a
+    # branch can drop this line, so the real gate is the environment's protected-branches
+    # policy; it is enforced once the repo is public (see .github/RELEASING.md).
+    if: ${{ github.ref == 'refs/heads/main' }}
     environment: production
     env:
       HAS_CLASP: ${{ secrets.CLASPRC_JSON != '' && secrets.SCRIPT_ID != '' }}
@@ -54,7 +58,14 @@ jobs:
         if: env.HAS_CLASP == 'true'
         with:
           ref: refs/tags/${{ inputs.tag }}
+          fetch-depth: 0
           persist-credentials: false
+
+      - name: Tag must point at a commit on main
+        if: env.HAS_CLASP == 'true'
+        run: |
+          git merge-base --is-ancestor "$(git rev-list -n1 "refs/tags/$TAG")" origin/main \
+            || { echo "::error::$TAG is not on main; refusing to deploy"; exit 1; }
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         if: env.HAS_CLASP == 'true'
