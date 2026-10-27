@@ -127,7 +127,9 @@ Click **Connect JSON Resume** again.
 ## Outputs
 
 All `SINGLE`. All `STRING` except `email`, which is `EMAIL_ADDRESS`: the **Draft an email** step's
-To field offers only email-address variables, never text (measured live 2026-10-27). The chip labels follow Google's built-in **Create a doc** step (measured
+To field offers only email-address variables, never text (measured live 2026-10-27). Studio shows an
+`EMAIL_ADDRESS` output as "<label> email address", so its label is just `Resume`, read as **Resume
+email address** (the Gmail starter's "Sender email address" works the same way). The chip labels follow Google's built-in **Create a doc** step (measured
 live 2026-10-27: "Link to doc", "Doc name", "Doc location", "Document ID") and the Gmail
 starter's "Sender email address". A test pins every id and label, in order. Ids stay stable:
 users never see them, and renaming one breaks every flow bound to it.
@@ -141,7 +143,7 @@ users never see them, and renaming one breaks every flow bound to it.
 | `docId` | Document ID | for a Drive step (share, move) |
 | `name` | Name | `basics.name`, for addressing a message |
 | `label` | Headline | `basics.label` |
-| `email` | Email address | `basics.email`, usable as a draft's **To**. Left out when the resume has no valid address |
+| `email` | Resume email address | `basics.email`, usable as a draft's **To**. Left out when the resume has no valid address |
 | `resumeText` | Resume (plain text) | flattened text for any AI step (summary, cover letter) |
 | `resume` | Resume (JSON) | the validated `resume.json`. **Weakest case:** no native step consumes JSON, and it can be up to 2 MB |
 

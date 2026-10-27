@@ -176,7 +176,7 @@ test('output ids and chip labels are exactly the agreed set', () => {
       ['docId', 'Document ID'],
       ['name', 'Name'],
       ['label', 'Headline'],
-      ['email', 'Email address'],
+      ['email', 'Resume'], // Studio shows EMAIL_ADDRESS as "<label> email address"
       ['resumeText', 'Resume (plain text)'],
       ['resume', 'Resume (JSON)'],
     ]

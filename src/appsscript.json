@@ -108,7 +108,7 @@
               },
               {
                 "id": "email",
-                "description": "Email address",
+                "description": "Resume",
                 "cardinality": "SINGLE",
                 "dataType": {
                   "basicType": "EMAIL_ADDRESS"
