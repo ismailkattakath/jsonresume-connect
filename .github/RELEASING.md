@@ -40,7 +40,9 @@ it needs. User-facing release notes live in `docs/`; this file is the operator's
 | `CLASPRC_JSON` | secret | environment `production` | whole contents of `~/.clasprc.json` after a **clasp v3** `clasp login` |
 | `SCRIPT_ID` | secret | environment `production` | the Apps Script project ID (Project Settings → IDs) |
 | `DEPLOYMENT_ID` | variable | environment `production` | the versioned deployment to keep updating (optional; see below) |
-| `RELEASE_PLEASE_TOKEN` | secret | repo | optional GitHub App token / fine-grained PAT (see below) |
+| `CI_BOT_CLIENT_ID` | variable | repo | client ID of the owner's `ismailkattakath-ci` GitHub App (see below) |
+| `CI_BOT_APP_PRIVATE_KEY` | secret | repo | a private key (`.pem`) of that App |
+| `RELEASE_PLEASE_TOKEN` | secret | repo | optional fine-grained PAT, used only when the App is not configured |
 
 Create the `production` environment first (next section) — `--env` needs it to exist. Set them **from your own terminal** (each prompts for the value or reads a file; nothing is
 echoed):
@@ -68,10 +70,15 @@ gh variable set DEPLOYMENT_ID --repo "$R" --env production --body "<deployment i
 - **`DEPLOYMENT_ID` keeps one deployment.** A Studio custom-step install is bound to a
   deployment ID; a new ID per release would leave installs on the old version. On the first
   run leave it unset, copy the ID from the `clasp create-deployment` log, then set it.
-- **`RELEASE_PLEASE_TOKEN` (optional).** With the default `GITHUB_TOKEN`, CI does **not** run
-  on the release PR, so a required `lint-format-test` check blocks it: merge it with the
-  ruleset bypass (below). A GitHub App token (preferred: scoped, short-lived) or fine-grained
-  PAT (contents + pull requests: write) makes CI run on it instead.
+- **Release PR token: the `ismailkattakath-ci` App.** With `GITHUB_TOKEN`, every run on the
+  release PR is held as **`action_required`** until someone approves it (measured on v0.1.0:
+  28 held runs; the PR stayed BLOCKED). `release-please.yml` mints a short-lived App token
+  (`actions/create-github-app-token`, scoped to this repo and to contents / issues /
+  pull-requests: write) when `CI_BOT_CLIENT_ID` is set — the same App and names as
+  `kattakath/nix-config`. Set the variable **after** the key, or the token step fails:
+  `gh secret set CI_BOT_APP_PRIVATE_KEY --repo "$R" < app.pem`, then
+  `gh variable set CI_BOT_CLIENT_ID --repo "$R" --body "<client id>"`. Without the App it
+  falls back to `RELEASE_PLEASE_TOKEN`, then `GITHUB_TOKEN`.
 
 ## Environment `production`
 

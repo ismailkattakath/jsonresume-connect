@@ -24,12 +24,26 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
+      # The owner's CI GitHub App (same pinned action and names as kattakath/nix-config's
+      # auto-merge.yml). Release PRs pushed with GITHUB_TOKEN are held as "action_required"
+      # until someone approves each run; PRs pushed as the App run their checks at once.
+      # Skipped when the App is not configured, so a fork still releases with GITHUB_TOKEN.
+      - id: app-token
+        if: ${{ vars.CI_BOT_CLIENT_ID != '' }}
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.CI_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }} # zizmor: ignore[secrets-outside-env] -- an environment reviewer would gate every push to main
+          repositories: ${{ github.event.repository.name }}
+          # Exactly the job's own permissions above; the App's installation grants more.
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
-          # Optional GitHub App / fine-grained PAT so CI runs on the release PR and the
-          # release event can trigger workflows; GITHUB_TOKEN cannot (see .github/RELEASING.md).
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }} # zizmor: ignore[secrets-outside-env] -- an environment reviewer would gate every push to main
+          # App token, else a fine-grained PAT, else GITHUB_TOKEN (see .github/RELEASING.md).
+          token: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_TOKEN || github.token }} # zizmor: ignore[secrets-outside-env] -- an environment reviewer would gate every push to main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
