@@ -23,10 +23,16 @@ const ctx = loadProject();
 // The body is { username, url, resume } (measured 2026-10-27).
 check(
   'unwraps { username, resume }',
-  ctx.unwrapResumePayload({username: 'u', url: 'x', resume: {basics: {name: 'A'}}})
-    .resume.basics.name === 'A'
+  ctx.unwrapResumePayload({
+    username: 'u',
+    url: 'x',
+    resume: {basics: {name: 'A'}},
+  }).resume.basics.name === 'A'
 );
-check('keeps the username', ctx.unwrapResumePayload({username: 'u', resume: {}}).username === 'u');
+check(
+  'keeps the username',
+  ctx.unwrapResumePayload({username: 'u', resume: {}}).username === 'u'
+);
 check(
   'a bare resume passes through',
   ctx.unwrapResumePayload({basics: {name: 'B'}}).resume.basics.name === 'B'
@@ -47,26 +53,42 @@ check(
 const invocation = inputs => ({workflow: {actionInvocation: {inputs}}});
 const readFromEvent = (ev, id) => {
   const inputs =
-    (ev && ev.workflow && ev.workflow.actionInvocation && ev.workflow.actionInvocation.inputs) ||
+    (ev &&
+      ev.workflow &&
+      ev.workflow.actionInvocation &&
+      ev.workflow.actionInvocation.inputs) ||
     {};
   return ctx.readActionInput(inputs, id);
 };
 
 check(
   'reads stringValues from an action invocation',
-  readFromEvent(invocation({title: {stringValues: ['CV for X']}}), 'title') === 'CV for X'
+  readFromEvent(invocation({title: {stringValues: ['CV for X']}}), 'title') ===
+    'CV for X'
 );
 check(
   'trims whitespace',
-  readFromEvent(invocation({title: {stringValues: ['  CV for X  ']}}), 'title') === 'CV for X'
+  readFromEvent(
+    invocation({title: {stringValues: ['  CV for X  ']}}),
+    'title'
+  ) === 'CV for X'
 );
-check('missing field yields empty string', readFromEvent(invocation({}), 'title') === '');
+check(
+  'missing field yields empty string',
+  readFromEvent(invocation({}), 'title') === ''
+);
 check(
   'empty stringValues array yields empty string',
   readFromEvent(invocation({title: {stringValues: []}}), 'title') === ''
 );
-check('a missing workflow envelope does not throw', readFromEvent({}, 'title') === '');
-check('an undefined event does not throw', readFromEvent(undefined, 'title') === '');
+check(
+  'a missing workflow envelope does not throw',
+  readFromEvent({}, 'title') === ''
+);
+check(
+  'an undefined event does not throw',
+  readFromEvent(undefined, 'title') === ''
+);
 
 // THE LIVE PAYLOAD ITSELF. If this ever stops parsing, the platform changed.
 check(
@@ -89,39 +111,71 @@ check(
 );
 
 // ---- validation: strict, fails, never repairs ------------------------------
-check('accepts a sparse but valid resume', ctx.hasAnyKnownSection({basics: {name: 'A'}}) === true);
-check('accepts a work-only resume', ctx.hasAnyKnownSection({work: []}) === true);
-check('rejects an unrelated object', ctx.hasAnyKnownSection({hello: 'world'}) === false);
+check(
+  'accepts a sparse but valid resume',
+  ctx.hasAnyKnownSection({basics: {name: 'A'}}) === true
+);
+check(
+  'accepts a work-only resume',
+  ctx.hasAnyKnownSection({work: []}) === true
+);
+check(
+  'rejects an unrelated object',
+  ctx.hasAnyKnownSection({hello: 'world'}) === false
+);
 
 const problem = o => ctx.resumeProblem(o);
 check('a JSON array is an error', /not a JSON object/.test(problem([1, 2])));
 check('null is an error', /not a JSON object/.test(problem(null)));
-check('an unrelated object is an error', /no jsonresume\.org sections/.test(problem({hello: 'world'})));
+check(
+  'an unrelated object is an error',
+  /no jsonresume\.org sections/.test(problem({hello: 'world'}))
+);
 check('a plain resume passes', problem({basics: {name: 'A'}}) === '');
 check(
   'a schema-valid resume passes',
   problem({
     basics: {name: 'A'},
-    work: [{name: 'X', startDate: '2024-08', endDate: '2026-03-01', highlights: ['h']}],
+    work: [
+      {
+        name: 'X',
+        startDate: '2024-08',
+        endDate: '2026-03-01',
+        highlights: ['h'],
+      },
+    ],
     skills: [{name: 'S', keywords: ['k']}],
     education: [{startDate: '2006', courses: []}],
   }) === ''
 );
-check('work as an object is rejected', /work must be an array/.test(problem({work: {name: 'X'}})));
-check('a string entry is rejected', /work\[0\] must be an object/.test(problem({work: ['X']})));
+check(
+  'work as an object is rejected',
+  /work must be an array/.test(problem({work: {name: 'X'}}))
+);
+check(
+  'a string entry is rejected',
+  /work\[0\] must be an object/.test(problem({work: ['X']}))
+);
 check(
   'highlights as a string is rejected',
-  /work\[0\]\.highlights must be an array of strings/.test(problem({work: [{highlights: 'h'}]}))
+  /work\[0\]\.highlights must be an array of strings/.test(
+    problem({work: [{highlights: 'h'}]})
+  )
 );
 check(
   'a prose date is rejected',
-  /work\[0\]\.startDate must be YYYY/.test(problem({work: [{startDate: 'Aug 2024'}]}))
+  /work\[0\]\.startDate must be YYYY/.test(
+    problem({work: [{startDate: 'Aug 2024'}]})
+  )
 );
 check(
   'an empty endDate (current role) passes',
   problem({work: [{startDate: '2024', endDate: ''}]}) === ''
 );
-check('basics.name as a number is rejected', /basics\.name must be a string/.test(problem({basics: {name: 1}})));
+check(
+  'basics.name as a number is rejected',
+  /basics\.name must be a string/.test(problem({basics: {name: 1}}))
+);
 check(
   'extra unknown keys are allowed',
   problem({basics: {name: 'A'}, meta: {x: 1}, work: [{foo: 'bar'}]}) === ''
@@ -156,7 +210,8 @@ function cardsFor({hasAccess}) {
 }
 const signedOut = cardsFor({hasAccess: false});
 const signedIn = cardsFor({hasAccess: true});
-const texts = calls => calls.filter(([k]) => k === 'setText').map(([, a]) => String(a[0]));
+const texts = calls =>
+  calls.filter(([k]) => k === 'setText').map(([, a]) => String(a[0]));
 const hints = [...signedOut, ...signedIn]
   .filter(([k]) => k === 'setHint' || k === 'setTitle')
   .map(([, a]) => String(a[0]));
@@ -182,7 +237,8 @@ check(
 );
 check(
   'signed in, the card names the account and offers Disconnect',
-  texts(signedIn).some(t => t.includes('as <b>@ada</b>')) && texts(signedIn).includes('Disconnect')
+  texts(signedIn).some(t => t.includes('as <b>@ada</b>')) &&
+    texts(signedIn).includes('Disconnect')
 );
 check(
   'signed in, the card carries the title field, accepting variables',
@@ -202,18 +258,36 @@ check(
 );
 check(
   'an open-ended role reads as present',
-  ctx.headlineFor('work', {position: 'Engineer', name: 'Acme', startDate: '2024-01'}).includes('present')
+  ctx
+    .headlineFor('work', {
+      position: 'Engineer',
+      name: 'Acme',
+      startDate: '2024-01',
+    })
+    .includes('present')
 );
 check(
   'education uses studyType/area/institution',
   ctx
-    .headlineFor('education', {studyType: 'BSc', area: 'Computer Science', institution: 'A University'})
+    .headlineFor('education', {
+      studyType: 'BSc',
+      area: 'Computer Science',
+      institution: 'A University',
+    })
     .startsWith('BSc Computer Science — A University')
 );
-check('skills carry no dates', ctx.headlineFor('skills', {name: 'Nix', level: 'Advanced'}) === 'Nix — Advanced');
+check(
+  'skills carry no dates',
+  ctx.headlineFor('skills', {name: 'Nix', level: 'Advanced'}) ===
+    'Nix — Advanced'
+);
 check(
   'certificates use issuer and date',
-  ctx.headlineFor('certificates', {name: 'CKA', issuer: 'CNCF', date: '2023-05'}) === 'CKA — CNCF  (2023-05)'
+  ctx.headlineFor('certificates', {
+    name: 'CKA',
+    issuer: 'CNCF',
+    date: '2023-05',
+  }) === 'CKA — CNCF  (2023-05)'
 );
 
 // ---- degenerate inputs must not throw --------------------------------------

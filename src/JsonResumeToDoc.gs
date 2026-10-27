@@ -24,7 +24,14 @@
 var MAX_BYTES = 2 * 1024 * 1024; // a resume.json far past this is not a resume
 
 // Sections rendered into resumeText, in the order a reader expects them.
-var TEXT_SECTIONS = ['work', 'projects', 'education', 'skills', 'certificates', 'awards'];
+var TEXT_SECTIONS = [
+  'work',
+  'projects',
+  'education',
+  'skills',
+  'certificates',
+  'awards',
+];
 
 /**
  * ONE SOURCE ON PURPOSE (operator decision, 2026-10-27): the signed-in user's
@@ -72,47 +79,66 @@ function connectedCard() {
     .setFieldName('title')
     .setTitle('Document title (optional)')
     .setHint('Defaults to "{your name} — Résumé".')
-    .setHostAppDataSource(CardService.newHostAppDataSource().setWorkflowDataSource(
-      CardService.newWorkflowDataSource().setIncludeVariables(true)));
+    .setHostAppDataSource(
+      CardService.newHostAppDataSource().setWorkflowDataSource(
+        CardService.newWorkflowDataSource().setIncludeVariables(true)
+      )
+    );
   var section = CardService.newCardSection()
-    .addWidget(CardService.newTextParagraph().setText(
-      'Connected to <b>JSON Resume</b>' + (who ? ' as <b>@' + escapeHtml(who) + '</b>' : '') +
-      '. Each run loads your resume from jsonresume.org and renders it into a Google Doc ' +
-      'in your Drive, with PDF and DOCX download links. This step can only see the files it creates.'))
+    .addWidget(
+      CardService.newTextParagraph().setText(
+        'Connected to <b>JSON Resume</b>' +
+          (who ? ' as <b>@' + escapeHtml(who) + '</b>' : '') +
+          '. Each run loads your resume from jsonresume.org and renders it into a Google Doc ' +
+          'in your Drive, with PDF and DOCX download links. This step can only see the files it creates.'
+      )
+    )
     .addWidget(titleInput)
-    .addWidget(CardService.newTextButton()
-      .setText('Disconnect')
-      .setOnClickAction(CardService.newAction().setFunctionName('disconnectJsonResume')));
-  return CardService.newCardBuilder()
-    .addSection(section)
-    .build();
+    .addWidget(
+      CardService.newTextButton()
+        .setText('Disconnect')
+        .setOnClickAction(
+          CardService.newAction().setFunctionName('disconnectJsonResume')
+        )
+    );
+  return CardService.newCardBuilder().addSection(section).build();
 }
 
 /** The custom sign-in card a public add-on needs instead of Google's generic one. */
 function jsonResumeConnectCard() {
   var url = jsonResumeService().getAuthorizationUrl();
   var section = CardService.newCardSection()
-    .addWidget(CardService.newTextParagraph().setText(
-      'Connect your <b>JSON Resume</b> account to load your resume. ' +
-      'No account yet? Create one at jsonresume.org (sign in with GitHub) and add your resume in its dashboard.'))
-    .addWidget(CardService.newTextButton()
-      .setText('Connect JSON Resume')
-      .setAuthorizationAction(CardService.newAuthorizationAction().setAuthorizationUrl(url)))
-    .addWidget(CardService.newTextParagraph().setText(
-      // Bold, not a link: Studio strips <b> around and inside a card link, and
-      // opens card links in a NEW tab, so a link cannot refresh this page
-      // (measured live 2026-10-27).
-      'After connecting, <b>refresh</b> this page.'));
-  return [CardService.newCardBuilder()
-    .addSection(section)
-    .build()];
+    .addWidget(
+      CardService.newTextParagraph().setText(
+        'Connect your <b>JSON Resume</b> account to load your resume. ' +
+          'No account yet? Create one at jsonresume.org (sign in with GitHub) and add your resume in its dashboard.'
+      )
+    )
+    .addWidget(
+      CardService.newTextButton()
+        .setText('Connect JSON Resume')
+        .setAuthorizationAction(
+          CardService.newAuthorizationAction().setAuthorizationUrl(url)
+        )
+    )
+    .addWidget(
+      CardService.newTextParagraph().setText(
+        // Bold, not a link: Studio strips <b> around and inside a card link, and
+        // opens card links in a NEW tab, so a link cannot refresh this page
+        // (measured live 2026-10-27).
+        'After connecting, <b>refresh</b> this page.'
+      )
+    );
+  return [CardService.newCardBuilder().addSection(section).build()];
 }
 
 function disconnectJsonResume() {
   jsonResumeService().reset();
   PropertiesService.getUserProperties().deleteProperty('JR_USERNAME');
   return CardService.newActionResponseBuilder()
-    .setNavigation(CardService.newNavigation().updateCard(jsonResumeConnectCard()[0]))
+    .setNavigation(
+      CardService.newNavigation().updateCard(jsonResumeConnectCard()[0])
+    )
     .build();
 }
 
@@ -132,9 +158,11 @@ function jsonResumeService() {
 
 function jsonResumeAuthCallback(request) {
   var ok = jsonResumeService().handleCallback(request);
-  return HtmlService.createHtmlOutput(ok
-    ? 'Connected to JSON Resume. Return to Workspace Studio and refresh the page.'
-    : 'Not connected. Return to Workspace Studio and try again.');
+  return HtmlService.createHtmlOutput(
+    ok
+      ? 'Connected to JSON Resume. Return to Workspace Studio and refresh the page.'
+      : 'Not connected. Return to Workspace Studio and try again.'
+  );
 }
 
 /**
@@ -152,11 +180,18 @@ function jsonResumeClientId() {
     muteHttpExceptions: true,
     payload: JSON.stringify({
       client_name: 'JSON Resume for Workspace Studio',
-      redirect_uris: ['https://script.google.com/macros/d/' + ScriptApp.getScriptId() + '/usercallback']
-    })
+      redirect_uris: [
+        'https://script.google.com/macros/d/' +
+          ScriptApp.getScriptId() +
+          '/usercallback',
+      ],
+    }),
   });
   if (response.getResponseCode() >= 300) {
-    throw new Error('jsonresume.org client registration returned HTTP ' + response.getResponseCode());
+    throw new Error(
+      'jsonresume.org client registration returned HTTP ' +
+        response.getResponseCode()
+    );
   }
   id = JSON.parse(response.getContentText()).client_id;
   props.setProperty('JR_CLIENT_ID', id);
@@ -178,9 +213,15 @@ function jsonResumeClientId() {
 function onExecuteJsonResumeToDoc(event) {
   // The envelope only: the resume itself is personal data and never logged.
   // The live payload shape is pinned in the tests (LIVE_EVENT).
-  var inputs = (event && event.workflow && event.workflow.actionInvocation &&
-                event.workflow.actionInvocation.inputs) || {};
-  console.log('JsonResumeToDoc inputs present: ' + JSON.stringify(Object.keys(inputs)));
+  var inputs =
+    (event &&
+      event.workflow &&
+      event.workflow.actionInvocation &&
+      event.workflow.actionInvocation.inputs) ||
+    {};
+  console.log(
+    'JsonResumeToDoc inputs present: ' + JSON.stringify(Object.keys(inputs))
+  );
 
   var loaded = loadResume();
   if (loaded.error) return failStep('Could not load resume: ' + loaded.error);
@@ -188,8 +229,11 @@ function onExecuteJsonResumeToDoc(event) {
 
   var doc;
   try {
-    doc = renderResumeDoc(ScriptApp.getOAuthToken(), resume,
-      docTitleFor(resume, readActionInput(inputs, 'title')));
+    doc = renderResumeDoc(
+      ScriptApp.getOAuthToken(),
+      resume,
+      docTitleFor(resume, readActionInput(inputs, 'title'))
+    );
   } catch (err) {
     return failStep('Could not create the Google Doc: ' + err.message);
   }
@@ -205,47 +249,68 @@ function onExecuteJsonResumeToDoc(event) {
 function loadResume() {
   var service = jsonResumeService();
   if (!service.hasAccess()) {
-    return { error: 'not connected to JSON Resume. Open this step and click "Connect JSON Resume".' };
+    return {
+      error:
+        'not connected to JSON Resume. Open this step and click "Connect JSON Resume".',
+    };
   }
 
   var raw;
   try {
     var response = UrlFetchApp.fetch(JR_ORIGIN + '/api/oauth/resume', {
-      headers: { Authorization: 'Bearer ' + service.getAccessToken(), Accept: 'application/json' },
-      muteHttpExceptions: true
+      headers: {
+        Authorization: 'Bearer ' + service.getAccessToken(),
+        Accept: 'application/json',
+      },
+      muteHttpExceptions: true,
     });
     var status = response.getResponseCode();
     if (status === 401) {
       service.reset();
-      return { error: 'the JSON Resume connection expired or was revoked. Open this step and connect again.' };
+      return {
+        error:
+          'the JSON Resume connection expired or was revoked. Open this step and connect again.',
+      };
     }
     if (status === 404) {
-      return { error: 'your JSON Resume account has no resume yet. Create it in the jsonresume.org dashboard.' };
+      return {
+        error:
+          'your JSON Resume account has no resume yet. Create it in the jsonresume.org dashboard.',
+      };
     }
     if (status < 200 || status >= 300) {
-      return { error: 'jsonresume.org returned HTTP ' + status + '.' };
+      return {error: 'jsonresume.org returned HTTP ' + status + '.'};
     }
     raw = response.getContentText();
   } catch (err) {
-    return { error: err.message };
+    return {error: err.message};
   }
 
   if (raw.length > MAX_BYTES) {
-    return { error: 'the document exceeds the ' + Math.round(MAX_BYTES / 1024 / 1024) + ' MB limit.' };
+    return {
+      error:
+        'the document exceeds the ' +
+        Math.round(MAX_BYTES / 1024 / 1024) +
+        ' MB limit.',
+    };
   }
 
   var payload;
   try {
     payload = JSON.parse(raw);
   } catch (err) {
-    return { error: 'jsonresume.org did not return JSON.' };
+    return {error: 'jsonresume.org did not return JSON.'};
   }
   // The endpoint wraps it: { username, url, resume } (measured 2026-10-27).
   var unwrapped = unwrapResumePayload(payload);
-  if (unwrapped.username) PropertiesService.getUserProperties().setProperty('JR_USERNAME', unwrapped.username);
+  if (unwrapped.username)
+    PropertiesService.getUserProperties().setProperty(
+      'JR_USERNAME',
+      unwrapped.username
+    );
 
   var problem = resumeProblem(unwrapped.resume);
-  return problem ? { error: problem } : { resume: unwrapped.resume };
+  return problem ? {error: problem} : {resume: unwrapped.resume};
 }
 
 /**
@@ -258,13 +323,19 @@ function resumeProblem(resume) {
   // Every field in JSON Resume is optional, so presence of one known section
   // is the floor; resumeShapeProblems then checks the types of what is there.
   if (!hasAnyKnownSection(resume)) {
-    return 'no jsonresume.org sections found ' +
-      '(expected at least one of basics, work, education, skills, projects).';
+    return (
+      'no jsonresume.org sections found ' +
+      '(expected at least one of basics, work, education, skills, projects).'
+    );
   }
   var problems = resumeShapeProblems(resume);
   if (problems.length) {
-    return 'it does not match the jsonresume.org schema: ' + problems.slice(0, 5).join('; ') +
-      (problems.length > 5 ? ' (and ' + (problems.length - 5) + ' more)' : '') + '.';
+    return (
+      'it does not match the jsonresume.org schema: ' +
+      problems.slice(0, 5).join('; ') +
+      (problems.length > 5 ? ' (and ' + (problems.length - 5) + ' more)' : '') +
+      '.'
+    );
   }
   return '';
 }
@@ -288,7 +359,7 @@ function buildOutputs(docId, docUrl, resume) {
     label: str(basics.label),
     email: str(basics.email),
     resumeText: toPlainText(r),
-    resume: JSON.stringify(r)
+    resume: JSON.stringify(r),
   };
 }
 
@@ -310,9 +381,14 @@ function failStep(message) {
       )
     )
     .setErrorActionability(AddOnsResponseService.ErrorActionability.ACTIONABLE)
-    .setErrorRetryability(AddOnsResponseService.ErrorRetryability.NOT_RETRYABLE);
-  var hostAppAction = AddOnsResponseService.newHostAppAction().setWorkflowAction(workflowAction);
-  return AddOnsResponseService.newRenderActionBuilder().setHostAppAction(hostAppAction).build();
+    .setErrorRetryability(
+      AddOnsResponseService.ErrorRetryability.NOT_RETRYABLE
+    );
+  var hostAppAction =
+    AddOnsResponseService.newHostAppAction().setWorkflowAction(workflowAction);
+  return AddOnsResponseService.newRenderActionBuilder()
+    .setHostAppAction(hostAppAction)
+    .build();
 }
 
 /**
@@ -327,18 +403,36 @@ function failStep(message) {
 function outputs(plain) {
   var variableDataMap = {};
   Object.keys(plain).forEach(function (key) {
-    variableDataMap[key] = AddOnsResponseService.newVariableData().addStringValue(plain[key]);
+    variableDataMap[key] =
+      AddOnsResponseService.newVariableData().addStringValue(plain[key]);
   });
 
-  var workflowAction = AddOnsResponseService.newReturnOutputVariablesAction()
-    .setVariableDataMap(variableDataMap);
-  var hostAppAction = AddOnsResponseService.newHostAppAction().setWorkflowAction(workflowAction);
-  return AddOnsResponseService.newRenderActionBuilder().setHostAppAction(hostAppAction).build();
+  var workflowAction =
+    AddOnsResponseService.newReturnOutputVariablesAction().setVariableDataMap(
+      variableDataMap
+    );
+  var hostAppAction =
+    AddOnsResponseService.newHostAppAction().setWorkflowAction(workflowAction);
+  return AddOnsResponseService.newRenderActionBuilder()
+    .setHostAppAction(hostAppAction)
+    .build();
 }
 
 function hasAnyKnownSection(resume) {
-  var known = ['basics', 'work', 'education', 'skills', 'projects', 'volunteer',
-    'awards', 'certificates', 'publications', 'languages', 'interests', 'references'];
+  var known = [
+    'basics',
+    'work',
+    'education',
+    'skills',
+    'projects',
+    'volunteer',
+    'awards',
+    'certificates',
+    'publications',
+    'languages',
+    'interests',
+    'references',
+  ];
   for (var i = 0; i < known.length; i++) {
     if (Object.prototype.hasOwnProperty.call(resume, known[i])) return true;
   }
@@ -346,13 +440,25 @@ function hasAnyKnownSection(resume) {
 }
 
 // The jsonresume.org v1 schema's sections that are arrays of objects.
-var RESUME_ARRAY_SECTIONS = ['work', 'volunteer', 'education', 'awards', 'certificates', 'publications',
-  'skills', 'languages', 'interests', 'references', 'projects'];
+var RESUME_ARRAY_SECTIONS = [
+  'work',
+  'volunteer',
+  'education',
+  'awards',
+  'certificates',
+  'publications',
+  'skills',
+  'languages',
+  'interests',
+  'references',
+  'projects',
+];
 // Its fields that are arrays of strings, wherever they appear.
 var RESUME_STRING_LIST_FIELDS = ['highlights', 'keywords', 'courses', 'roles'];
 // Its date fields, which the schema constrains to the "iso8601" pattern.
 var RESUME_DATE_FIELDS = ['startDate', 'endDate', 'date', 'releaseDate'];
-var ISO8601_PARTIAL = /^([1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]|[1-2][0-9]{3}-[0-1][0-9]|[1-2][0-9]{3})$/;
+var ISO8601_PARTIAL =
+  /^([1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]|[1-2][0-9]{3}-[0-1][0-9]|[1-2][0-9]{3})$/;
 
 /**
  * Structural check against the jsonresume.org v1 schema. A drifted shape
@@ -362,28 +468,49 @@ var ISO8601_PARTIAL = /^([1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]|[1-2][0-9]{3}-[0-1]
  */
 function resumeShapeProblems(resume) {
   var problems = [];
-  if ('basics' in resume && !isPlainObject(resume.basics)) problems.push('basics must be an object');
-  if (isPlainObject(resume.basics) && 'name' in resume.basics && typeof resume.basics.name !== 'string') {
+  if ('basics' in resume && !isPlainObject(resume.basics))
+    problems.push('basics must be an object');
+  if (
+    isPlainObject(resume.basics) &&
+    'name' in resume.basics &&
+    typeof resume.basics.name !== 'string'
+  ) {
     problems.push('basics.name must be a string');
   }
   RESUME_ARRAY_SECTIONS.forEach(function (section) {
     if (!(section in resume)) return;
     var list = resume[section];
-    if (!Array.isArray(list)) { problems.push(section + ' must be an array'); return; }
+    if (!Array.isArray(list)) {
+      problems.push(section + ' must be an array');
+      return;
+    }
     list.forEach(function (entry, i) {
       var at = section + '[' + i + ']';
-      if (!isPlainObject(entry)) { problems.push(at + ' must be an object'); return; }
+      if (!isPlainObject(entry)) {
+        problems.push(at + ' must be an object');
+        return;
+      }
       RESUME_STRING_LIST_FIELDS.forEach(function (field) {
         if (!(field in entry)) return;
         var v = entry[field];
-        if (!Array.isArray(v) || v.some(function (s) { return typeof s !== 'string'; })) {
+        if (
+          !Array.isArray(v) ||
+          v.some(function (s) {
+            return typeof s !== 'string';
+          })
+        ) {
           problems.push(at + '.' + field + ' must be an array of strings');
         }
       });
       RESUME_DATE_FIELDS.forEach(function (field) {
         if (!(field in entry) || entry[field] === '') return;
-        if (typeof entry[field] !== 'string' || !ISO8601_PARTIAL.test(entry[field])) {
-          problems.push(at + '.' + field + ' must be YYYY, YYYY-MM or YYYY-MM-DD');
+        if (
+          typeof entry[field] !== 'string' ||
+          !ISO8601_PARTIAL.test(entry[field])
+        ) {
+          problems.push(
+            at + '.' + field + ' must be YYYY, YYYY-MM or YYYY-MM-DD'
+          );
         }
       });
     });
@@ -403,12 +530,15 @@ function isPlainObject(v) {
  * step that needs structure.
  */
 function toPlainText(resume) {
-  var basics = (resume.basics && typeof resume.basics === 'object') ? resume.basics : {};
+  var basics =
+    resume.basics && typeof resume.basics === 'object' ? resume.basics : {};
   var lines = [];
 
   if (basics.name) lines.push(str(basics.name));
   if (basics.label) lines.push(str(basics.label));
-  var contact = [str(basics.email), str(basics.phone), str(basics.url)].filter(nonEmpty);
+  var contact = [str(basics.email), str(basics.phone), str(basics.url)].filter(
+    nonEmpty
+  );
   if (contact.length) lines.push(contact.join(' · '));
   if (basics.summary) lines.push('', str(basics.summary));
 
@@ -431,7 +561,10 @@ function toPlainText(resume) {
     });
   });
 
-  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  return lines
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 /**
@@ -443,26 +576,42 @@ function toPlainText(resume) {
  * published schema rather than guessed.
  */
 function headlineFor(key, item) {
-  var dates = [str(item.startDate), str(item.endDate) || (item.startDate ? 'present' : '')]
-    .filter(nonEmpty).join(' – ');
+  var dates = [
+    str(item.startDate),
+    str(item.endDate) || (item.startDate ? 'present' : ''),
+  ]
+    .filter(nonEmpty)
+    .join(' – ');
   var head;
 
   if (key === 'education') {
     head = [str(item.studyType), str(item.area)].filter(nonEmpty).join(' ');
     head = [head, str(item.institution)].filter(nonEmpty).join(' — ');
   } else if (key === 'skills' || key === 'languages' || key === 'interests') {
-    head = [str(item.name) || str(item.language), str(item.level) || str(item.fluency)]
-      .filter(nonEmpty).join(' — ');
+    head = [
+      str(item.name) || str(item.language),
+      str(item.level) || str(item.fluency),
+    ]
+      .filter(nonEmpty)
+      .join(' — ');
     return head; // these carry no dates
   } else if (key === 'certificates' || key === 'awards') {
-    head = [str(item.name) || str(item.title), str(item.issuer) || str(item.awarder)]
-      .filter(nonEmpty).join(' — ');
+    head = [
+      str(item.name) || str(item.title),
+      str(item.issuer) || str(item.awarder),
+    ]
+      .filter(nonEmpty)
+      .join(' — ');
     var when = str(item.date);
     return when ? head + '  (' + when + ')' : head;
   } else {
     // work, projects, volunteer, publications
-    head = [str(item.position) || str(item.role), str(item.name) || str(item.organization)]
-      .filter(nonEmpty).join(' — ');
+    head = [
+      str(item.position) || str(item.role),
+      str(item.name) || str(item.organization),
+    ]
+      .filter(nonEmpty)
+      .join(' — ');
   }
 
   return dates ? head + '  (' + dates + ')' : head;
@@ -492,7 +641,7 @@ function readActionInput(inputs, id) {
 }
 
 function str(v) {
-  return (v === null || v === undefined) ? '' : String(v);
+  return v === null || v === undefined ? '' : String(v);
 }
 
 function nonEmpty(v) {
@@ -501,9 +650,14 @@ function nonEmpty(v) {
 
 /** { username, resume } from /api/oauth/resume's body; a bare resume is accepted too. */
 function unwrapResumePayload(payload) {
-  if (payload && typeof payload === 'object' && !Array.isArray(payload) &&
-      payload.resume && typeof payload.resume === 'object') {
-    return { username: str(payload.username), resume: payload.resume };
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    !Array.isArray(payload) &&
+    payload.resume &&
+    typeof payload.resume === 'object'
+  ) {
+    return {username: str(payload.username), resume: payload.resume};
   }
-  return { username: '', resume: payload };
+  return {username: '', resume: payload};
 }

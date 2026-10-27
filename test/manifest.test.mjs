@@ -54,7 +54,10 @@ test('no top-level name is defined in two files', () => {
 
 // ---- one step, its name in ONE place ----------------------------------------
 check('the manifest declares exactly one step', elements.length === 1);
-check('the step has a name', typeof step.name === 'string' && step.name.trim().length > 0);
+check(
+  'the step has a name',
+  typeof step.name === 'string' && step.name.trim().length > 0
+);
 // The display name lives in appsscript.json only. A copy in code would drift.
 test('no source file repeats the step name', () => {
   const found = OWN_FILES.filter(f => own[f].includes(step.name));
@@ -194,11 +197,17 @@ for (const url of [
   ctx.JR_ORIGIN + '/api/oauth/token',
   ctx.JR_ORIGIN + '/api/oauth/register',
 ]) {
-  check(`allowlist covers ${url.split('?')[0]}`, allow.some(p => url.startsWith(p)));
+  check(
+    `allowlist covers ${url.split('?')[0]}`,
+    allow.some(p => url.startsWith(p))
+  );
 }
 // registry.jsonresume.org/{user}.json 301s to jsonresume.org/@{user}.json
 // (measured 2026-10-27), so the redirect target is on the list too.
-check('allowlist covers the registry redirect target', allow.includes('https://jsonresume.org/'));
+check(
+  'allowlist covers the registry redirect target',
+  allow.includes('https://jsonresume.org/')
+);
 
 // ---- the Doc is the only artifact -------------------------------------------
 check(
@@ -216,8 +225,12 @@ check(
 
 // ---- manifest text ------------------------------------------------------------
 const texts = [step.name, step.description];
-for (const io of [...action.inputs, ...action.outputs]) texts.push(io.description);
-check('no manifest description contains "<"', texts.every(t => !t.includes('<')));
+for (const io of [...action.inputs, ...action.outputs])
+  texts.push(io.description);
+check(
+  'no manifest description contains "<"',
+  texts.every(t => !t.includes('<'))
+);
 check(
   'no manifest description promises "any HTTPS URL"',
   texts.every(t => !/any HTTPS URL/i.test(t))

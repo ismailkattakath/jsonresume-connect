@@ -24,7 +24,9 @@ import {
 const DOC_ID = '1AbC-d_9xYz';
 const VALID = {
   basics: {name: 'Ada Lovelace', label: 'Analyst', email: 'ada@example.com'},
-  work: [{name: 'Analytical Engine', position: 'Programmer', startDate: '1842-01'}],
+  work: [
+    {name: 'Analytical Engine', position: 'Programmer', startDate: '1842-01'},
+  ],
 };
 const json = (status, body) => ({
   status,
@@ -38,7 +40,10 @@ const json = (status, body) => ({
 function run({
   hasAccess = true,
   resumeResponse = json(200, {username: 'ada', url: 'x', resume: VALID}),
-  drive = json(200, {id: DOC_ID, webViewLink: `https://docs.google.com/document/d/${DOC_ID}/edit`}),
+  drive = json(200, {
+    id: DOC_ID,
+    webViewLink: `https://docs.google.com/document/d/${DOC_ID}/edit`,
+  }),
   docs = json(200, {}),
   event = LIVE_EVENT,
 } = {}) {
@@ -58,7 +63,10 @@ function run({
     },
     CacheService: {getUserCache: () => ({})},
     LockService: {getUserLock: () => ({})},
-    ScriptApp: {getOAuthToken: () => 'google-token', getScriptId: () => 'script-id'},
+    ScriptApp: {
+      getOAuthToken: () => 'google-token',
+      getScriptId: () => 'script-id',
+    },
     Utilities: {
       getUuid: () => 'uuid',
       newBlob: () => ({
@@ -76,9 +84,14 @@ function run({
       fetch(url, options = {}) {
         fetches.push({url, options});
         let r;
-        if (url === 'https://jsonresume.org/api/oauth/resume') r = resumeResponse;
-        else if (url.startsWith('https://www.googleapis.com/upload/drive/v3/files')) r = drive;
-        else if (url.startsWith('https://docs.googleapis.com/v1/documents/')) r = docs;
+        if (url === 'https://jsonresume.org/api/oauth/resume')
+          r = resumeResponse;
+        else if (
+          url.startsWith('https://www.googleapis.com/upload/drive/v3/files')
+        )
+          r = drive;
+        else if (url.startsWith('https://docs.googleapis.com/v1/documents/'))
+          r = docs;
         else throw new Error(`unexpected fetch ${url}`);
         if (r instanceof Error) throw r;
         return {getResponseCode: () => r.status, getContentText: () => r.body};
@@ -102,13 +115,23 @@ const failsWith = (r, re) => {
 describe('fails the step, never renders, when', () => {
   it('not connected', () => {
     const r = run({hasAccess: false});
-    failsWith(r, /^Could not load resume: not connected to JSON Resume\. Open this step and click "Connect JSON Resume"\.$/);
-    assert.equal(r.fetches.length, 0, 'nothing is fetched without a connection');
+    failsWith(
+      r,
+      /^Could not load resume: not connected to JSON Resume\. Open this step and click "Connect JSON Resume"\.$/
+    );
+    assert.equal(
+      r.fetches.length,
+      0,
+      'nothing is fetched without a connection'
+    );
   });
 
   it('the token is rejected (401): resets the connection', () => {
     const r = run({resumeResponse: json(401, {error: 'invalid_token'})});
-    failsWith(r, /connection expired or was revoked\. Open this step and connect again\.$/);
+    failsWith(
+      r,
+      /connection expired or was revoked\. Open this step and connect again\.$/
+    );
     assert.equal(r.oauth.state.resets, 1);
   });
 
@@ -120,19 +143,31 @@ describe('fails the step, never renders, when', () => {
   });
 
   it('jsonresume.org errors (500)', () => {
-    failsWith(run({resumeResponse: json(500, 'oops')}), /jsonresume\.org returned HTTP 500\.$/);
+    failsWith(
+      run({resumeResponse: json(500, 'oops')}),
+      /jsonresume\.org returned HTTP 500\.$/
+    );
   });
 
   it('the fetch throws', () => {
-    failsWith(run({resumeResponse: new Error('DNS error')}), /^Could not load resume: DNS error$/);
+    failsWith(
+      run({resumeResponse: new Error('DNS error')}),
+      /^Could not load resume: DNS error$/
+    );
   });
 
   it('the body is not JSON', () => {
-    failsWith(run({resumeResponse: json(200, '<html>')}), /did not return JSON\.$/);
+    failsWith(
+      run({resumeResponse: json(200, '<html>')}),
+      /did not return JSON\.$/
+    );
   });
 
   it('the body exceeds 2 MB', () => {
-    failsWith(run({resumeResponse: json(200, 'x'.repeat(2 * 1024 * 1024 + 1))}), /exceeds the 2 MB limit\.$/);
+    failsWith(
+      run({resumeResponse: json(200, 'x'.repeat(2 * 1024 * 1024 + 1))}),
+      /exceeds the 2 MB limit\.$/
+    );
   });
 
   it('the resume is not an object', () => {
@@ -140,22 +175,38 @@ describe('fails the step, never renders, when', () => {
   });
 
   it('the resume has no known section', () => {
-    failsWith(run({resumeResponse: json(200, {resume: {hello: 'world'}})}), /no jsonresume\.org sections found/);
+    failsWith(
+      run({resumeResponse: json(200, {resume: {hello: 'world'}})}),
+      /no jsonresume\.org sections found/
+    );
   });
 
   it('the resume does not match the schema: lists the problems, repairs nothing', () => {
     const r = run({
       resumeResponse: json(200, {
-        resume: {basics: {name: 'A'}, work: [{startDate: 'Aug 2024', highlights: 'h'}]},
+        resume: {
+          basics: {name: 'A'},
+          work: [{startDate: 'Aug 2024', highlights: 'h'}],
+        },
       }),
     });
     failsWith(r, /does not match the jsonresume\.org schema: /);
-    assert.match(r.result.message, /work\[0\]\.highlights must be an array of strings/);
-    assert.match(r.result.message, /work\[0\]\.startDate must be YYYY, YYYY-MM or YYYY-MM-DD/);
+    assert.match(
+      r.result.message,
+      /work\[0\]\.highlights must be an array of strings/
+    );
+    assert.match(
+      r.result.message,
+      /work\[0\]\.startDate must be YYYY, YYYY-MM or YYYY-MM-DD/
+    );
   });
 
-  it('Drive refuses the create: Google\'s own message reaches Activity', () => {
-    const r = run({drive: json(403, {error: {message: 'Google Drive API has not been used in project 1'}})});
+  it("Drive refuses the create: Google's own message reaches Activity", () => {
+    const r = run({
+      drive: json(403, {
+        error: {message: 'Google Drive API has not been used in project 1'},
+      }),
+    });
     assert.equal(r.result.kind, 'error');
     assert.equal(
       r.result.message,
@@ -168,14 +219,19 @@ describe('fails the step, never renders, when', () => {
 describe('a valid resume', () => {
   const r = run();
   const map = r.result.map || {};
-  const out = Object.fromEntries(Object.entries(map).map(([k, v]) => [k, v.values]));
+  const out = Object.fromEntries(
+    Object.entries(map).map(([k, v]) => [k, v.values])
+  );
 
   it('returns outputs, not an error', () => {
     assert.equal(r.result.kind, 'outputs', JSON.stringify(r.result));
   });
 
   it('returns exactly the declared outputs, one string each', () => {
-    const declared = manifest.addOns.flows.workflowElements[0].workflowAction.outputs.map(o => o.id);
+    const declared =
+      manifest.addOns.flows.workflowElements[0].workflowAction.outputs.map(
+        o => o.id
+      );
     assert.deepEqual(Object.keys(out).sort(), [...declared].sort());
     for (const [k, v] of Object.entries(out)) {
       assert.ok(v.length === 1 && typeof v[0] === 'string', k);
@@ -184,9 +240,18 @@ describe('a valid resume', () => {
 
   it('returns the Doc and its export links', () => {
     assert.equal(out.docId[0], DOC_ID);
-    assert.equal(out.docUrl[0], `https://docs.google.com/document/d/${DOC_ID}/edit`);
-    assert.equal(out.pdfUrl[0], `https://docs.google.com/document/d/${DOC_ID}/export?format=pdf`);
-    assert.equal(out.docxUrl[0], `https://docs.google.com/document/d/${DOC_ID}/export?format=docx`);
+    assert.equal(
+      out.docUrl[0],
+      `https://docs.google.com/document/d/${DOC_ID}/edit`
+    );
+    assert.equal(
+      out.pdfUrl[0],
+      `https://docs.google.com/document/d/${DOC_ID}/export?format=pdf`
+    );
+    assert.equal(
+      out.docxUrl[0],
+      `https://docs.google.com/document/d/${DOC_ID}/export?format=docx`
+    );
   });
 
   it('returns the resume metadata, JSON and text', () => {
@@ -198,7 +263,9 @@ describe('a valid resume', () => {
   });
 
   it('fetches the resume with the JSON Resume token, nothing else', () => {
-    const jr = r.fetches.filter(f => f.url.startsWith('https://jsonresume.org/'));
+    const jr = r.fetches.filter(f =>
+      f.url.startsWith('https://jsonresume.org/')
+    );
     assert.equal(jr.length, 1);
     assert.equal(jr[0].options.headers.Authorization, 'Bearer jr-access-token');
   });
@@ -210,7 +277,11 @@ describe('a valid resume', () => {
     assert.equal(options.headers.Authorization, 'Bearer google-token');
     assert.match(options.contentType, /^multipart\/related; boundary=/);
     const body = Buffer.from(options.payload).toString('utf8');
-    assert.ok(body.includes('{"name":"Ada Lovelace — Résumé","mimeType":"application/vnd.google-apps.document"}'));
+    assert.ok(
+      body.includes(
+        '{"name":"Ada Lovelace — Résumé","mimeType":"application/vnd.google-apps.document"}'
+      )
+    );
     assert.ok(body.includes('Content-Type: text/html; charset=UTF-8'));
     assert.ok(body.includes('<!DOCTYPE html>'));
     assert.match(body, /<h1 style="[^"]*">Ada Lovelace<\/h1>/);
@@ -218,8 +289,16 @@ describe('a valid resume', () => {
 
   it('styles the Doc in two separate batchUpdates: margins, then Normal text', () => {
     assert.equal(r.docsCalls.length, 2);
-    assert.ok(r.docsCalls.every(c => c.url === `https://docs.googleapis.com/v1/documents/${DOC_ID}:batchUpdate`));
-    const [m, n] = r.docsCalls.map(c => JSON.parse(c.options.payload).requests[0]);
+    assert.ok(
+      r.docsCalls.every(
+        c =>
+          c.url ===
+          `https://docs.googleapis.com/v1/documents/${DOC_ID}:batchUpdate`
+      )
+    );
+    const [m, n] = r.docsCalls.map(
+      c => JSON.parse(c.options.payload).requests[0]
+    );
     assert.equal(m.updateDocumentStyle.documentStyle.marginTop.magnitude, 36);
     assert.equal(n.updateNamedStyle.namedStyle.namedStyleType, 'NORMAL_TEXT');
   });
@@ -236,7 +315,11 @@ describe('a valid resume', () => {
 
   it('fetches only allowlisted URLs', () => {
     const allow = manifest.urlFetchWhitelist;
-    for (const {url} of r.fetches) assert.ok(allow.some(p => url.startsWith(p)), url);
+    for (const {url} of r.fetches)
+      assert.ok(
+        allow.some(p => url.startsWith(p)),
+        url
+      );
   });
 });
 
@@ -256,11 +339,19 @@ describe('the title input', () => {
 
 describe('best-effort styling', () => {
   it('a failed batchUpdate still delivers the Doc, and says why in Executions', () => {
-    const r = run({docs: json(400, {error: {message: 'Named style type is required.'}})});
+    const r = run({
+      docs: json(400, {error: {message: 'Named style type is required.'}}),
+    });
     assert.equal(r.result.kind, 'outputs');
-    assert.equal(r.docsCalls.length, 2, 'the second call is tried even when the first fails');
+    assert.equal(
+      r.docsCalls.length,
+      2,
+      'the second call is tried even when the first fails'
+    );
     const errors = r.logs.filter(([k]) => k === 'error').map(([, l]) => l);
     assert.equal(errors.length, 2);
-    assert.ok(errors.every(e => e.includes('HTTP 400: Named style type is required.')));
+    assert.ok(
+      errors.every(e => e.includes('HTTP 400: Named style type is required.'))
+    );
   });
 });

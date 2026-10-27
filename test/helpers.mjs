@@ -41,7 +41,9 @@ export const OAUTH2_FILE = 'third_party/apps-script-oauth2/OAuth2.gs';
 
 export const readSrc = f => readFileSync(join(SRC, f), 'utf8');
 export const sha256 = f =>
-  createHash('sha256').update(readFileSync(join(SRC, f))).digest('hex');
+  createHash('sha256')
+    .update(readFileSync(join(SRC, f)))
+    .digest('hex');
 export const manifest = JSON.parse(readSrc('appsscript.json'));
 
 /**

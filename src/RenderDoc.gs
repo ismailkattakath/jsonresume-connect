@@ -31,7 +31,8 @@
  * same way Apps Script does, and fail on a name defined twice.
  */
 
-var DRIVE_UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3/files' +
+var DRIVE_UPLOAD_URL =
+  'https://www.googleapis.com/upload/drive/v3/files' +
   '?uploadType=multipart&fields=id,webViewLink';
 var DOCS_EXPORT_URL = 'https://docs.google.com/document/d/';
 var DOCS_API_URL = 'https://docs.googleapis.com/v1/documents/';
@@ -49,8 +50,12 @@ var PAGE_MARGIN_PT = 36; // 0.5 inch
  *   is returned as imported. Cosmetic, so it never costs the user the Doc.
  */
 function renderResumeDoc(token, resume, title) {
-  var doc = driveCreate(token, { name: title, mimeType: GOOGLE_DOC_MIME },
-    'text/html; charset=UTF-8', utf8Bytes(resumeToHtml(resume)));
+  var doc = driveCreate(
+    token,
+    {name: title, mimeType: GOOGLE_DOC_MIME},
+    'text/html; charset=UTF-8',
+    utf8Bytes(resumeToHtml(resume))
+  );
 
   // Page margins. How the HTML import treats CSS @page is undocumented, so
   // set them explicitly through the
@@ -66,7 +71,9 @@ function renderResumeDoc(token, resume, title) {
   try {
     docsBatchUpdate(token, doc.id, namedStyleRequests());
   } catch (err) {
-    console.error('JsonResumeToDoc: Normal text style not applied: ' + err.message);
+    console.error(
+      'JsonResumeToDoc: Normal text style not applied: ' + err.message
+    );
   }
   return doc;
 }
@@ -86,22 +93,25 @@ function driveCreate(token, metadata, mediaType, mediaBytes) {
     method: 'post',
     contentType: 'multipart/related; boundary=' + boundary,
     payload: body,
-    headers: { Authorization: 'Bearer ' + token },
-    muteHttpExceptions: true
+    headers: {Authorization: 'Bearer ' + token},
+    muteHttpExceptions: true,
   });
   var file = JSON.parse(checkResponse(response, 'files.create'));
-  return { id: str(file.id), webViewLink: str(file.webViewLink) };
+  return {id: str(file.id), webViewLink: str(file.webViewLink)};
 }
 
 /** documents.batchUpdate: Docs REST v1, same token, same no-DocumentApp rule. */
 function docsBatchUpdate(token, docId, requests) {
-  var response = UrlFetchApp.fetch(DOCS_API_URL + encodeURIComponent(docId) + ':batchUpdate', {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify({ requests: requests }),
-    headers: { Authorization: 'Bearer ' + token },
-    muteHttpExceptions: true
-  });
+  var response = UrlFetchApp.fetch(
+    DOCS_API_URL + encodeURIComponent(docId) + ':batchUpdate',
+    {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({requests: requests}),
+      headers: {Authorization: 'Bearer ' + token},
+      muteHttpExceptions: true,
+    }
+  );
   return checkResponse(response, 'documents.batchUpdate');
 }
 
@@ -117,8 +127,14 @@ function checkResponse(response, what) {
   var text = response.getContentText();
   if (status >= 200 && status < 300) return text;
   var detail = text;
-  try { detail = JSON.parse(text).error.message || text; } catch (e) { /* not JSON */ }
-  throw new Error(what + ' returned HTTP ' + status + ': ' + str(detail).slice(0, 300));
+  try {
+    detail = JSON.parse(text).error.message || text;
+  } catch (e) {
+    /* not JSON */
+  }
+  throw new Error(
+    what + ' returned HTTP ' + status + ': ' + str(detail).slice(0, 300)
+  );
 }
 
 function utf8Bytes(s) {
@@ -146,19 +162,30 @@ function exportUrl(docId, format) {
  * "multipart upload"). The media bytes go between head and tail.
  */
 function multipartFrame(boundary, metadata, mediaType) {
-  var head = '--' + boundary + '\r\n' +
+  var head =
+    '--' +
+    boundary +
+    '\r\n' +
     'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-    JSON.stringify(metadata) + '\r\n' +
-    '--' + boundary + '\r\n' +
-    'Content-Type: ' + mediaType + '\r\n\r\n';
+    JSON.stringify(metadata) +
+    '\r\n' +
+    '--' +
+    boundary +
+    '\r\n' +
+    'Content-Type: ' +
+    mediaType +
+    '\r\n\r\n';
   var tail = '\r\n--' + boundary + '--\r\n';
-  return { head: head, tail: tail };
+  return {head: head, tail: tail};
 }
 
 function docTitleFor(resume, configured) {
   var t = str(configured).trim();
   if (t) return t.slice(0, 200);
-  var name = resume && resume.basics && typeof resume.basics === 'object' ? str(resume.basics.name).trim() : '';
+  var name =
+    resume && resume.basics && typeof resume.basics === 'object'
+      ? str(resume.basics.name).trim()
+      : '';
   return name ? name + ' — Résumé' : 'Résumé';
 }
 
@@ -184,13 +211,19 @@ function escapeHtml(v) {
 function safeWebUrl(v) {
   var u = str(v).trim();
   if (!/^https?:\/\/[^\s"'<>]+$/i.test(u)) return '';
-  if (u.indexOf('@') !== -1 && u.indexOf('@') < (u.indexOf('/', 8) === -1 ? u.length : u.indexOf('/', 8))) return '';
+  if (
+    u.indexOf('@') !== -1 &&
+    u.indexOf('@') < (u.indexOf('/', 8) === -1 ? u.length : u.indexOf('/', 8))
+  )
+    return '';
   return u;
 }
 
 function safeEmail(v) {
   var e = str(v).trim();
-  return /^[^\s@<>"'()\\,;:]+@[^\s@<>"'()\\,;:]+\.[^\s@<>"'()\\,;:]+$/.test(e) ? e : '';
+  return /^[^\s@<>"'()\\,;:]+@[^\s@<>"'()\\,;:]+\.[^\s@<>"'()\\,;:]+$/.test(e)
+    ? e
+    : '';
 }
 
 /** A link when the URL is safe, plain escaped text when it is not. */
@@ -202,18 +235,45 @@ var CONTACT_LINK_STYLE = 'color:#111827;text-decoration:underline';
 function linkOrText(url, text, style) {
   var safe = safeWebUrl(url);
   var label = escapeHtml(text || url);
-  return safe ? '<a href="' + escapeHtml(safe) + '" style="' + (style || LINK_STYLE) + '">' + label + '</a>' : label;
+  return safe
+    ? '<a href="' +
+        escapeHtml(safe) +
+        '" style="' +
+        (style || LINK_STYLE) +
+        '">' +
+        label +
+        '</a>'
+    : label;
 }
 
 function arr(v) {
-  return Array.isArray(v) ? v.filter(function (x) { return x !== null && x !== undefined && x !== ''; }) : [];
+  return Array.isArray(v)
+    ? v.filter(function (x) {
+        return x !== null && x !== undefined && x !== '';
+      })
+    : [];
 }
 
 function objs(v) {
-  return arr(v).filter(function (x) { return typeof x === 'object' && !Array.isArray(x); });
+  return arr(v).filter(function (x) {
+    return typeof x === 'object' && !Array.isArray(x);
+  });
 }
 
-var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+var MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 /**
  * ISO 8601 (the schema's date format) to the form résumé themes print:
@@ -244,8 +304,15 @@ function dateRange(start, end) {
 }
 
 function joinNonEmpty(parts, sep) {
-  return parts.map(str).map(function (p) { return p.trim(); })
-    .filter(function (p) { return p.length > 0; }).join(sep);
+  return parts
+    .map(str)
+    .map(function (p) {
+      return p.trim();
+    })
+    .filter(function (p) {
+      return p.length > 0;
+    })
+    .join(sep);
 }
 
 /**
@@ -274,20 +341,34 @@ function joinNonEmpty(parts, sep) {
 // about 3 pages; Merriweather sets taller than Arial.
 // Docs has no letter-spacing, so the theme's 1px tracking is left out.
 var INK = '#111827';
-var FONT = 'font-family:Merriweather,Georgia,serif;line-height:1.0;color:#1f2937;';
+var FONT =
+  'font-family:Merriweather,Georgia,serif;line-height:1.0;color:#1f2937;';
 var STYLES = {
-  h1: FONT + 'font-size:20pt;font-weight:bold;color:' + INK + ';text-align:center;margin:0 0 2pt 0',
-  label: FONT + 'font-size:12pt;font-style:italic;text-align:center;margin:0 0 4pt 0',
+  h1:
+    FONT +
+    'font-size:20pt;font-weight:bold;color:' +
+    INK +
+    ';text-align:center;margin:0 0 2pt 0',
+  label:
+    FONT +
+    'font-size:12pt;font-style:italic;text-align:center;margin:0 0 4pt 0',
   contact: FONT + 'font-size:10pt;text-align:center;margin:0 0 6pt 0',
   summary: FONT + 'font-size:10pt;margin:0 0 4pt 0',
-  h2: FONT + 'font-size:13pt;font-weight:bold;color:' + INK + ';text-transform:uppercase;' +
-    'border-bottom:2px solid ' + INK + ';padding-bottom:2pt;margin:12pt 0 4pt 0',
-  h3: FONT + 'font-size:11pt;font-weight:bold;color:' + INK + ';margin:6pt 0 0 0',
+  h2:
+    FONT +
+    'font-size:13pt;font-weight:bold;color:' +
+    INK +
+    ';text-transform:uppercase;' +
+    'border-bottom:2px solid ' +
+    INK +
+    ';padding-bottom:2pt;margin:12pt 0 4pt 0',
+  h3:
+    FONT + 'font-size:11pt;font-weight:bold;color:' + INK + ';margin:6pt 0 0 0',
   org: FONT + 'font-size:10pt;font-style:italic;margin:0',
   meta: FONT + 'font-size:9pt;color:#666666;margin:0 0 2pt 0',
   p: FONT + 'font-size:10pt;margin:0 0 2pt 0',
   ul: 'margin:0 0 2pt 0',
-  li: FONT + 'font-size:10pt;margin:0'
+  li: FONT + 'font-size:10pt;margin:0',
 };
 
 /**
@@ -306,37 +387,49 @@ var STYLES = {
  * https://developers.google.com/workspace/docs/api/reference/rest/v1/documents/request#UpdateNamedStyleRequest
  */
 function namedStyleRequests() {
-  return [{
-    updateNamedStyle: {
-      namedStyle: {
-        namedStyleType: 'NORMAL_TEXT',
-        textStyle: { fontSize: { magnitude: 10, unit: 'PT' } },
-        paragraphStyle: {
-          lineSpacing: 100,
-          spaceAbove: { magnitude: 0, unit: 'PT' },
-          spaceBelow: { magnitude: 0, unit: 'PT' }
-        }
+  return [
+    {
+      updateNamedStyle: {
+        namedStyle: {
+          namedStyleType: 'NORMAL_TEXT',
+          textStyle: {fontSize: {magnitude: 10, unit: 'PT'}},
+          paragraphStyle: {
+            lineSpacing: 100,
+            spaceAbove: {magnitude: 0, unit: 'PT'},
+            spaceBelow: {magnitude: 0, unit: 'PT'},
+          },
+        },
+        fields:
+          'namedStyleType,textStyle.fontSize,paragraphStyle.lineSpacing,' +
+          'paragraphStyle.spaceAbove,paragraphStyle.spaceBelow',
       },
-      fields: 'namedStyleType,textStyle.fontSize,paragraphStyle.lineSpacing,' +
-        'paragraphStyle.spaceAbove,paragraphStyle.spaceBelow'
-    }
-  }];
+    },
+  ];
 }
 
 /** One element with its inline style. `inner` is already-escaped HTML. */
 function el(tag, styleKey, inner) {
-  return '<' + tag + ' style="' + STYLES[styleKey] + '">' + inner + '</' + tag + '>';
+  return (
+    '<' + tag + ' style="' + STYLES[styleKey] + '">' + inner + '</' + tag + '>'
+  );
 }
 
 /** The Docs API requests that set all four page margins, in points. */
 function marginRequests(pt) {
-  var m = { magnitude: pt, unit: 'PT' };
-  return [{
-    updateDocumentStyle: {
-      documentStyle: { marginTop: m, marginBottom: m, marginLeft: m, marginRight: m },
-      fields: 'marginTop,marginBottom,marginLeft,marginRight'
-    }
-  }];
+  var m = {magnitude: pt, unit: 'PT'};
+  return [
+    {
+      updateDocumentStyle: {
+        documentStyle: {
+          marginTop: m,
+          marginBottom: m,
+          marginLeft: m,
+          marginRight: m,
+        },
+        fields: 'marginTop,marginBottom,marginLeft,marginRight',
+      },
+    },
+  ];
 }
 
 /**
@@ -353,14 +446,34 @@ function marginRequests(pt) {
 function renderEntry(e) {
   var html = el('h3', 'h3', e.title);
   if (e.org) html += el('p', 'org', e.org);
-  var meta = [e.dates ? escapeHtml(e.dates) : '', e.subtitle || ''].filter(function (x) { return x; });
+  var meta = [e.dates ? escapeHtml(e.dates) : '', e.subtitle || ''].filter(
+    function (x) {
+      return x;
+    }
+  );
   if (meta.length) html += el('p', 'meta', meta.join(' · '));
   if (str(e.summary).trim()) html += el('p', 'p', escapeHtml(e.summary));
-  var bullets = arr(e.bullets).map(str).filter(function (b) { return b.trim(); });
+  var bullets = arr(e.bullets)
+    .map(str)
+    .filter(function (b) {
+      return b.trim();
+    });
   if (bullets.length) {
-    html += el('ul', 'ul', bullets.map(function (b) { return el('li', 'li', escapeHtml(b)); }).join(''));
+    html += el(
+      'ul',
+      'ul',
+      bullets
+        .map(function (b) {
+          return el('li', 'li', escapeHtml(b));
+        })
+        .join('')
+    );
   }
-  var keywords = arr(e.keywords).map(str).filter(function (k) { return k.trim(); });
+  var keywords = arr(e.keywords)
+    .map(str)
+    .filter(function (k) {
+      return k.trim();
+    });
   if (keywords.length) html += el('p', 'p', escapeHtml(keywords.join(', ')));
   return html;
 }
@@ -372,8 +485,19 @@ function renderEntry(e) {
  * heading gap on every group.
  */
 function renderCompactEntry(e) {
-  var keywords = arr(e.keywords).map(str).filter(function (k) { return k.trim(); });
-  return el('p', 'p', '<b>' + e.title + '</b>' + (keywords.length ? ': ' + escapeHtml(keywords.join(', ')) : ''));
+  var keywords = arr(e.keywords)
+    .map(str)
+    .filter(function (k) {
+      return k.trim();
+    });
+  return el(
+    'p',
+    'p',
+    '<b>' +
+      e.title +
+      '</b>' +
+      (keywords.length ? ': ' + escapeHtml(keywords.join(', ')) : '')
+  );
 }
 
 /**
@@ -383,62 +507,134 @@ function renderCompactEntry(e) {
  */
 var RESUME_SECTIONS = [
   // academic-cv-lite's order: education first.
-  { key: 'education', heading: 'Education', entry: function (ed) {
-    return {
-      title: linkOrText(ed.url, ed.institution),
-      org: escapeHtml(joinNonEmpty([ed.studyType, ed.area], ' in ')),
-      dates: dateRange(ed.startDate, ed.endDate),
-      subtitle: escapeHtml(ed.score ? 'Score: ' + str(ed.score) : ''),
-      summary: '', bullets: ed.courses
-    };
-  } },
-  { key: 'work', heading: 'Professional Experience', entry: function (w) {
-    return {
-      title: escapeHtml(w.position) || linkOrText(w.url, w.name || w.company),
-      org: w.position ? linkOrText(w.url, w.name || w.company) : '',
-      dates: dateRange(w.startDate, w.endDate),
-      subtitle: escapeHtml(joinNonEmpty([w.location, w.description], ' · ')),
-      summary: w.summary, bullets: w.highlights
-    };
-  } },
-  { key: 'projects', heading: 'Projects', entry: function (p) {
-    // p.type is a free-form category ("application", "volunteering"). Printed
-    // raw it read as an enum, so it is left out.
-    return {
-      title: linkOrText(p.url, p.name),
-      org: escapeHtml(joinNonEmpty([p.entity, arr(p.roles).map(str).join(', ')], ' · ')),
-      dates: dateRange(p.startDate, p.endDate),
-      summary: p.description || p.summary, bullets: p.highlights, keywords: p.keywords
-    };
-  } },
-  { key: 'skills', heading: 'Skills', compact: true, entry: function (s) {
-    return { title: escapeHtml(joinNonEmpty([s.name, s.level], ' — ')), keywords: s.keywords };
-  } },
-  { key: 'certificates', heading: 'Certifications', entry: function (c) {
-    return { title: linkOrText(c.url, c.name), org: escapeHtml(c.issuer), dates: formatDate(c.date) };
-  } },
-  { key: 'awards', heading: 'Awards', entry: function (a) {
-    return { title: escapeHtml(a.title), org: escapeHtml(a.awarder), dates: formatDate(a.date), summary: a.summary };
-  } },
-  { key: 'publications', heading: 'Publications', entry: function (p) {
-    return { title: linkOrText(p.url, p.name), org: escapeHtml(p.publisher), dates: formatDate(p.releaseDate), summary: p.summary };
-  } },
-  { key: 'volunteer', heading: 'Volunteering', entry: function (v) {
-    return {
-      title: escapeHtml(v.position) || linkOrText(v.url, v.organization),
-      org: v.position ? linkOrText(v.url, v.organization) : '',
-      dates: dateRange(v.startDate, v.endDate), summary: v.summary, bullets: v.highlights
-    };
-  } },
-  { key: 'languages', heading: 'Languages', compact: true, entry: function (l) {
-    return { title: escapeHtml(joinNonEmpty([l.language, l.fluency], ' — ')) };
-  } },
-  { key: 'interests', heading: 'Interests', compact: true, entry: function (i) {
-    return { title: escapeHtml(i.name), keywords: i.keywords };
-  } },
-  { key: 'references', heading: 'References', entry: function (r) {
-    return { title: escapeHtml(r.name), summary: r.reference };
-  } }
+  {
+    key: 'education',
+    heading: 'Education',
+    entry: function (ed) {
+      return {
+        title: linkOrText(ed.url, ed.institution),
+        org: escapeHtml(joinNonEmpty([ed.studyType, ed.area], ' in ')),
+        dates: dateRange(ed.startDate, ed.endDate),
+        subtitle: escapeHtml(ed.score ? 'Score: ' + str(ed.score) : ''),
+        summary: '',
+        bullets: ed.courses,
+      };
+    },
+  },
+  {
+    key: 'work',
+    heading: 'Professional Experience',
+    entry: function (w) {
+      return {
+        title: escapeHtml(w.position) || linkOrText(w.url, w.name || w.company),
+        org: w.position ? linkOrText(w.url, w.name || w.company) : '',
+        dates: dateRange(w.startDate, w.endDate),
+        subtitle: escapeHtml(joinNonEmpty([w.location, w.description], ' · ')),
+        summary: w.summary,
+        bullets: w.highlights,
+      };
+    },
+  },
+  {
+    key: 'projects',
+    heading: 'Projects',
+    entry: function (p) {
+      // p.type is a free-form category ("application", "volunteering"). Printed
+      // raw it read as an enum, so it is left out.
+      return {
+        title: linkOrText(p.url, p.name),
+        org: escapeHtml(
+          joinNonEmpty([p.entity, arr(p.roles).map(str).join(', ')], ' · ')
+        ),
+        dates: dateRange(p.startDate, p.endDate),
+        summary: p.description || p.summary,
+        bullets: p.highlights,
+        keywords: p.keywords,
+      };
+    },
+  },
+  {
+    key: 'skills',
+    heading: 'Skills',
+    compact: true,
+    entry: function (s) {
+      return {
+        title: escapeHtml(joinNonEmpty([s.name, s.level], ' — ')),
+        keywords: s.keywords,
+      };
+    },
+  },
+  {
+    key: 'certificates',
+    heading: 'Certifications',
+    entry: function (c) {
+      return {
+        title: linkOrText(c.url, c.name),
+        org: escapeHtml(c.issuer),
+        dates: formatDate(c.date),
+      };
+    },
+  },
+  {
+    key: 'awards',
+    heading: 'Awards',
+    entry: function (a) {
+      return {
+        title: escapeHtml(a.title),
+        org: escapeHtml(a.awarder),
+        dates: formatDate(a.date),
+        summary: a.summary,
+      };
+    },
+  },
+  {
+    key: 'publications',
+    heading: 'Publications',
+    entry: function (p) {
+      return {
+        title: linkOrText(p.url, p.name),
+        org: escapeHtml(p.publisher),
+        dates: formatDate(p.releaseDate),
+        summary: p.summary,
+      };
+    },
+  },
+  {
+    key: 'volunteer',
+    heading: 'Volunteering',
+    entry: function (v) {
+      return {
+        title: escapeHtml(v.position) || linkOrText(v.url, v.organization),
+        org: v.position ? linkOrText(v.url, v.organization) : '',
+        dates: dateRange(v.startDate, v.endDate),
+        summary: v.summary,
+        bullets: v.highlights,
+      };
+    },
+  },
+  {
+    key: 'languages',
+    heading: 'Languages',
+    compact: true,
+    entry: function (l) {
+      return {title: escapeHtml(joinNonEmpty([l.language, l.fluency], ' — '))};
+    },
+  },
+  {
+    key: 'interests',
+    heading: 'Interests',
+    compact: true,
+    entry: function (i) {
+      return {title: escapeHtml(i.name), keywords: i.keywords};
+    },
+  },
+  {
+    key: 'references',
+    heading: 'References',
+    entry: function (r) {
+      return {title: escapeHtml(r.name), summary: r.reference};
+    },
+  },
 ];
 
 /**
@@ -451,49 +647,83 @@ var RESUME_SECTIONS = [
  * empty heading. Every schema field is optional.
  */
 function resumeToHtml(resume) {
-  var r = (resume && typeof resume === 'object') ? resume : {};
-  var b = (r.basics && typeof r.basics === 'object' && !Array.isArray(r.basics)) ? r.basics : {};
+  var r = resume && typeof resume === 'object' ? resume : {};
+  var b =
+    r.basics && typeof r.basics === 'object' && !Array.isArray(r.basics)
+      ? r.basics
+      : {};
   var out = [];
 
   if (str(b.name).trim()) out.push(el('h1', 'h1', escapeHtml(b.name)));
   if (str(b.label).trim()) out.push(el('p', 'label', escapeHtml(b.label)));
 
-  var loc = (b.location && typeof b.location === 'object') ? b.location : {};
+  var loc = b.location && typeof b.location === 'object' ? b.location : {};
   var email = safeEmail(b.email);
   // The theme's contact line: email, phone, location, site, then each profile
   // by network name; links show without the scheme.
   var contact = [
-    email ? '<a href="mailto:' + escapeHtml(email) + '" style="' + CONTACT_LINK_STYLE + '">' + escapeHtml(email) + '</a>' : escapeHtml(b.email),
+    email
+      ? '<a href="mailto:' +
+        escapeHtml(email) +
+        '" style="' +
+        CONTACT_LINK_STYLE +
+        '">' +
+        escapeHtml(email) +
+        '</a>'
+      : escapeHtml(b.email),
     escapeHtml(b.phone),
     escapeHtml(joinNonEmpty([loc.city, loc.region, loc.countryCode], ', ')),
-    str(b.url).trim() ? linkOrText(b.url, str(b.url).replace(/^https?:\/\//, '').replace(/\/$/, ''), CONTACT_LINK_STYLE) : ''
+    str(b.url).trim()
+      ? linkOrText(
+          b.url,
+          str(b.url)
+            .replace(/^https?:\/\//, '')
+            .replace(/\/$/, ''),
+          CONTACT_LINK_STYLE
+        )
+      : '',
   ];
   objs(b.profiles).forEach(function (p) {
     var label = str(p.network).trim() || str(p.username).trim();
-    contact.push(str(p.url).trim() ? linkOrText(p.url, label || p.url, CONTACT_LINK_STYLE) : escapeHtml(label));
+    contact.push(
+      str(p.url).trim()
+        ? linkOrText(p.url, label || p.url, CONTACT_LINK_STYLE)
+        : escapeHtml(label)
+    );
   });
-  contact = contact.filter(function (c) { return c; });
+  contact = contact.filter(function (c) {
+    return c;
+  });
   if (contact.length) out.push(el('p', 'contact', contact.join('  •  ')));
 
   // The theme puts the summary straight under the header, unheaded, then a rule.
-  if (str(b.summary).trim()) out.push(el('p', 'summary', escapeHtml(b.summary)));
+  if (str(b.summary).trim())
+    out.push(el('p', 'summary', escapeHtml(b.summary)));
   out.push('<hr>');
 
   RESUME_SECTIONS.forEach(function (section) {
     var items = objs(r[section.key]);
     if (!items.length) return;
-    var body = items.map(function (item) {
-      var e = section.entry(item);
-      if (!e.title) return '';
-      return section.compact ? renderCompactEntry(e) : renderEntry(e);
-    }).join('');
+    var body = items
+      .map(function (item) {
+        var e = section.entry(item);
+        if (!e.title) return '';
+        return section.compact ? renderCompactEntry(e) : renderEntry(e);
+      })
+      .join('');
     if (!body) return;
     out.push(el('h2', 'h2', escapeHtml(section.heading.toUpperCase())));
     out.push(body);
   });
 
-  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
-    escapeHtml(docTitleFor(r, '')) + '</title></head>' +
-    '<body style="' + FONT + 'font-size:10pt">' +
-    out.join('\n') + '</body></html>';
+  return (
+    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' +
+    escapeHtml(docTitleFor(r, '')) +
+    '</title></head>' +
+    '<body style="' +
+    FONT +
+    'font-size:10pt">' +
+    out.join('\n') +
+    '</body></html>'
+  );
 }

@@ -25,7 +25,10 @@ for (const {who, resume, skip} of await registryResumes()) {
     assert.ok(!text.includes('undefined') && !text.includes('null'));
   });
   test(`registry/${who}: name appears in the text when present`, opts, () => {
-    assert.ok(!resume.basics?.name || ctx.toPlainText(resume).includes(resume.basics.name));
+    assert.ok(
+      !resume.basics?.name ||
+        ctx.toPlainText(resume).includes(resume.basics.name)
+    );
   });
   test(`registry/${who}: no run of blank lines`, opts, () => {
     assert.ok(!/\n{3,}/.test(ctx.toPlainText(resume)));
@@ -38,7 +41,8 @@ for (const {who, resume, skip} of await registryResumes()) {
   });
   test(`registry/${who}: name is present in the HTML`, opts, () => {
     assert.ok(
-      !resume.basics?.name || ctx.resumeToHtml(resume).includes(ctx.escapeHtml(resume.basics.name))
+      !resume.basics?.name ||
+        ctx.resumeToHtml(resume).includes(ctx.escapeHtml(resume.basics.name))
     );
   });
   test(`registry/${who}: no script tag`, opts, () => {
