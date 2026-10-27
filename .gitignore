@@ -1,0 +1,4 @@
+node_modules/
+# clasp project binding: holds your own scriptId. Copy .clasp.json.example.
+.clasp.json
+.clasprc.json

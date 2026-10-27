@@ -1,0 +1,6 @@
+# Vendored, byte-identical to upstream (a test pins its hash).
+src/third_party/
+package-lock.json
+# Markdown is prose owned by several hands; Prettier would realign every
+# table in it. Code and config only.
+*.md
