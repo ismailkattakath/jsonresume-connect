@@ -1,0 +1,49 @@
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: release-please
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # changelog commit, tag, GitHub release
+      issues: write # create/apply "autorelease: pending" labels
+      pull-requests: write # open/update the release PR
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          # Optional GitHub App / fine-grained PAT so CI runs on the release PR and the
+          # release event can trigger workflows; GITHUB_TOKEN cannot (see .github/RELEASING.md).
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }} # zizmor: ignore[secrets-outside-env] -- an environment reviewer would gate every push to main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  deploy:
+    name: deploy
+    needs: release
+    if: ${{ needs.release.outputs.release_created == 'true' }}
+    permissions:
+      contents: read
+    # ./ not $/: zizmor 1.31 prefers the July-2026 "$/" self-repository form, but
+    # actionlint 1.7.12 rejects it; keep the documented form until actionlint accepts it.
+    uses: ./.github/workflows/deploy.yml # zizmor: ignore[self-repository]
+    with:
+      tag: ${{ needs.release.outputs.tag_name }}
+    secrets:
+      CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+      SCRIPT_ID: ${{ secrets.SCRIPT_ID }}

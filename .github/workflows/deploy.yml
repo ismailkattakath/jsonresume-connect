@@ -1,0 +1,97 @@
+name: Deploy to Apps Script
+
+# Runs from release-please.yml when it creates a release, or by hand for a re-deploy.
+# Not `on: release`: a release created with GITHUB_TOKEN triggers no workflow, and with a
+# PAT it would deploy twice (here and from release-please.yml).
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag to deploy (vX.Y.Z)
+        required: true
+        type: string
+    secrets:
+      CLASPRC_JSON:
+        required: false
+      SCRIPT_ID:
+        required: false
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to deploy (vX.Y.Z)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: clasp push + deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    env:
+      HAS_CLASP: ${{ secrets.CLASPRC_JSON != '' && secrets.SCRIPT_ID != '' }}
+      TAG: ${{ inputs.tag }}
+      # Pinned exactly; v3 reads ~/.clasprc.json (google/clasp src/auth/auth.ts).
+      CLASP: "@google/clasp@3.4.1"
+    steps:
+      - name: Skip when credentials are absent
+        if: env.HAS_CLASP != 'true'
+        run: echo "::notice title=Deploy skipped::CLASPRC_JSON or SCRIPT_ID is not set for this repo/environment; nothing deployed."
+
+      - name: Validate tag
+        if: env.HAS_CLASP == 'true'
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::tag '$TAG' is not vX.Y.Z"; exit 1; }
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: env.HAS_CLASP == 'true'
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: env.HAS_CLASP == 'true'
+        with:
+          node-version-file: .nvmrc
+
+      - name: Write clasp credentials and project file
+        if: env.HAS_CLASP == 'true'
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+          SCRIPT_ID: ${{ secrets.SCRIPT_ID }}
+        run: |
+          umask 077
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          # .clasp.json.example is the one source for rootDir; only scriptId is injected.
+          jq --arg id "$SCRIPT_ID" '.scriptId = $id' .clasp.json.example > .clasp.json
+
+      - name: clasp push
+        if: env.HAS_CLASP == 'true'
+        # --force: without it a changed manifest makes a non-interactive push abort
+        # (google/clasp src/commands/push.ts, confirmManifestUpdate returns false).
+        run: npx --yes "$CLASP" push --force
+
+      - name: clasp create-deployment
+        if: env.HAS_CLASP == 'true'
+        env:
+          # Repo/environment variable, not a secret. Set it to keep ONE deployment ID across
+          # releases (the installed add-on is bound to it). Empty = create a new deployment.
+          DEPLOYMENT_ID: ${{ vars.DEPLOYMENT_ID }}
+        run: |
+          if [ -n "$DEPLOYMENT_ID" ]; then
+            npx --yes "$CLASP" create-deployment --description "$TAG" --deploymentId "$DEPLOYMENT_ID"
+          else
+            npx --yes "$CLASP" create-deployment --description "$TAG"
+            echo "::notice title=New deployment::Set the DEPLOYMENT_ID variable to the ID above so later releases redeploy it."
+          fi
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "$HOME/.clasprc.json" .clasp.json
