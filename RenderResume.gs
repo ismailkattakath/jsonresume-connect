@@ -261,8 +261,7 @@ function parseResumeInput(text) {
 }
 
 /**
- * One JSON object from a step input: {value} or {error}; never throws. Shared
- * by every step that reads JSON (Parse Job Description too).
+ * One JSON object from a step input: {value} or {error}; never throws.
  *
  * The input is often an AI step's output, so it is wrapped in a ```json fence
  * more often than not. The fence is stripped rather than rejected.
