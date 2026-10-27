@@ -1,10 +1,10 @@
 blank_issues_enabled: false
 contact_links:
   - name: Ask a question
-    url: https://github.com/ismailkattakath/jsonresume-google-docs/discussions
+    url: https://github.com/ismailkattakath/jsonresume-connect/discussions
     about: Questions and "how do I…" go to GitHub Discussions.
   - name: Report a security vulnerability
-    url: https://github.com/ismailkattakath/jsonresume-google-docs/security/advisories/new
+    url: https://github.com/ismailkattakath/jsonresume-connect/security/advisories/new
     about: Report it privately. Never in a public issue.
   - name: Problem with jsonresume.org itself
     url: https://github.com/jsonresume/jsonresume.org/issues

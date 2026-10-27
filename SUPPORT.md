@@ -1,10 +1,10 @@
-# Getting help
+# Getting help with JSON Resume Connect
 
 | You have | Go to |
 |---|---|
-| A question, or "how do I…" | [GitHub Discussions](https://github.com/ismailkattakath/jsonresume-google-docs/discussions) |
-| A bug in this add-on | a [bug report](https://github.com/ismailkattakath/jsonresume-google-docs/issues/new?template=bug_report.yml) |
-| An idea | a [feature request](https://github.com/ismailkattakath/jsonresume-google-docs/issues/new?template=feature_request.yml) |
+| A question, or "how do I…" | [GitHub Discussions](https://github.com/ismailkattakath/jsonresume-connect/discussions) |
+| A bug in this add-on | a [bug report](https://github.com/ismailkattakath/jsonresume-connect/issues/new?template=bug_report.yml) |
+| An idea | a [feature request](https://github.com/ismailkattakath/jsonresume-connect/issues/new?template=feature_request.yml) |
 | A security problem | **not** an issue — see [SECURITY.md](SECURITY.md) |
 | A problem with your jsonresume.org account or dashboard | [jsonresume/jsonresume.org](https://github.com/jsonresume/jsonresume.org/issues) |
 | A problem with Workspace Studio or Apps Script itself | Google Workspace support |

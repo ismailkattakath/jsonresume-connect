@@ -1,4 +1,4 @@
-# Governance
+# Governance of JSON Resume Connect
 
 ## Today: a single maintainer
 

@@ -1,8 +1,8 @@
-JSON Resume to Google Doc
+JSON Resume Connect
 Copyright 2026 Ismail Kattakath
 
 This product includes software developed by Ismail Kattakath
-(https://github.com/ismailkattakath/jsonresume-google-docs).
+(https://github.com/ismailkattakath/jsonresume-connect).
 
 This product includes OAuth2 for Apps Script
 (https://github.com/googleworkspace/apps-script-oauth2), vendored as

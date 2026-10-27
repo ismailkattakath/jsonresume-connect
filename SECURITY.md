@@ -1,4 +1,4 @@
-# Security policy
+# Security policy for JSON Resume Connect
 
 ## Supported versions
 
@@ -15,7 +15,7 @@ There are no tagged releases yet. Security fixes land on **`main`** only, and on
 **Do not open a public issue, discussion or pull request.**
 
 Report it privately through GitHub's
-[private vulnerability reporting](https://github.com/ismailkattakath/jsonresume-google-docs/security/advisories/new):
+[private vulnerability reporting](https://github.com/ismailkattakath/jsonresume-connect/security/advisories/new):
 *Security → Report a vulnerability*. Only the maintainer and you can see the report.
 
 Include:

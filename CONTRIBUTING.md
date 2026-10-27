@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to JSON Resume Connect
 
 Thanks for helping. This project is small, so the rules are short.
 
