@@ -74,7 +74,7 @@
 | `LoadJsonResume.gs` › `client_name` in dynamic client registration | `JSON Resume for Workspace Studio` | `JSON Resume Connect` (jsonresume.org's consent screen shows it; "Workspace Studio" is a Google mark) |
 | README H1 | `JSON Resume steps for Google Workspace Studio` | `JSON Resume Connect` + "for Google Workspace Studio™" in the tagline |
 | GitHub repo slug | `jsonresume-connect` | done. A later **transfer** to the jsonresume org changes the Pages URL; GitHub redirects repo URLs but **not Pages URLs**, so the consent screen and Marketplace links must be updated (and brand re-verified) |
-| Worktree `origin` remote | still the old `jsonresume-google-docs` URL (works through GitHub's redirect) | `git remote set-url origin https://github.com/ismailkattakath/jsonresume-connect.git` — the lead's call, not done here |
+| Local checkout | folder and `origin` both `jsonresume-connect` | done 2026-10-27; agent worktrees removed after their branches merged |
 
 [style]: https://developers.google.com/workspace/add-ons/guides/workspace-style
 [review]: https://developers.google.com/workspace/marketplace/about-app-review
