@@ -178,6 +178,11 @@ export function fakeAddOnsResponseService() {
         d.values.push(v);
         return d;
       };
+      d.addEmailAddress = v => {
+        d.type = 'EMAIL_ADDRESS';
+        d.values.push(v);
+        return d;
+      };
       return d;
     },
     newReturnOutputVariablesAction: () => {

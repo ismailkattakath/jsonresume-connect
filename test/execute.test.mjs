@@ -346,6 +346,7 @@ describe('a valid resume', () => {
     assert.equal(out.name[0], 'Ada Lovelace');
     assert.equal(out.label[0], 'Analyst');
     assert.equal(out.email[0], 'ada@example.com');
+    assert.equal(map.email.type, 'EMAIL_ADDRESS');
     assert.deepEqual(JSON.parse(out.resume[0]), VALID);
     assert.match(out.resumeText[0], /^Ada Lovelace\nAnalyst\n/);
   });
@@ -409,6 +410,38 @@ describe('a valid resume', () => {
         url
       );
   });
+});
+
+describe('the email output', () => {
+  const withEmail = email =>
+    run({
+      resumeResponse: json(200, {
+        username: 'ada',
+        url: 'x',
+        resume: {...VALID, basics: {...VALID.basics, email}},
+      }),
+    }).result;
+
+  it('trims a valid address and types it EMAIL_ADDRESS', () => {
+    const result = withEmail('  ada@example.com ');
+    assert.equal(result.kind, 'outputs');
+    assert.deepEqual(result.map.email.values, ['ada@example.com']);
+    assert.equal(result.map.email.type, 'EMAIL_ADDRESS');
+  });
+
+  for (const [why, email] of [
+    ['missing', undefined],
+    ['empty', ''],
+    ['not an address', 'ada at example dot com'],
+    ['markup', '"><img src=x>@x.com'],
+  ]) {
+    it(`is left out, and the step still succeeds, when ${why}`, () => {
+      const result = withEmail(email);
+      assert.equal(result.kind, 'outputs');
+      assert.ok(!('email' in result.map), JSON.stringify(result.map.email));
+      assert.ok('docUrl' in result.map);
+    });
+  }
 });
 
 describe('the title input', () => {

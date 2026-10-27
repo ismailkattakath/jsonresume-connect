@@ -111,7 +111,7 @@
                 "description": "Email address",
                 "cardinality": "SINGLE",
                 "dataType": {
-                  "basicType": "STRING"
+                  "basicType": "EMAIL_ADDRESS"
                 }
               },
               {

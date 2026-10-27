@@ -552,10 +552,24 @@ function failStep(message, opts) {
  * against Google's own examples, which use
  * `AddOnsResponseService.newVariableData().addStringValue(...)` and
  * `newReturnOutputVariablesAction().setVariableDataMap(...)`.
+ *
+ * `email` is the one EMAIL_ADDRESS output (manifest): Studio's "Draft an
+ * email" To field offers only email-address variables, never text (live,
+ * 2026-10-27). It goes through addEmailAddress, and only when safeEmail()
+ * accepts it: a resume without a usable address leaves the variable out
+ * rather than hand Studio a malformed one.
  */
 function outputs(plain) {
   var variableDataMap = {};
   Object.keys(plain).forEach(function (key) {
+    if (key === 'email') {
+      var email = safeEmail(plain.email);
+      if (email) {
+        variableDataMap.email =
+          AddOnsResponseService.newVariableData().addEmailAddress(email);
+      }
+      return;
+    }
     variableDataMap[key] =
       AddOnsResponseService.newVariableData().addStringValue(plain[key]);
   });

@@ -151,10 +151,14 @@ check(
     v => typeof v === 'string'
   )
 );
+// email is EMAIL_ADDRESS so "Draft an email" can use it as To (that field
+// offers no text variables, live 2026-10-27); everything else is text.
 check(
-  'every output is a STRING scalar',
+  'every output is a SINGLE scalar: email EMAIL_ADDRESS, the rest STRING',
   action.outputs.every(
-    o => o.dataType.basicType === 'STRING' && o.cardinality === 'SINGLE'
+    o =>
+      o.cardinality === 'SINGLE' &&
+      o.dataType.basicType === (o.id === 'email' ? 'EMAIL_ADDRESS' : 'STRING')
   )
 );
 // The chip labels users see, pinned EXACTLY, in order. They follow Google's
