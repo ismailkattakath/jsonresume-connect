@@ -3,7 +3,7 @@
 **Status: BUILT and RUN LIVE (2026-10-27).** Live-run findings and fixes: README § The
 renderer. The code is `src/RenderDoc.gs`; the tests are
 `test/render.test.mjs` and `test/execute.test.mjs`. Since 2026-10-27 the renderer is half of the
-one step, "JSON Resume to Google Doc" (README); it renders the validated jsonresume.org résumé,
+one step, "JSON Resume Connect" (README); it renders the validated jsonresume.org résumé,
 no longer a JSON string from another step. The blocker cleared first: `Load JSON Resume` ran on Google's servers on
 2026-09-30 (`onExecute`, 0.91 s, Completed), and its real event payload is pinned in
 `test/helpers.mjs`.

@@ -1,15 +1,15 @@
 <!-- brand-intro -->
 
-# JSON Resume to Google Doc
+# JSON Resume Connect
 
 One custom step for Google Workspace Studio. It loads **your** résumé from your
 [jsonresume.org](https://jsonresume.org) account (**Connect JSON Resume**), checks it against the
 [jsonresume.org schema](https://github.com/jsonresume/resume-schema), and renders it into a
-**Google Doc** in your Drive, with PDF and DOCX download links.
+document for **Google Docs™** in your Drive, with PDF and DOCX download links.
 
 | | |
 |---|---|
-| Step name | set in `src/appsscript.json` (the one place it lives) |
+| Name | `addOns.common.name` and the step's `name` in `src/appsscript.json`, plus `APP_NAME` in `JsonResumeToDoc.gs` (jsonresume.org's consent screen shows it). A test fails if the three differ or the literal appears anywhere else in code. No "Google" in the name: the add-on naming rules forbid it |
 | Code | `src/JsonResumeToDoc.gs` (connect, fetch, validate, outputs) · `src/RenderDoc.gs` (HTML → Doc) |
 | Vendored | `src/third_party/apps-script-oauth2/OAuth2.gs` |
 
@@ -25,7 +25,7 @@ posting, which is attacker-controlled text when it arrives from an inbox.
 ```
 [starter]
     ↓
-[JSON Resume to Google Doc]   ← this step
+[JSON Resume Connect]   ← this step
     ↓
 [Gmail: create draft]   ← put docUrl / pdfUrl / docxUrl in the body
 ```
@@ -39,10 +39,23 @@ posting, which is attacker-controlled text when it arrives from an inbox.
 
 | Input | Required | Notes |
 |---|---|---|
-| `title` | no | the Doc's name. Defaults to `<basics.name> — Résumé`. Accepts a variable from an earlier step |
+| `title` | no | the Doc's name. Defaults to `<basics.name> — Resume`. Accepts a variable from an earlier step |
 
-The card headers do not repeat the step name: it lives in `src/appsscript.json` only (a test
-fails on a copy in code). Dropping the header is **not yet run live**.
+The cards have no header, so they do not repeat the name. The field title matches the manifest
+input's description (a test checks it).
+
+**Disconnect** swaps the connected section for the Connect section in place, through
+`AddOnsResponseService` `modifyCard` → `replaceSection`. Studio's guides say card navigation is not
+supported in Studio add-ons ([update cards](https://developers.google.com/workspace/add-ons/studio/update-cards)).
+The earlier `CardService` navigation call was replaced. **Not yet run live:** neither the
+replacement, nor cards without a header.
+
+**If client registration fails** (jsonresume.org down), the card says "JSON Resume sign-in is
+unavailable right now. Try again in a few minutes." instead of showing a raw error.
+
+**One spelling:** everything the user reads says **resume**, in ASCII as in the JSON Resume name.
+That covers cards, errors, the manifest and the Doc's default title. A test enforces it. Prose in
+this README keeps résumé.
 
 1. **No account yet?** Create one at jsonresume.org. **Sign in with GitHub:** the dashboard stores
    your résumé as a GitHub gist it creates for you, using your GitHub sign-in (upstream
@@ -111,8 +124,17 @@ and links, which is the same pattern Google's own Drive picker uses.
 
 **Failure policy:**
 
-- Not connected, no résumé, an invalid résumé, or a failed Doc create → the step **fails**, with
-  the reason in Activity.
+| Failure | Studio error | User reads |
+|---|---|---|
+| Not connected, token revoked (401), no résumé (404), other 4xx, invalid résumé | `ACTIONABLE` + `NOT_RETRYABLE` | what to fix ("Open this step and connect again.") |
+| jsonresume.org unreachable, 429 or 5xx; client registration failed | `NOT_ACTIONABLE` + `RETRYABLE` (Studio retries up to five times) | "… is not responding. The step will try again." |
+| Drive refuses the create (401/403) | `ACTIONABLE` + `NOT_RETRYABLE` | "Google refused to create the Doc. Check that the add-on is still allowed to create files in your Drive." |
+| Drive unreachable, 429 or 5xx | `NOT_ACTIONABLE` + `RETRYABLE` | "Google Drive is not responding. The step will try again." |
+
+**The user never sees an HTTP code, Google's error text or an exception message.** The style
+guide says "Don't let the user see any exceptions your code throws". Those details go to
+Executions (`console.error`), and the résumé and tokens never do. Tests check every failure
+message for raw detail.
 - A failed styling call (`documents.batchUpdate`) → the step **succeeds** with the Doc as
   imported. The reason goes to the Executions log.
 
@@ -233,6 +255,9 @@ have stopped the next person re-checking.
   it. The OAuth service name, `JR_CLIENT_ID` and `JR_USERNAME` did not change, so a connection
   carries over. The JSON-text input and its ```` ```json ```` fence stripping went with the merge:
   their only sources were AI steps, and `/api/oauth/resume` returns JSON.
+- **Renamed to JSON Resume Connect** (2026-10-27). Google's add-on naming rules forbid "Google" in
+  the name. The DCR `client_name` is now the same name. A client registered before the rename
+  keeps its old name on jsonresume.org's consent screen until it is registered again.
 - **Parse Job Description and Apply Tailoring were removed** (2026-10-27). Tailoring lives in
   another tool.
 
@@ -344,7 +369,7 @@ first light, when `clasp push` beats re-pasting.
 4. **Deploy → Test deployments → Install → Done.**
 5. Refresh Workspace Studio and authorise the add-on.
 
-**First-run flow that gives an unambiguous verdict:** *starter → JSON Resume to Google Doc →
+**First-run flow that gives an unambiguous verdict:** *starter → JSON Resume Connect →
 Notify me in Chat*, with `name`, `docUrl` and `pdfUrl` as variable chips in the message.
 
 | What you see | Meaning |
