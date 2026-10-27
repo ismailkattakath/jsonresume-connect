@@ -7,8 +7,30 @@ Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 > **limited preview** ([Create and use custom steps][studiohelp]). Confirm that a public
 > Marketplace listing for a Studio-only add-on is accepted **before** paying for review effort.
 >
-> **Text below describes the final single-step shape** (core merges load + render into one
-> step). Check the step's name and outputs against the final `appsscript.json` before submitting.
+> **One step, named "JSON Resume Connect"** (core merges Load + Render into it and deletes
+> Parse Job Description and Apply Tailoring).
+
+## The step
+
+| | |
+|---|---|
+| Step name | **JSON Resume Connect** |
+| Configuration | **Connect JSON Resume** button (OAuth with PKCE); **Disconnect** once connected |
+| Runs | load résumé from jsonresume.org → check against the JSON Resume schema (fail if invalid) → write a new Doc in the user's Drive |
+
+### Outputs — match core's final manifest
+
+| Output | Meaning |
+|---|---|
+| Doc URL | link to the new Doc |
+| PDF link | PDF export of that Doc |
+| DOCX link | DOCX export of that Doc |
+| Doc ID | Drive file ID of the Doc |
+| Name | `basics.name` |
+| Headline | `basics.label` |
+| Email | `basics.email` |
+| Resume (JSON) | the validated `resume.json` |
+| Resume (plain text) | the résumé as plain text |
 
 ## App details
 
@@ -70,7 +92,7 @@ Icons are square, in colour, with transparent backgrounds — the [review] crite
 Capture at **1280×800**, in a real Workspace Studio session with a test résumé (no real personal
 data). `assets/screenshot-placeholder-1280x800.png` is a frame only; it **cannot** be submitted.
 
-1. **The flow** — Studio canvas: starter → JSON Resume Connect step → Gmail draft using its links.
+1. **The flow** — Studio canvas: starter → **JSON Resume Connect** → Gmail draft using its links.
 2. **Connect card** — the step not yet connected, showing **Connect JSON Resume**.
 3. **Connected card** — "Connected to JSON Resume as @username" with **Disconnect**.
 4. **Step outputs** — the Doc, PDF and DOCX link variables offered to the next step.
