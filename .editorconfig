@@ -13,7 +13,8 @@ indent_size = 2
 # Two trailing spaces are a hard line break in Markdown.
 trim_trailing_whitespace = false
 
-[LICENSE]
-# Verbatim Apache-2.0 text from apache.org; never reformat it.
+[{LICENSE,LICENSES/*}]
+# Verbatim licence texts (MIT from opensource.org, Apache-2.0 from apache.org);
+# never reformat them.
 indent_size = unset
 trim_trailing_whitespace = unset

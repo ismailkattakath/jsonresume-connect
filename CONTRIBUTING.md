@@ -70,8 +70,9 @@ force-push your branch with `--force-with-lease`.
   [JSON Resume](https://github.com/jsonresume) organisation. A DCO needs no entity at all.
 - **It survives a transfer.** The sign-off travels inside each commit. A CLA signed with one
   owner would need re-papering when stewardship changes.
-- **Inbound = outbound.** Contributions arrive under the same Apache-2.0 licence they go out
-  under. Apache-2.0 §5 already says so; the DCO records that you agreed.
+- **Inbound = outbound.** Contributions arrive under the same MIT licence they go out under.
+  The MIT licence, unlike Apache-2.0 §5, has no clause saying so; the DCO sign-off is the
+  record that you agreed.
 - Google's [release guidance](https://opensource.google/documentation/reference/releasing/preparing)
   requires a CLA, but only for Google-owned projects. It does not bind this one.
 
@@ -83,7 +84,7 @@ pair):
 
 ```js
 // SPDX-FileCopyrightText: 2026 Ismail Kattakath
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT
 ```
 
 - **Year:** the year the file was created, not the current year.
@@ -92,13 +93,15 @@ pair):
   with your name. Do not remove existing lines.
 - **`OAuth2.gs` is vendored** from
   [googleworkspace/apps-script-oauth2](https://github.com/googleworkspace/apps-script-oauth2).
+  It stays under **Apache-2.0** ([LICENSES/Apache-2.0.txt](LICENSES/Apache-2.0.txt)), not MIT.
   Keep its upstream Google header untouched, and record any upgrade in [NOTICE](NOTICE).
 - **JSON files** (`appsscript.json`) cannot hold comments. They are covered by the top-level
   [LICENSE](LICENSE).
 
-**Why SPDX and not the 11-line Apache boilerplate:** both are valid. The two-line form is
-machine-checkable (`reuse lint`, ScanCode). It is also closer to the JSON Resume organisation's
-own repositories, which carry no per-file headers at all.
+**Why SPDX:** the two-line form is machine-checkable (`reuse lint`, ScanCode) and names the
+licence unambiguously in a repository that holds two (MIT for the project, Apache-2.0 for the
+vendored `OAuth2.gs`). The project is MIT to match the JSON Resume organisation's own
+repositories.
 
 ## Pull requests
 
@@ -109,4 +112,4 @@ own repositories, which carry no per-file headers at all.
   are made: [GOVERNANCE.md](GOVERNANCE.md).
 
 By contributing, you agree that your contributions are licensed under the
-[Apache License 2.0](LICENSE).
+[MIT License](LICENSE).

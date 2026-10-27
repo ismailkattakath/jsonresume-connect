@@ -8,5 +8,6 @@
 # OAuth2.gs is vendored from googleworkspace/apps-script-oauth2 (see NOTICE).
 OAuth2.gs linguist-vendored
 
-# Keep the licence text byte-for-byte as published.
+# Keep the licence texts byte-for-byte as published.
 LICENSE -text
+LICENSES/** -text

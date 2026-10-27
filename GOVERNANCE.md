@@ -33,7 +33,7 @@ to be **offered to the [jsonresume](https://github.com/jsonresume) GitHub organi
 2. If they accept, the repository transfers to `github.com/jsonresume`, and the organisation's
    own governance and maintainers take precedence over this file.
 3. The current maintainer stays on as a maintainer unless they choose to step down.
-4. Licence (Apache-2.0), DCO sign-off and copyright notices are unchanged by a transfer. The
+4. Licence (MIT), DCO sign-off and copyright notices are unchanged by a transfer. The
    DCO was chosen so no contributor paperwork has to be redone (see
    [CONTRIBUTING.md](CONTRIBUTING.md)).
 
