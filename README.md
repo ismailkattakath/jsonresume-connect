@@ -25,6 +25,10 @@
   (`script.external_request`).
 - **No server, no API key, no analytics.**
 
+<p align="center">
+  <img src="assets/screenshots/1-flow.png" width="640" alt="A Workspace Studio flow: Start manually, then JSON Resume Connect, then Draft an email whose subject and message use the step's Doc name and Link to doc">
+</p>
+
 <sub>Independent project. Not affiliated with or endorsed by the JSON Resume project or Google LLC.
 Google Docs™ and Google Workspace Studio™ are trademarks of Google LLC.</sub>
 

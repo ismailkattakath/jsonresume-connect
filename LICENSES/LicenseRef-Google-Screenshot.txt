@@ -1,0 +1,14 @@
+Screenshots of Google Workspace Studio (assets/screenshots/).
+
+The Google Workspace Studio user interface shown in these images is the property of
+Google LLC. It is NOT covered by this repository's MIT licence.
+
+The images are unaltered captures of Google services, published for illustrative and
+informative purposes (a Google Workspace Marketplace listing and this project's
+documentation), as the Google Workspace Marketplace branding terms allow:
+https://developers.google.com/workspace/marketplace/terms/branding
+
+The content of the add-on's own card (the "JSON Resume Connect" step, its text and icon)
+is Copyright 2026 Ismail Kattakath, MIT-licensed like the rest of the project.
+
+Google Workspace Studio is a trademark of Google LLC.

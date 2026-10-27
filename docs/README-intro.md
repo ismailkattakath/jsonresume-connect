@@ -31,9 +31,8 @@
   (`script.external_request`).
 - **No server, no API key, no analytics.**
 
-<!-- screenshot slot: replace with a real 1280×800 capture (docs/marketplace-listing.md#screenshots) -->
 <p align="center">
-  <img src="assets/screenshot-placeholder-1280x800.png" width="640" alt="Placeholder: the flow in Google Workspace Studio and the rendered résumé">
+  <img src="assets/screenshots/1-flow.png" width="640" alt="A Workspace Studio flow: Start manually, then JSON Resume Connect, then Draft an email whose subject and message use the step's Doc name and Link to doc">
 </p>
 
 <sub>Independent project. Not affiliated with or endorsed by the JSON Resume project or Google LLC.

@@ -11,3 +11,11 @@ path = ["**/*.md", "**/*.json", "**/*.yml", "**/*.yaml", "assets/**", "docs/**",
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Ismail Kattakath"
 SPDX-License-Identifier = "MIT"
+
+# Screenshots of Google Workspace Studio: Google's interface, not ours to MIT-license.
+# Last on purpose: when several annotations match a file, the last one wins.
+[[annotations]]
+path = "assets/screenshots/**"
+precedence = "override"
+SPDX-FileCopyrightText = ["Google LLC", "2026 Ismail Kattakath"]
+SPDX-License-Identifier = "LicenseRef-Google-Screenshot"

@@ -14,21 +14,25 @@ It borrows neither Google's logo or colours nor the JSON Resume logo.
 | `icon-120.png` | 120×120 | OAuth consent screen app logo (Google Auth platform › Branding) | [Branding help][brand]: square, "120px by 120px", ≤ 1 MB, PNG/JPG/BMP |
 | `icon-512.png` | 512×512 | README header, GitHub social preview | — |
 | `card-banner-220x140.png` | 220×140 | Marketplace application card banner (required) | [listing]: "Required size: 220x140 pixels" |
-| `screenshot-placeholder-1280x800.png` | 1280×800 | **layout placeholder only** | see below |
+| `screenshots/1-flow.png` … `4-outputs.png` | 2560×1600 | Marketplace screenshots; README hero (shot 1) | [listing]: 1280×800 recommended, 2560×1600 accepted |
 
 All icons are **square, colour (not grayscale), transparent background**: the
 [app review][review] criteria.
 
-## Screenshots: placeholders are not submittable
+## Screenshots
 
 - Marketplace needs **at least 1, up to 10** screenshots "showing your app's integration with
   Google services", **1280×800** recommended (640×400 or 2560×1600 also accepted), square
   corners, no padding ([listing]).
 - Review rejects screenshots that "don't accurately represent app capabilities" ([review]).
-- So `screenshot-placeholder-1280x800.png` only fixes the frame. Replace it with real captures —
-  the list to take is in [`docs/marketplace-listing.md`](../docs/marketplace-listing.md#screenshots).
 - Unaltered screenshots of Google services are allowed "for illustrative or informative
-  purposes" ([Marketplace branding][mbrand]).
+  purposes" ([Marketplace branding][mbrand]). So nothing is edited after capture: the account
+  photo and the scrollbar are hidden with page CSS before the shot.
+- **How they were taken:** a 1280×800 Chromium window at 2× (not device emulation, which clips
+  Studio's side panel). The shot list and what is still missing:
+  [`docs/marketplace-listing.md`](../docs/marketplace-listing.md#screenshots).
+- **Licence:** the Studio interface in them is Google's. `REUSE.toml` marks them
+  `LicenseRef-Google-Screenshot`, not MIT.
 
 ## Rebuild
 
@@ -36,7 +40,6 @@ All icons are **square, colour (not grayscale), transparent background**: the
 RV=$(nix build --no-link --print-out-paths nixpkgs#resvg)/bin/resvg   # resvg 0.48.1
 for s in 32 48 96 120 128 512; do $RV -w $s -h $s assets/src/logo.svg assets/icon-$s.png; done
 $RV assets/src/banner.svg assets/card-banner-220x140.png
-$RV assets/src/screenshot-placeholder.svg assets/screenshot-placeholder-1280x800.png
 ```
 
 ## Manifest `logoUrl`

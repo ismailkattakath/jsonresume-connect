@@ -82,22 +82,28 @@ Independent project. Not affiliated with or endorsed by the JSON Resume project 
 | App icon 32×32 | yes | `assets/icon-32.png` | "at least two sizes: 32x32 and 128x128" |
 | App icon 128×128 | yes | `assets/icon-128.png` | same |
 | Card banner 220×140 | yes | `assets/card-banner-220x140.png` | "Required size: 220x140 pixels" |
-| Screenshots | ≥ 1, ≤ 10 | to capture — see below | 1280×800 recommended; square corners, no padding |
+| Screenshots | ≥ 1, ≤ 10 | `assets/screenshots/1–4` (5–6 to capture) — see below | 1280×800 recommended; square corners, no padding |
 | Promo video | optional | — | YouTube URL |
 
 Icons are square, in colour, with transparent backgrounds — the [review] criteria.
 
 ### Screenshots
 
-Capture at **1280×800**, in a real Workspace Studio session with a test résumé (no real personal
-data). `assets/screenshot-placeholder-1280x800.png` is a frame only; it **cannot** be submitted.
+Captured in a real Workspace Studio session, in a 1280×800 window at 2× (files are 2560×1600,
+an accepted size). Before each capture, the account photo and the page scrollbar were hidden
+with CSS; nothing was edited after capture. The recipient is `hiring@example.com`.
 
-1. **The flow** — Studio canvas: starter → **JSON Resume Connect** → Gmail draft using its links.
-2. **Connect card** — the step not yet connected, showing **Connect JSON Resume**.
-3. **Connected card** — "Connected to JSON Resume as @username" with **Disconnect**.
-4. **Step outputs** — the Doc, PDF and DOCX link variables offered to the next step.
-5. **The result** — the rendered résumé open in Google Docs.
-6. **A clear failure** — the Activity tab showing an actionable schema error.
+| # | Shot | File |
+|---|---|---|
+| 1 | **The flow** — starter → **JSON Resume Connect** → Gmail draft using its Doc name and link | `assets/screenshots/1-flow.png` |
+| 2 | **Connect card** — the step not yet connected, showing **Connect JSON Resume** | `assets/screenshots/2-connect.png` |
+| 3 | **Connected card** — "Connected to JSON Resume as @username" with **Disconnect** | `assets/screenshots/3-connected.png` |
+| 4 | **Step outputs** — all ten outputs offered to the next step | `assets/screenshots/4-outputs.png` |
+| 5 | **The result** — the rendered résumé open in Google Docs | to capture with a **test** JSON Resume account |
+| 6 | **A clear failure** — the Activity tab showing an actionable schema error | to capture with a **test** account holding an invalid résumé |
+
+Shot 3 shows the maintainer's public JSON Resume handle. Shots 5 and 6 would show a whole
+résumé, so they need a test account rather than real personal data.
 
 ## Support links (required)
 
