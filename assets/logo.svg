@@ -2,10 +2,14 @@
   <title id="t">JSON braces on a folded page</title>
   <!-- Original mark: a page with a folded corner holding a pair of JSON braces.
        Colours are deliberately NOT Google's (#4285F4 #EA4335 #FBBC05 #34A853)
-       nor JSON Resume's (#FFF18F). Background is transparent (Marketplace icon rule). -->
-  <path d="M30 8 H80 L106 34 V110 a10 10 0 0 1 -10 10 H30 a10 10 0 0 1 -10 -10 V18 a10 10 0 0 1 10 -10 Z" fill="#3D2C8D"/>
-  <path d="M80 8 V26 a8 8 0 0 0 8 8 H106 Z" fill="#9D8DF1"/>
-  <g fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+       nor JSON Resume's (#FFF18F). Background is transparent (Marketplace icon rule).
+       Geometry follows the Google Workspace product-icon grid, measured on the official
+       Docs icon (gstatic docs_2020q4_48dp): page 32x44 on a 48 canvas = aspect 8:11,
+       91.7% of the height, centred (16.7% side, 4.2% top/bottom margins). Scaled to 128:
+       page x 21.33-106.67, y 5.33-122.67. Shape and colours stay our own. -->
+  <path d="M27.33 5.33 H80.67 L106.67 31.33 V116.67 a6 6 0 0 1 -6 6 H27.33 a6 6 0 0 1 -6 -6 V11.33 a6 6 0 0 1 6 -6 Z" fill="#3D2C8D"/>
+  <path d="M80.67 5.33 V23.33 a8 8 0 0 0 8 8 H106.67 Z" fill="#9D8DF1"/>
+  <g transform="translate(64 72) scale(1.048) translate(-63 -72)" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
     <path d="M55 46 C46 46 48 54 48 62 C48 68 46 72 40 72 C46 72 48 76 48 82 C48 90 46 98 55 98"/>
     <path d="M71 46 C80 46 78 54 78 62 C78 68 80 72 86 72 C80 72 78 76 78 82 C78 90 80 98 71 98"/>
   </g>
