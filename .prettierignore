@@ -4,3 +4,5 @@ package-lock.json
 # Markdown is prose owned by several hands; Prettier would realign every
 # table in it. Code and config only.
 *.md
+# Written by release-please in its own format on every release PR.
+.release-please-manifest.json
