@@ -1,4 +1,4 @@
-<!-- Content for the README's <!-- brand-intro --> slot. The lead splices it in.
+<!-- Content for the README's brand-intro placeholder. The lead splices it in.
      Badge workflow files exist on origin/ci/pipelines (ci.yml, scorecard.yml); the CI and
      Scorecard badges resolve once that branch is merged and the repo is public.
      If the repo is transferred (e.g. to the jsonresume org), replace

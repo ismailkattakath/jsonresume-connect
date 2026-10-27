@@ -44,7 +44,7 @@ $RV assets/src/screenshot-placeholder.svg assets/screenshot-placeholder-1280x800
 - **Now:** `addOns.common.logoUrl` points at the jsonresume GitHub org avatar — **another
   project's logo**. Replace it.
 - **Target** (once the repo is public):
-  `https://raw.githubusercontent.com/ismailkattakath/jsonresume-google-docs/main/assets/icon-128.png`
+  `https://raw.githubusercontent.com/ismailkattakath/jsonresume-connect/main/assets/icon-128.png`
   (or the GitHub Pages copy). The [manifest reference][manifest] only says "**Required.** The
   public URL of the toolbar image" — it names no size; 128×128 PNG over HTTPS matches the
   Marketplace icon. **The URL changes if the repo is renamed or transferred** — update both.
