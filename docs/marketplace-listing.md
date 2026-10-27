@@ -7,8 +7,8 @@ Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 > **limited preview** ([Create and use custom steps][studiohelp]). Confirm that a public
 > Marketplace listing for a Studio-only add-on is accepted **before** paying for review effort.
 >
-> **Step table below matches `appsscript.json` on `main` (four steps).** Match it to core's
-> final manifest before submitting.
+> **Text below describes the final single-step shape** (core merges load + render into one
+> step). Check the step's name and outputs against the final `appsscript.json` before submitting.
 
 ## App details
 
@@ -16,7 +16,7 @@ Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 |---|---|---|
 | Application name | ≤ 50 chars | `JSON Resume Connect` (19) — rationale: [`naming.md`](naming.md) |
 | Short description | ≤ 200 chars | see below (measured length noted) |
-| Detailed description | < 16,000 chars | see below (1,808 chars, measured) |
+| Detailed description | < 16,000 chars | see below (1,605 chars, measured) |
 | Category | console dropdown | **Productivity** if offered; otherwise the closest office/productivity entry |
 | Language | — | English |
 
@@ -29,19 +29,18 @@ Load your JSON Resume in a Workspace Studio flow, check it against the schema, a
 ### Detailed description
 
 ```text
-JSON Resume Connect adds résumé steps to your Google Workspace Studio™ flows.
+JSON Resume Connect adds one résumé step to your Google Workspace Studio™ flows.
 
-Keep one résumé in the open JSON Resume standard (jsonresume.org). Let a flow turn it into a clean document in Google Docs™ whenever you need one — for example, each time a job posting arrives.
+Keep one résumé in the open JSON Resume standard (jsonresume.org). The step turns it into a clean document in Google Docs™ whenever your flow runs — for example, each time a job posting arrives.
 
-STEPS
-• Load JSON Resume — connect your jsonresume.org account once. Each run loads your résumé, checks it against the JSON Resume schema, and fails clearly if it does not match.
-• Render JSON Resume to Doc — writes a résumé into a new document in your Google Drive™, in a clean academic-CV style, and returns the Doc link plus PDF and DOCX download links.
-• Parse Job Description — checks a job posting that an AI step wrote as JSON against the JSON Resume job schema.
-• Apply Tailoring — applies a short tailoring patch from an AI step to your résumé: the headline and summary may be reworded, highlights and skills only picked and reordered. Employers, titles, dates and degrees are never changed.
+WHAT THE STEP DOES
+• Connect once — sign in to your jsonresume.org account from the step's card (OAuth with PKCE). Disconnect at any time.
+• Load and check — each run loads your résumé and checks it against the JSON Resume schema. If it does not match, the step fails with the problems listed, so you fix the source instead of sending a broken résumé.
+• Render — writes the résumé into a new document in your Google Drive™, in a clean academic-CV style, and returns the Doc link plus PDF and DOCX download links for the next steps of your flow (for example, a Gmail draft).
 
 WHY IT IS BUILT THIS WAY
-• No API key to obtain or pay for. Tailoring belongs to the AI step you already have in Workspace Studio.
-• Deterministic steps that can be tested.
+• No API key to obtain or pay for.
+• Deterministic output that can be tested.
 • Narrow permissions: it can open only the files it creates (drive.file), plus outbound requests to jsonresume.org and Google's Docs and Drive APIs.
 • No server, no analytics, no tracking. Your résumé and your Docs stay in your accounts.
 
@@ -49,7 +48,7 @@ YOU NEED
 • A Google Workspace account with access to Workspace Studio.
 • A jsonresume.org account with a résumé (sign in with GitHub).
 
-Open source (Apache-2.0): https://github.com/ismailkattakath/jsonresume-connect
+Open source (MIT): https://github.com/ismailkattakath/jsonresume-connect
 
 Independent project. Not affiliated with or endorsed by the JSON Resume project or Google LLC. Google Docs™, Google Drive™, Google Workspace™ and Google Workspace Studio™ are trademarks of Google LLC.
 ```
@@ -71,11 +70,10 @@ Icons are square, in colour, with transparent backgrounds — the [review] crite
 Capture at **1280×800**, in a real Workspace Studio session with a test résumé (no real personal
 data). `assets/screenshot-placeholder-1280x800.png` is a frame only; it **cannot** be submitted.
 
-1. **The flow** — Studio canvas: starter → Load JSON Resume → Gemini step → Render JSON Resume
-   to Doc → Gmail draft.
-2. **Connect card** — Load JSON Resume, not connected, showing **Connect JSON Resume**.
+1. **The flow** — Studio canvas: starter → JSON Resume Connect step → Gmail draft using its links.
+2. **Connect card** — the step not yet connected, showing **Connect JSON Resume**.
 3. **Connected card** — "Connected to JSON Resume as @username" with **Disconnect**.
-4. **Render step card** — the Resume JSON field bound to a variable from an earlier step.
+4. **Step outputs** — the Doc, PDF and DOCX link variables offered to the next step.
 5. **The result** — the rendered résumé open in Google Docs.
 6. **A clear failure** — the Activity tab showing an actionable schema error.
 

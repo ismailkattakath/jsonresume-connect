@@ -1,7 +1,9 @@
 # Design review — card UX against Google's add-on and Studio guidelines
 
 Audit of `main` @ `8fe629c`, 2026-10-27. **For agent "core"; nothing here edits code.**
-Line numbers are from that commit.
+Line numbers are from that commit. Core is merging load + render into **one step** and deleting
+Parse Job Description and Apply Tailoring: apply each finding to wherever that code lands, and
+drop items 7 and 8's references to the deleted steps.
 
 ## Verdict
 

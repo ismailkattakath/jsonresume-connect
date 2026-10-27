@@ -118,11 +118,11 @@ Use a **test** Google account and a **test** résumé. Show the browser address 
 
 | t | Show | Say (caption) |
 |---|---|---|
-| 0:00 | Marketplace listing or the install dialog | "JSON Resume Connect adds résumé steps to Google Workspace Studio." |
+| 0:00 | Marketplace listing or the install dialog | "JSON Resume Connect adds a résumé step to Google Workspace Studio." |
 | 0:10 | **Google consent screen** with both scopes visible | "It asks for two permissions: files it creates in Drive (drive.file) and outbound requests to jsonresume.org and Google APIs." |
-| 0:30 | Studio: add **Load JSON Resume** → **Connect JSON Resume** → jsonresume.org approval "Read your resume" → refresh | "The user connects their own JSON Resume account." |
+| 0:30 | Studio: add the **JSON Resume Connect** step → **Connect JSON Resume** → jsonresume.org approval "Read your resume" → refresh | "The user connects their own JSON Resume account." |
 | 0:55 | Connected card "Connected to JSON Resume as @username" | — |
-| 1:05 | Add **Render JSON Resume to Doc**, bind the `resume` variable | — |
+| 1:05 | Add a Gmail draft step that uses the step's `docUrl` / `pdfUrl` | — |
 | 1:15 | Run the flow → Activity tab → open `docUrl` | "drive.file: the add-on creates this Doc in the user's Drive." |
 | 1:35 | Click the PDF and DOCX links | "Export links for the Doc it created." |
 | 1:45 | Drive: the add-on sees only this file; **Disconnect** clears the JSON Resume sign-in | "It cannot open any other file." |

@@ -9,7 +9,7 @@ permalink: /privacy/
 [git history](https://github.com/ismailkattakath/jsonresume-connect/commits/main/docs/privacy.md).*
 
 **JSON Resume Connect** ("the add-on") is an independent open-source Google Workspace add-on. It
-adds steps to Google Workspace Studio™ flows. It is maintained by
+adds one step to Google Workspace Studio™ flows. It is maintained by
 [Ismail Kattakath](https://github.com/ismailkattakath). The source code is public, so every
 statement below can be checked against it.
 
@@ -26,8 +26,7 @@ statement below can be checked against it.
 | Data | Where it comes from | What the add-on does with it | Where it is kept |
 |---|---|---|---|
 | Your JSON Resume sign-in (access and refresh tokens) and your jsonresume.org username | jsonresume.org, after you click **Connect JSON Resume** and approve "Read your resume" (scope `resume:read`) | Reads your résumé when a flow runs; shows "Connected as @username" | Apps Script **User Properties** and **User Cache**: private to your Google account and this add-on. Deleted when you click **Disconnect** |
-| Your résumé (`resume.json`) | jsonresume.org | Checks it against the JSON Resume schema and hands it to the next steps of **your** flow | **Not stored** by the add-on. It exists in memory during the run and in your flow's own run data, which Google Workspace Studio keeps |
-| Text your flow passes in (for example a résumé, a job posting or a tailoring patch written by an AI step) | Earlier steps of your flow | Validates and transforms it in memory | Not stored by the add-on |
+| Your résumé (`resume.json`) | jsonresume.org | Checks it against the JSON Resume schema and writes it into the Doc below | **Not stored** by the add-on. It exists in memory during the run only |
 | The Google Doc it creates | Created by the add-on | Writes your résumé into it and returns its link plus PDF and DOCX export links | **Your Google Drive**. The add-on can open only files it created (`drive.file`) |
 | An OAuth client identifier for jsonresume.org | Registered once per deployment | Identifies the add-on to jsonresume.org | Apps Script Script Properties. It is not personal data |
 
@@ -77,7 +76,7 @@ feature, governed by Google's terms, not by this add-on.
 
 | To remove | Do this |
 |---|---|
-| Your JSON Resume tokens and username | Open the **Load JSON Resume** step and click **Disconnect** |
+| Your JSON Resume tokens and username | Open the step in your flow and click **Disconnect** |
 | The add-on's access to your Google account | [Google Account › Third-party connections](https://myaccount.google.com/connections) › JSON Resume Connect › Delete all connections |
 | The add-on's access to jsonresume.org | Revoke it in your jsonresume.org account |
 | Résumé Docs it created | Delete them in Google Drive. They are ordinary Docs that you own |

@@ -4,7 +4,7 @@
 #   /privacy/    privacy.md
 #   /terms/      terms.md
 title: JSON Resume Connect
-description: Résumé steps for Google Workspace Studio™ flows — JSON Resume in, a document in Google Docs™ out.
+description: A résumé step for Google Workspace Studio™ flows — JSON Resume in, a document in Google Docs™ out.
 theme: jekyll-theme-primer
 # Internal working docs stay in the repo but are not published.
 exclude:

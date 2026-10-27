@@ -11,10 +11,11 @@ By installing or using **JSON Resume Connect** ("the add-on") you agree to these
 
 ## 1. What it is
 
-- A free, open-source Google Workspace add-on that adds steps to Google Workspace Studio™ flows.
+- A free, open-source Google Workspace add-on that adds one step to Google Workspace Studio™ flows.
 - Source code: [github.com/ismailkattakath/jsonresume-connect](https://github.com/ismailkattakath/jsonresume-connect),
-  under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). The licence
-  governs the code; these terms govern use of the published add-on.
+  under the [MIT License](https://github.com/ismailkattakath/jsonresume-connect/blob/main/LICENSE). The
+  licence governs the code; these terms govern use of the published add-on. Bundled third-party
+  code keeps its own licence (the vendored OAuth2 for Apps Script library is Apache-2.0).
 
 ## 2. No fee, no account with us
 
@@ -29,10 +30,10 @@ By installing or using **JSON Resume Connect** ("the add-on") you agree to these
 - The add-on checks your résumé against the JSON Resume schema. It does not check that the
   content is true.
 
-## 4. AI steps in your flow
+## 4. Other steps in your flow
 
-- Steps such as Gemini belong to Google, not to this add-on. Review any AI-written résumé before
-  you send it.
+- Other steps in your flow, such as Gemini, belong to Google, not to this add-on. Review anything
+  they write before you send it.
 
 ## 5. Privacy
 
@@ -41,7 +42,7 @@ By installing or using **JSON Resume Connect** ("the add-on") you agree to these
 ## 6. No warranty
 
 - The add-on is provided **"AS IS", without warranties or conditions of any kind**, as set out
-  in sections 7 and 8 of the Apache License 2.0.
+  in the MIT License.
 - It depends on Google Workspace Studio, Google APIs and jsonresume.org. Any of them can change
   or stop working without notice.
 

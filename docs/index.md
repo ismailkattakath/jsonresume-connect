@@ -6,17 +6,15 @@ title: JSON Resume Connect
 
 # JSON Resume Connect
 
-**Résumé steps for Google Workspace Studio™ flows.** Keep your résumé in the open
+**One résumé step for Google Workspace Studio™ flows.** Keep your résumé in the open
 [JSON Resume](https://jsonresume.org) standard. A flow loads it, checks it, and writes it into a
 clean document in Google Docs™, with PDF and DOCX links.
 
 ## What it does
 
-- **Load JSON Resume** — connect your jsonresume.org account once; each run loads and checks
-  your résumé.
-- **Render JSON Resume to Doc** — creates the document in your Google Drive™ and returns its
-  links.
-- Works with the AI step you already have: Gemini tailors, this add-on renders.
+- **Connect once** — sign in to your jsonresume.org account from the step's card.
+- **Each run** — loads your résumé, checks it against the JSON Resume schema, and writes it into
+  a new document in your Google Drive™, returning its link plus PDF and DOCX links.
 
 ## Permissions
 
