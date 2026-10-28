@@ -98,8 +98,8 @@ function onConfigJsonResumeToDoc() {
  * matches that input's manifest description. Every field accepts variables
  * (setIncludeVariables), so an earlier step can supply it.
  *
- * Name, Email address and Photo URL override the resume's basics for this
- * step only: the Doc and the outputs use them, the resume is never changed.
+ * The two "for later steps" fields replace only the Name and email outputs;
+ * the Doc always shows the resume as it is (readOverrides).
  */
 function connectedCard() {
   var who = PropertiesService.getUserProperties().getProperty('JR_USERNAME');
@@ -123,19 +123,22 @@ function connectedCard() {
     )
     .addWidget(
       CardService.newTextParagraph().setText(
-        "<b>Overrides</b> (optional). Each replaces your resume's value for " +
-          'this step only; your resume is not changed.'
+        '<b>For later steps</b> (optional). These replace the Name and ' +
+          'email variables only. The Doc always shows your resume as it is.'
       )
-    )
-    .addWidget(stepTextInput('overrideName', 'Name', 'Replaces basics.name.'))
-    .addWidget(
-      stepTextInput('overrideEmail', 'Email address', 'Replaces basics.email.')
     )
     .addWidget(
       stepTextInput(
-        'overrideImage',
-        'Photo URL',
-        'An https link to an image. Adds it to the Doc and replaces basics.image.'
+        'overrideName',
+        'Name for later steps',
+        'Replaces the Name variable. Default: basics.name.'
+      )
+    )
+    .addWidget(
+      stepTextInput(
+        'overrideEmail',
+        'Email for later steps',
+        'Replaces the Resume email address variable. Default: basics.email.'
       )
     )
     .addWidget(
@@ -343,20 +346,21 @@ function onExecuteJsonResumeToDoc(event) {
       ? failStep(loaded.error, {retry: true})
       : failStep('Could not load resume: ' + loaded.error);
   }
-  var overridden = applyOverrides(loaded.resume, inputs);
-  if (overridden.error) return failStep(overridden.error);
-  var resume = overridden.resume;
+  var resume = loaded.resume;
+  var overrides = readOverrides(inputs);
+  if (overrides.error) return failStep(overrides.error);
 
   // The email output is EMAIL_ADDRESS, and Studio needs every declared output
   // on every run: a missing one fails with "Missing required output
   // variables", an empty one with "Output contains an invalid email address"
-  // (both measured live, 2026-10-27). So a resume without a usable address
-  // fails here, before any Doc is created, with a fix the user can make.
-  if (!safeEmail(resume.basics.email)) {
+  // (both measured live, 2026-10-27). So with no usable address from the
+  // resume or the step, it fails here, before any Doc, with a fix to make.
+  var basics = isPlainObject(resume.basics) ? resume.basics : {};
+  if (!overrides.email && !safeEmail(basics.email)) {
     return failStep(
       'Could not load resume: it has no valid email address. Add one as ' +
-        'basics.email in the jsonresume.org editor, or set Email address ' +
-        'in this step.'
+        'basics.email in the jsonresume.org editor, or set "Email for later ' +
+        'steps" in this step.'
     );
   }
 
@@ -365,70 +369,39 @@ function onExecuteJsonResumeToDoc(event) {
     doc = renderResumeDoc(
       ScriptApp.getOAuthToken(),
       resume,
-      docTitleFor(resume, readActionInput(inputs, 'title')),
-      {image: overridden.image}
+      docTitleFor(resume, readActionInput(inputs, 'title'))
     );
   } catch (err) {
     console.error('JsonResumeToDoc: Doc create failed: ' + err.message);
     return docCreateFailure(err.status);
   }
 
-  return outputs(buildOutputs(doc.id, doc.webViewLink, resume, doc.name));
+  var out = buildOutputs(doc.id, doc.webViewLink, resume, doc.name);
+  if (overrides.name) out.name = overrides.name;
+  if (overrides.email) out.email = overrides.email;
+  return outputs(out);
 }
 
 /**
- * The resume with this step's overrides applied, on a copy: the loaded
- * resume is never changed. Returns { resume, image } or { error }.
+ * The step's optional values for later steps: { name, email } or { error }.
  *
- * - Name and Email address replace basics.name and basics.email.
- * - Photo URL replaces basics.image and is the only photo the Doc renders: a
- *   resume's own basics.image stays out (resumeToHtml), the owner's typed URL
- *   goes in. https only.
+ * They replace only the Name and email OUTPUTS. The Doc, its title and the
+ * Resume (JSON / plain text) outputs always show the resume as it is: a Doc
+ * that silently differs from the resume is confusing (operator, 2026-10-27).
  *
- * A set but invalid value fails the step, actionable: silently falling back
+ * A set but invalid email fails the step, actionable: silently falling back
  * to the resume would hide the typo.
  */
-function applyOverrides(resume, inputs) {
-  var copy = {};
-  Object.keys(resume).forEach(function (k) {
-    copy[k] = resume[k];
-  });
-  var basics = {};
-  if (isPlainObject(resume.basics)) {
-    Object.keys(resume.basics).forEach(function (k) {
-      basics[k] = resume.basics[k];
-    });
-  }
-  copy.basics = basics;
-
+function readOverrides(inputs) {
   var name = readActionInput(inputs, 'overrideName');
-  if (name) basics.name = name;
-
   var email = readActionInput(inputs, 'overrideEmail');
-  if (email) {
-    if (!safeEmail(email)) {
-      return {
-        error:
-          "Email address in this step is not a valid email address. Fix it, or clear it to use your resume's.",
-      };
-    }
-    basics.email = email;
+  if (email && !safeEmail(email)) {
+    return {
+      error:
+        '"Email for later steps" is not a valid email address. Fix it, or clear it to use your resume\'s.',
+    };
   }
-
-  var image = readActionInput(inputs, 'overrideImage');
-  if (image) {
-    var safe = safeWebUrl(image);
-    if (!safe || !/^https:/i.test(safe)) {
-      return {
-        error:
-          'Photo URL in this step must be an https link to an image. Fix it, or clear it.',
-      };
-    }
-    basics.image = safe;
-    image = safe;
-  }
-
-  return {resume: copy, image: image || ''};
+  return {name: name, email: safeEmail(email)};
 }
 
 /** A failed Doc create, in the user's terms. `status` is unset for a network error. */

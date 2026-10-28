@@ -68,27 +68,24 @@ posting, which is attacker-controlled text when it arrives from an inbox.
 | Card state | Shows |
 |---|---|
 | Not connected | **Connect JSON Resume**, plus "After connecting, **refresh** this page" |
-| Connected | "Connected to JSON Resume as @username", the **Document title** field, three optional **Overrides** (Name, Email address, Photo URL), and **Disconnect** |
+| Connected | "Connected to JSON Resume as @username", the **Document title** field, two optional **For later steps** fields, and **Disconnect** |
 
 | Input | Required | Notes |
 |---|---|---|
 | `title` | no | the Doc's name. Defaults to `<basics.name> — Resume`. Accepts a variable from an earlier step |
-| `overrideName` | no | replaces `basics.name`: the Doc heading, the default title and the `name` output |
-| `overrideEmail` | no | `EMAIL_ADDRESS`. Replaces `basics.email` in the Doc and the `email` output; also fixes a resume with no address |
-| `overrideImage` | no | an `https` image URL. Adds a centered photo to the Doc header and replaces `basics.image` |
+| `overrideName` | no | "Name for later steps": replaces the `name` output only |
+| `overrideEmail` | no | "Email for later steps", `EMAIL_ADDRESS`: replaces the `email` output only; also lets a resume with no address run |
 
-**Overrides apply to this step only.** The resume on jsonresume.org is never changed. Every field
-accepts a variable from an earlier step. A set but invalid value (not an address, not `https`)
-**fails the step**, fixable, rather than silently falling back to the resume and hiding the typo.
+**The Doc always shows the resume as it is.** The two "for later steps" fields change only the
+`name` and `email` variables; the Doc, its title and the Resume (JSON / plain text) outputs are
+untouched. A Doc that silently differed from the resume was confusing (operator, 2026-10-27), so an
+earlier draft that also rewrote the Doc and added a Photo URL was dropped before release. The resume
+on jsonresume.org is never changed. A set but invalid email **fails the step**, fixable, rather than
+silently falling back to the resume and hiding the typo.
 
-**Why the photo needs an override.** A resume's own `basics.image` is never rendered: an external
-image URL in a stranger's document is a tracking beacon. The Photo URL is typed by the flow's owner,
-so it is trusted; Drive fetches it once at import and embeds it (measured live 2026-10-27: a
-Gravatar URL embedded at 72 pt).
-
-**Why overrides rather than the Google profile.** The JSON Resume schema has no required fields
-(v1.2.1 and v1.7.0), and the account's name, email and photo need `openid`/`userinfo` scopes the
-add-on does not otherwise ask for. Explicit fields keep the scopes unchanged and the choice visible.
+**Why fields rather than the Google profile.** The JSON Resume schema has no required fields
+(v1.2.1 and v1.7.0), and the account's name and email need `openid`/`userinfo` scopes the add-on
+does not otherwise ask for. Explicit fields keep the scopes unchanged and the choice visible.
 
 The cards have no header, so they do not repeat the name. The field title matches the manifest
 input's description (a test checks it).
@@ -157,9 +154,9 @@ users never see them, and renaming one breaks every flow bound to it.
 | `pdfUrl` | Link to PDF | `https://docs.google.com/document/d/{id}/export?format=pdf` |
 | `docxUrl` | Link to DOCX | `https://docs.google.com/document/d/{id}/export?format=docx` |
 | `docId` | Document ID | for a Drive step (share, move) |
-| `name` | Name | `basics.name`, for addressing a message |
+| `name` | Name | `basics.name` (or "Name for later steps"), for addressing a message |
 | `label` | Headline | `basics.label` |
-| `email` | Resume email address | `basics.email` (or the Email address override), usable as a draft's **To**. With no valid address from either, the step **fails** (Studio needs every output on every run) |
+| `email` | Resume email address | `basics.email` (or "Email for later steps"), usable as a draft's **To**. With no valid address from either, the step **fails** (Studio needs every output on every run) |
 | `resumeText` | Resume (plain text) | flattened text for any AI step (summary, cover letter) |
 | `resume` | Resume (JSON) | the validated `resume.json`. **Weakest case:** no native step consumes JSON, and it can be up to 2 MB |
 

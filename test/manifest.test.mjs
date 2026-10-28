@@ -185,17 +185,13 @@ test('output ids and chip labels are exactly the agreed set', () => {
 
 // ---- inputs: card fields bind to manifest inputs BY NAME --------------------
 check(
-  'the step declares four optional inputs: title and the three overrides',
+  'the step declares three optional inputs: title, name and email for later steps',
   JSON.stringify(action.inputs.map(i => i.id)) ===
-    JSON.stringify([
-      'title',
-      'overrideName',
-      'overrideEmail',
-      'overrideImage',
-    ]) && action.inputs.every(i => i.required === false)
+    JSON.stringify(['title', 'overrideName', 'overrideEmail']) &&
+    action.inputs.every(i => i.required === false)
 );
 check(
-  'the email override is EMAIL_ADDRESS, the rest STRING',
+  'the email input is EMAIL_ADDRESS, the rest STRING',
   action.inputs.every(
     i =>
       i.dataType.basicType ===

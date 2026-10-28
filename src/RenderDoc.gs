@@ -52,12 +52,12 @@ var PAGE_MARGIN_PT = 36; // 0.5 inch
  * - A styling call (batchUpdate) fails: logged with console.error, and the Doc
  *   is returned as imported. Cosmetic, so it never costs the user the Doc.
  */
-function renderResumeDoc(token, resume, title, opts) {
+function renderResumeDoc(token, resume, title) {
   var doc = driveCreate(
     token,
     {name: title, mimeType: GOOGLE_DOC_MIME},
     'text/html; charset=UTF-8',
-    utf8Bytes(resumeToHtml(resume, opts))
+    utf8Bytes(resumeToHtml(resume))
   );
 
   // Page margins. How the HTML import treats CSS @page is undocumented, so
@@ -654,29 +654,17 @@ var RESUME_SECTIONS = [
  * styles only, no scripts and no external resources. basics.image is left out
  * ON PURPOSE. An external image URL in an untrusted document is a tracking
  * beacon, and a résumé photo is a regional convention, not a default.
- * The one exception is opts.image: a photo URL the step's owner typed into
- * the step card (Photo URL), already checked as https. Drive fetches it once
- * at import and embeds it.
  *
  * Absent, empty or wrongly-typed sections are skipped, never rendered as an
  * empty heading. Every schema field is optional.
  */
-function resumeToHtml(resume, opts) {
+function resumeToHtml(resume) {
   var r = resume && typeof resume === 'object' ? resume : {};
   var b =
     r.basics && typeof r.basics === 'object' && !Array.isArray(r.basics)
       ? r.basics
       : {};
   var out = [];
-
-  var image = opts && safeWebUrl(opts.image);
-  if (image && /^https:/i.test(image)) {
-    out.push(
-      '<p style="text-align:center"><img src="' +
-        escapeHtml(image) +
-        '" alt="" width="96" height="96" style="width:96px;height:96px"></p>'
-    );
-  }
 
   if (str(b.name).trim()) out.push(el('h1', 'h1', escapeHtml(b.name)));
   if (str(b.label).trim()) out.push(el('p', 'label', escapeHtml(b.label)));

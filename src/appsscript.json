@@ -50,7 +50,7 @@
               },
               {
                 "id": "overrideName",
-                "description": "Name",
+                "description": "Name for later steps",
                 "cardinality": "SINGLE",
                 "required": false,
                 "dataType": {
@@ -59,20 +59,11 @@
               },
               {
                 "id": "overrideEmail",
-                "description": "Email address",
+                "description": "Email for later steps",
                 "cardinality": "SINGLE",
                 "required": false,
                 "dataType": {
                   "basicType": "EMAIL_ADDRESS"
-                }
-              },
-              {
-                "id": "overrideImage",
-                "description": "Photo URL",
-                "cardinality": "SINGLE",
-                "required": false,
-                "dataType": {
-                  "basicType": "STRING"
                 }
               }
             ],

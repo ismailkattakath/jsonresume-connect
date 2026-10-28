@@ -445,7 +445,7 @@ describe('the email output', () => {
   }
 });
 
-describe('the overrides', () => {
+describe('the values for later steps', () => {
   const noEmail = {
     username: 'ada',
     url: 'x',
@@ -454,30 +454,33 @@ describe('the overrides', () => {
   const html = r =>
     Buffer.from(r.driveCalls[0].options.payload).toString('utf8');
 
-  it('Email address fixes a resume with no address', () => {
+  it('the email one fixes a resume with no address, Doc untouched', () => {
     const r = run({
       resumeResponse: json(200, noEmail),
       event: eventWith({overrideEmail: ' ada@example.org '}),
     });
     assert.equal(r.result.kind, 'outputs');
     assert.deepEqual(r.result.map.email.values, ['ada@example.org']);
-    assert.ok(html(r).includes('mailto:ada@example.org'));
+    assert.ok(!html(r).includes('ada@example.org'));
   });
 
-  it('Email address replaces the resume address', () => {
+  it('the email one replaces the email output only', () => {
     const r = run({event: eventWith({overrideEmail: 'other@example.org'})});
     assert.deepEqual(r.result.map.email.values, ['other@example.org']);
+    assert.ok(!html(r).includes('other@example.org'));
+    assert.ok(!r.result.map.resume.values[0].includes('other@example.org'));
   });
 
   it('reads an email-typed value array, not only stringValues', () => {
+    const base = eventWith({});
     const r = run({
       resumeResponse: json(200, noEmail),
       event: {
-        ...eventWith({}),
+        ...base,
         workflow: {
-          ...eventWith({}).workflow,
+          ...base.workflow,
           actionInvocation: {
-            ...eventWith({}).workflow.actionInvocation,
+            ...base.workflow.actionInvocation,
             inputs: {overrideEmail: {emailAddressValues: ['ada@example.org']}},
           },
         },
@@ -486,30 +489,20 @@ describe('the overrides', () => {
     assert.deepEqual(r.result.map.email.values, ['ada@example.org']);
   });
 
-  it('a set but invalid Email address fails, fixable, before any Doc', () => {
+  it('a set but invalid email fails, fixable, before any Doc', () => {
     failsWith(
       run({event: eventWith({overrideEmail: 'not an address'})}),
-      /Email address in this step/
+      /Email for later steps/
     );
   });
 
-  it('Name replaces basics.name in the Doc, the title and the output', () => {
+  it('the name one replaces the Name output, not the Doc or its title', () => {
     const r = run({event: eventWith({overrideName: 'Augusta King'})});
     assert.deepEqual(r.result.map.name.values, ['Augusta King']);
-    assert.ok(html(r).includes('Augusta King'));
-    assert.ok(html(r).includes('{"name":"Augusta King'));
+    assert.ok(!html(r).includes('Augusta King'));
   });
 
-  it('Photo URL puts one https image in the Doc', () => {
-    const r = run({
-      event: eventWith({overrideImage: 'https://example.org/ada.png'}),
-    });
-    assert.equal(r.result.kind, 'outputs');
-    assert.equal((html(r).match(/<img /g) || []).length, 1);
-    assert.ok(html(r).includes('src="https://example.org/ada.png"'));
-  });
-
-  it('a resume photo alone never renders', () => {
+  it('a resume photo never renders', () => {
     const r = run({
       resumeResponse: json(200, {
         username: 'ada',
@@ -521,24 +514,6 @@ describe('the overrides', () => {
       }),
     });
     assert.ok(!html(r).includes('<img'));
-  });
-
-  for (const bad of ['http://example.org/a.png', 'javascript:alert(1)', 'x']) {
-    it(`Photo URL ${bad} fails, fixable, before any Doc`, () => {
-      failsWith(
-        run({event: eventWith({overrideImage: bad})}),
-        /Photo URL in this step/
-      );
-    });
-  }
-
-  it('the resume itself is not changed', () => {
-    const resume = {...VALID, basics: {...VALID.basics}};
-    run({
-      resumeResponse: json(200, {username: 'ada', url: 'x', resume}),
-      event: eventWith({overrideName: 'Someone Else'}),
-    });
-    assert.equal(resume.basics.name, VALID.basics.name);
   });
 });
 
