@@ -180,6 +180,10 @@ and links, which is the same pattern Google's own Drive picker uses.
 | Drive refuses the create (401/403) | `ACTIONABLE` + `NOT_RETRYABLE` | "Google refused to create the Doc. Check that the add-on is still allowed to create files in your Drive." |
 | Drive unreachable, 429 or 5xx | `NOT_ACTIONABLE` + `RETRYABLE` | "Google Drive is not responding. The step will try again." |
 
+**Retries happen only in a switched-on flow.** Measured live 2026-10-27 with an injected 503: a
+switched-on flow re-ran the step after **~3–4 min**, then **~6–7 min** (growing backoff). A manual
+test run (**Run the flow** in the editor) does **not** retry: it stops at the first failure.
+
 **The user never sees an HTTP code, Google's error text or an exception message.** The style
 guide says "Don't let the user see any exceptions your code throws". Those details go to
 Executions (`console.error`), and the résumé and tokens never do. Tests check every failure
