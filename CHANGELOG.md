@@ -13,26 +13,10 @@ hand; each release is inserted directly below this paragraph, newest first.
 ## [0.1.1](https://github.com/ismailkattakath/jsonresume-connect/compare/v0.1.0...v0.1.1) (2026-10-28)
 
 
-### Features
-
-* name and email for later steps change the outputs only, never the Doc ([6d4f754](https://github.com/ismailkattakath/jsonresume-connect/commit/6d4f754e7c3abee735abd8723fe73090a374a47c))
-* optional Name, Email address and Photo URL overrides on the step card ([d78e6f1](https://github.com/ismailkattakath/jsonresume-connect/commit/d78e6f1698b0014fe524e872070e22f4029c8035))
-
-
 ### Bug Fixes
 
 * **step:** a resume without a valid email fails clearly instead of breaking the run ([30a7394](https://github.com/ismailkattakath/jsonresume-connect/commit/30a7394f26e3070bd03c7b9af28a2647947b993b))
 * validate dates with the @jsonresume/schema 1.7.0 iso8601 pattern ([89f2005](https://github.com/ismailkattakath/jsonresume-connect/commit/89f200528ac393bdbdddb7e392a51b48a1441877))
-
-
-### Reverts
-
-* drop the step's override fields; the card keeps only Document title ([05663cb](https://github.com/ismailkattakath/jsonresume-connect/commit/05663cbcd598c93a9afbdce059d22d13763c700b))
-
-
-### Miscellaneous Chores
-
-* release 0.1.1 ([d0be085](https://github.com/ismailkattakath/jsonresume-connect/commit/d0be08535ff4849173cab249f5754aecfb9fcd93))
 
 ## 0.1.0 (2026-10-27)
 
