@@ -10,6 +10,14 @@ Entries are written by [release-please](https://github.com/googleapis/release-pl
 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Do not edit them by
 hand; each release is inserted directly below this paragraph, newest first.
 
+## [0.1.1](https://github.com/ismailkattakath/jsonresume-connect/compare/v0.1.0...v0.1.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **step:** a resume without a valid email fails clearly instead of breaking the run ([30a7394](https://github.com/ismailkattakath/jsonresume-connect/commit/30a7394f26e3070bd03c7b9af28a2647947b993b))
+* validate dates with the @jsonresume/schema 1.7.0 iso8601 pattern ([89f2005](https://github.com/ismailkattakath/jsonresume-connect/commit/89f200528ac393bdbdddb7e392a51b48a1441877))
+
 ## 0.1.0 (2026-10-27)
 
 
