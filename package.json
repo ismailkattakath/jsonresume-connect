@@ -1,6 +1,6 @@
 {
   "name": "jsonresume-connect",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A Google Workspace Studio custom step that renders your jsonresume.org resume into a Google Doc.",
   "license": "MIT",
