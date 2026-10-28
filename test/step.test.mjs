@@ -173,6 +173,20 @@ check(
     problem({work: [{startDate: 'Aug 2024'}]})
   )
 );
+for (const bad of ['2024-13', '2024-00', '2024-02-32', '2024-02-00']) {
+  check(
+    `an out-of-range date (${bad}) is rejected, per schema 1.7.0`,
+    /work\[0\]\.startDate must be YYYY/.test(
+      problem({work: [{startDate: bad}]})
+    )
+  );
+}
+for (const good of ['2024', '2024-12', '2024-02-29', '1999-01-31']) {
+  check(
+    `a valid date (${good}) passes`,
+    problem({work: [{startDate: good}]}) === ''
+  );
+}
 check(
   'an empty endDate (current role) passes',
   problem({work: [{startDate: '2024', endDate: ''}]}) === ''

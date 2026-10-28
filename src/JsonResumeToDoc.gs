@@ -633,10 +633,13 @@ var RESUME_ARRAY_SECTIONS = [
 ];
 // Its fields that are arrays of strings, wherever they appear.
 var RESUME_STRING_LIST_FIELDS = ['highlights', 'keywords', 'courses', 'roles'];
-// Its date fields, which the schema constrains to the "iso8601" pattern.
+// Its date fields, which the schema constrains to the "iso8601" pattern:
+// verbatim from @jsonresume/schema 1.7.0 (jsonresume.org packages/schema),
+// which bounds months to 01-12 and days to 01-31. v1.2.1's looser pattern
+// let "2024-13" through.
 var RESUME_DATE_FIELDS = ['startDate', 'endDate', 'date', 'releaseDate'];
 var ISO8601_PARTIAL =
-  /^([1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]|[1-2][0-9]{3}-[0-1][0-9]|[1-2][0-9]{3})$/;
+  /^([1-2][0-9]{3}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])|[1-2][0-9]{3}-(0[1-9]|1[0-2])|[1-2][0-9]{3})$/;
 
 /**
  * Structural check against the jsonresume.org v1 schema. A drifted shape
