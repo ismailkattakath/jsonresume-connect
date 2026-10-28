@@ -80,8 +80,9 @@ input's description (a test checks it).
 **Disconnect** swaps the connected section for the Connect section in place, through
 `AddOnsResponseService` `modifyCard` → `replaceSection`. Studio's guides say card navigation is not
 supported in Studio add-ons ([update cards](https://developers.google.com/workspace/add-ons/studio/update-cards)).
-The earlier `CardService` navigation call was replaced. **Not yet run live:** neither the
-replacement, nor cards without a header.
+The earlier `CardService` navigation call was replaced. **Run live 2026-10-28:** the section swaps
+in place, and the cards render without a header. A successful connect loads the résumé once, so
+the card shows "as @username" before the first run.
 
 **Labels are sentence case** (Google's add-on style guide), except proper nouns: "Connect JSON
 Resume", "Disconnect", "Document title". The connect card links `jsonresume.org` for sign-up; Studio

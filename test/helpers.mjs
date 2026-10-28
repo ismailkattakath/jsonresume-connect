@@ -128,6 +128,11 @@ export function fakeOAuth2({hasAccess = false} = {}) {
         if (k === 'getAccessToken') return () => state.token;
         if (k === 'getAuthorizationUrl')
           return () => 'https://jsonresume.org/oauth/authorize?x';
+        if (k === 'handleCallback')
+          return () => {
+            state.hasAccess = state.callbackOk !== false;
+            return state.hasAccess;
+          };
         if (k === 'reset')
           return () => {
             state.resets++;

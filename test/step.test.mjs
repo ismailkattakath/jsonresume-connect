@@ -345,11 +345,59 @@ check(
   )
 );
 
+// ---- Connect callback: records the account name before the first run -------
+for (const callbackOk of [true, false]) {
+  const oauth = fakeOAuth2();
+  oauth.state.callbackOk = callbackOk;
+  const user = propertyStore({});
+  let fetches = 0;
+  const c = loadProject({
+    OAuth2: oauth.OAuth2,
+    PropertiesService: {
+      getUserProperties: () => user,
+      getScriptProperties: () => propertyStore({JR_CLIENT_ID: 'test-client'}),
+    },
+    CacheService: {getUserCache: () => ({})},
+    LockService: {getUserLock: () => ({})},
+    UrlFetchApp: {
+      fetch: () => {
+        fetches++;
+        return {
+          getResponseCode: () => 200,
+          getContentText: () =>
+            JSON.stringify({
+              username: 'ada',
+              url: 'x',
+              resume: {basics: {name: 'A'}},
+            }),
+        };
+      },
+    },
+    HtmlService: {createHtmlOutput: s => s},
+  });
+  const page = c.jsonResumeAuthCallback({});
+  if (callbackOk) {
+    check(
+      'a successful connect records the account name',
+      user.getProperty('JR_USERNAME') === 'ada'
+    );
+    check(
+      'a successful connect says so',
+      /Connected to JSON Resume/.test(page)
+    );
+  } else {
+    check(
+      'a failed connect fetches nothing',
+      fetches === 0 && user.getProperty('JR_USERNAME') === null
+    );
+  }
+}
+
 // ---- Disconnect: a modifyCard action, not CardService navigation -----------
 // Studio's guides: navigation is not supported in Studio add-ons; a button
 // returns AddOnsResponseService.newRenderActionBuilder().setAction(
 // newAction().addModifyCard(newModifyCard().setReplaceSection(section))).
-// NOT YET RUN LIVE.
+// Run live 2026-10-28.
 {
   const {stub, calls} = recordingCardService();
   const oauth = fakeOAuth2({hasAccess: true});

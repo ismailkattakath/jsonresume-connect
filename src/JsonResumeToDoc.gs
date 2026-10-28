@@ -194,7 +194,7 @@ function unavailableCard() {
  * navigation methods are not supported in Studio add-ons, and its update-cards
  * guide returns AddOnsResponseService modifyCard actions instead
  * (https://developers.google.com/workspace/add-ons/studio/update-cards,
- * read 2026-10-27). NOT YET RUN LIVE.
+ * read 2026-10-27). Run live 2026-10-28: the section swaps in place.
  */
 function disconnectJsonResume() {
   var service = jsonResumeService();
@@ -226,6 +226,11 @@ function jsonResumeService() {
 
 function jsonResumeAuthCallback(request) {
   var ok = jsonResumeService().handleCallback(request);
+  // The card's "as @username" comes from JR_USERNAME, which only a resume load
+  // writes; Disconnect clears it. Load once here so a reconnect shows the
+  // account before the first run (seen missing live, 2026-10-28). Best effort:
+  // loadResume never throws, and a failure only leaves the name off the card.
+  if (ok) loadResume();
   return HtmlService.createHtmlOutput(
     ok
       ? 'Connected to JSON Resume. Return to Workspace Studio and refresh the page.'
