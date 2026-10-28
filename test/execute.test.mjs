@@ -445,6 +445,103 @@ describe('the email output', () => {
   }
 });
 
+describe('the overrides', () => {
+  const noEmail = {
+    username: 'ada',
+    url: 'x',
+    resume: {...VALID, basics: {...VALID.basics, email: undefined}},
+  };
+  const html = r =>
+    Buffer.from(r.driveCalls[0].options.payload).toString('utf8');
+
+  it('Email address fixes a resume with no address', () => {
+    const r = run({
+      resumeResponse: json(200, noEmail),
+      event: eventWith({overrideEmail: ' ada@example.org '}),
+    });
+    assert.equal(r.result.kind, 'outputs');
+    assert.deepEqual(r.result.map.email.values, ['ada@example.org']);
+    assert.ok(html(r).includes('mailto:ada@example.org'));
+  });
+
+  it('Email address replaces the resume address', () => {
+    const r = run({event: eventWith({overrideEmail: 'other@example.org'})});
+    assert.deepEqual(r.result.map.email.values, ['other@example.org']);
+  });
+
+  it('reads an email-typed value array, not only stringValues', () => {
+    const r = run({
+      resumeResponse: json(200, noEmail),
+      event: {
+        ...eventWith({}),
+        workflow: {
+          ...eventWith({}).workflow,
+          actionInvocation: {
+            ...eventWith({}).workflow.actionInvocation,
+            inputs: {overrideEmail: {emailAddressValues: ['ada@example.org']}},
+          },
+        },
+      },
+    });
+    assert.deepEqual(r.result.map.email.values, ['ada@example.org']);
+  });
+
+  it('a set but invalid Email address fails, fixable, before any Doc', () => {
+    failsWith(
+      run({event: eventWith({overrideEmail: 'not an address'})}),
+      /Email address in this step/
+    );
+  });
+
+  it('Name replaces basics.name in the Doc, the title and the output', () => {
+    const r = run({event: eventWith({overrideName: 'Augusta King'})});
+    assert.deepEqual(r.result.map.name.values, ['Augusta King']);
+    assert.ok(html(r).includes('Augusta King'));
+    assert.ok(html(r).includes('{"name":"Augusta King'));
+  });
+
+  it('Photo URL puts one https image in the Doc', () => {
+    const r = run({
+      event: eventWith({overrideImage: 'https://example.org/ada.png'}),
+    });
+    assert.equal(r.result.kind, 'outputs');
+    assert.equal((html(r).match(/<img /g) || []).length, 1);
+    assert.ok(html(r).includes('src="https://example.org/ada.png"'));
+  });
+
+  it('a resume photo alone never renders', () => {
+    const r = run({
+      resumeResponse: json(200, {
+        username: 'ada',
+        url: 'x',
+        resume: {
+          ...VALID,
+          basics: {...VALID.basics, image: 'https://tracker.example/p.gif'},
+        },
+      }),
+    });
+    assert.ok(!html(r).includes('<img'));
+  });
+
+  for (const bad of ['http://example.org/a.png', 'javascript:alert(1)', 'x']) {
+    it(`Photo URL ${bad} fails, fixable, before any Doc`, () => {
+      failsWith(
+        run({event: eventWith({overrideImage: bad})}),
+        /Photo URL in this step/
+      );
+    });
+  }
+
+  it('the resume itself is not changed', () => {
+    const resume = {...VALID, basics: {...VALID.basics}};
+    run({
+      resumeResponse: json(200, {username: 'ada', url: 'x', resume}),
+      event: eventWith({overrideName: 'Someone Else'}),
+    });
+    assert.equal(resume.basics.name, VALID.basics.name);
+  });
+});
+
 describe('the title input', () => {
   it('names the Doc when configured', () => {
     const r = run({event: eventWith({title: '  CV for Analytical Engines  '})});

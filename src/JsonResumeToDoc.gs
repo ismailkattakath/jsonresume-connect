@@ -93,22 +93,16 @@ function onConfigJsonResumeToDoc() {
 }
 
 /**
- * The connected card. The title field's setFieldName MUST equal a manifest
+ * The connected card. Each field's setFieldName MUST equal a manifest
  * inputs[].id: that binding is how the value reaches onExecute, and its title
- * matches that input's manifest description. It accepts variables
- * (setIncludeVariables), so an earlier step can supply the title.
+ * matches that input's manifest description. Every field accepts variables
+ * (setIncludeVariables), so an earlier step can supply it.
+ *
+ * Name, Email address and Photo URL override the resume's basics for this
+ * step only: the Doc and the outputs use them, the resume is never changed.
  */
 function connectedCard() {
   var who = PropertiesService.getUserProperties().getProperty('JR_USERNAME');
-  var titleInput = CardService.newTextInput()
-    .setFieldName('title')
-    .setTitle('Document title')
-    .setHint('Optional. Defaults to "{your name} — Resume".')
-    .setHostAppDataSource(
-      CardService.newHostAppDataSource().setWorkflowDataSource(
-        CardService.newWorkflowDataSource().setIncludeVariables(true)
-      )
-    );
   var section = CardService.newCardSection()
     .setId(CARD_SECTION_ID)
     .addWidget(
@@ -120,7 +114,30 @@ function connectedCard() {
           'This step can only see the files it creates.'
       )
     )
-    .addWidget(titleInput)
+    .addWidget(
+      stepTextInput(
+        'title',
+        'Document title',
+        'Optional. Defaults to "{your name} — Resume".'
+      )
+    )
+    .addWidget(
+      CardService.newTextParagraph().setText(
+        "<b>Overrides</b> (optional). Each replaces your resume's value for " +
+          'this step only; your resume is not changed.'
+      )
+    )
+    .addWidget(stepTextInput('overrideName', 'Name', 'Replaces basics.name.'))
+    .addWidget(
+      stepTextInput('overrideEmail', 'Email address', 'Replaces basics.email.')
+    )
+    .addWidget(
+      stepTextInput(
+        'overrideImage',
+        'Photo URL',
+        'An https link to an image. Adds it to the Doc and replaces basics.image.'
+      )
+    )
     .addWidget(
       CardService.newTextButton()
         .setText('Disconnect')
@@ -129,6 +146,19 @@ function connectedCard() {
         )
     );
   return CardService.newCardBuilder().addSection(section).build();
+}
+
+/** A card text field bound to a manifest input, accepting earlier steps' variables. */
+function stepTextInput(fieldName, title, hint) {
+  return CardService.newTextInput()
+    .setFieldName(fieldName)
+    .setTitle(title)
+    .setHint(hint)
+    .setHostAppDataSource(
+      CardService.newHostAppDataSource().setWorkflowDataSource(
+        CardService.newWorkflowDataSource().setIncludeVariables(true)
+      )
+    );
 }
 
 /** The custom sign-in card a public add-on needs instead of Google's generic one. */
@@ -313,17 +343,20 @@ function onExecuteJsonResumeToDoc(event) {
       ? failStep(loaded.error, {retry: true})
       : failStep('Could not load resume: ' + loaded.error);
   }
-  var resume = loaded.resume;
+  var overridden = applyOverrides(loaded.resume, inputs);
+  if (overridden.error) return failStep(overridden.error);
+  var resume = overridden.resume;
 
   // The email output is EMAIL_ADDRESS, and Studio needs every declared output
   // on every run: a missing one fails with "Missing required output
   // variables", an empty one with "Output contains an invalid email address"
   // (both measured live, 2026-10-27). So a resume without a usable address
   // fails here, before any Doc is created, with a fix the user can make.
-  if (!safeEmail(isPlainObject(resume.basics) ? resume.basics.email : '')) {
+  if (!safeEmail(resume.basics.email)) {
     return failStep(
       'Could not load resume: it has no valid email address. Add one as ' +
-        'basics.email in the jsonresume.org editor.'
+        'basics.email in the jsonresume.org editor, or set Email address ' +
+        'in this step.'
     );
   }
 
@@ -332,7 +365,8 @@ function onExecuteJsonResumeToDoc(event) {
     doc = renderResumeDoc(
       ScriptApp.getOAuthToken(),
       resume,
-      docTitleFor(resume, readActionInput(inputs, 'title'))
+      docTitleFor(resume, readActionInput(inputs, 'title')),
+      {image: overridden.image}
     );
   } catch (err) {
     console.error('JsonResumeToDoc: Doc create failed: ' + err.message);
@@ -340,6 +374,61 @@ function onExecuteJsonResumeToDoc(event) {
   }
 
   return outputs(buildOutputs(doc.id, doc.webViewLink, resume, doc.name));
+}
+
+/**
+ * The resume with this step's overrides applied, on a copy: the loaded
+ * resume is never changed. Returns { resume, image } or { error }.
+ *
+ * - Name and Email address replace basics.name and basics.email.
+ * - Photo URL replaces basics.image and is the only photo the Doc renders: a
+ *   resume's own basics.image stays out (resumeToHtml), the owner's typed URL
+ *   goes in. https only.
+ *
+ * A set but invalid value fails the step, actionable: silently falling back
+ * to the resume would hide the typo.
+ */
+function applyOverrides(resume, inputs) {
+  var copy = {};
+  Object.keys(resume).forEach(function (k) {
+    copy[k] = resume[k];
+  });
+  var basics = {};
+  if (isPlainObject(resume.basics)) {
+    Object.keys(resume.basics).forEach(function (k) {
+      basics[k] = resume.basics[k];
+    });
+  }
+  copy.basics = basics;
+
+  var name = readActionInput(inputs, 'overrideName');
+  if (name) basics.name = name;
+
+  var email = readActionInput(inputs, 'overrideEmail');
+  if (email) {
+    if (!safeEmail(email)) {
+      return {
+        error:
+          "Email address in this step is not a valid email address. Fix it, or clear it to use your resume's.",
+      };
+    }
+    basics.email = email;
+  }
+
+  var image = readActionInput(inputs, 'overrideImage');
+  if (image) {
+    var safe = safeWebUrl(image);
+    if (!safe || !/^https:/i.test(safe)) {
+      return {
+        error:
+          'Photo URL in this step must be an https link to an image. Fix it, or clear it.',
+      };
+    }
+    basics.image = safe;
+    image = safe;
+  }
+
+  return {resume: copy, image: image || ''};
 }
 
 /** A failed Doc create, in the user's terms. `status` is unset for a network error. */
@@ -811,11 +900,24 @@ function headlineFor(key, item) {
  */
 function readActionInput(inputs, id) {
   var entry = inputs && inputs[id];
-  if (!entry) return '';
-  if (Array.isArray(entry.stringValues) && entry.stringValues.length) {
-    return str(entry.stringValues[0]).trim();
+  if (!entry || typeof entry !== 'object') return '';
+  // stringValues, or an email-typed array: an EMAIL_ADDRESS input's key is
+  // not documented. Numbers and booleans never read as text. An object value
+  // (an address with a display name) gives its address.
+  var keys = Object.keys(entry).filter(function (k) {
+    return (
+      (k === 'stringValues' || /^email.*Values$/i.test(k)) &&
+      Array.isArray(entry[k]) &&
+      entry[k].length
+    );
+  });
+  if (!keys.length) return '';
+  var key = keys.indexOf('stringValues') >= 0 ? 'stringValues' : keys[0];
+  var v = entry[key][0];
+  if (v && typeof v === 'object') {
+    v = v.email || v.emailAddress || v.address || v.value || '';
   }
-  return '';
+  return str(v).trim();
 }
 
 function str(v) {

@@ -47,6 +47,33 @@
                 "dataType": {
                   "basicType": "STRING"
                 }
+              },
+              {
+                "id": "overrideName",
+                "description": "Name",
+                "cardinality": "SINGLE",
+                "required": false,
+                "dataType": {
+                  "basicType": "STRING"
+                }
+              },
+              {
+                "id": "overrideEmail",
+                "description": "Email address",
+                "cardinality": "SINGLE",
+                "required": false,
+                "dataType": {
+                  "basicType": "EMAIL_ADDRESS"
+                }
+              },
+              {
+                "id": "overrideImage",
+                "description": "Photo URL",
+                "cardinality": "SINGLE",
+                "required": false,
+                "dataType": {
+                  "basicType": "STRING"
+                }
               }
             ],
             "outputs": [
