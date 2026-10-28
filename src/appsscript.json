@@ -47,24 +47,6 @@
                 "dataType": {
                   "basicType": "STRING"
                 }
-              },
-              {
-                "id": "overrideName",
-                "description": "Name for later steps",
-                "cardinality": "SINGLE",
-                "required": false,
-                "dataType": {
-                  "basicType": "STRING"
-                }
-              },
-              {
-                "id": "overrideEmail",
-                "description": "Email for later steps",
-                "cardinality": "SINGLE",
-                "required": false,
-                "dataType": {
-                  "basicType": "EMAIL_ADDRESS"
-                }
               }
             ],
             "outputs": [

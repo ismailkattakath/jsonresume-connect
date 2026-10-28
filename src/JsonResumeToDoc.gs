@@ -93,16 +93,22 @@ function onConfigJsonResumeToDoc() {
 }
 
 /**
- * The connected card. Each field's setFieldName MUST equal a manifest
+ * The connected card. The title field's setFieldName MUST equal a manifest
  * inputs[].id: that binding is how the value reaches onExecute, and its title
- * matches that input's manifest description. Every field accepts variables
- * (setIncludeVariables), so an earlier step can supply it.
- *
- * The two "for later steps" fields replace only the Name and email outputs;
- * the Doc always shows the resume as it is (readOverrides).
+ * matches that input's manifest description. It accepts variables
+ * (setIncludeVariables), so an earlier step can supply the title.
  */
 function connectedCard() {
   var who = PropertiesService.getUserProperties().getProperty('JR_USERNAME');
+  var titleInput = CardService.newTextInput()
+    .setFieldName('title')
+    .setTitle('Document title')
+    .setHint('Optional. Defaults to "{your name} — Resume".')
+    .setHostAppDataSource(
+      CardService.newHostAppDataSource().setWorkflowDataSource(
+        CardService.newWorkflowDataSource().setIncludeVariables(true)
+      )
+    );
   var section = CardService.newCardSection()
     .setId(CARD_SECTION_ID)
     .addWidget(
@@ -114,33 +120,7 @@ function connectedCard() {
           'This step can only see the files it creates.'
       )
     )
-    .addWidget(
-      stepTextInput(
-        'title',
-        'Document title',
-        'Optional. Defaults to "{your name} — Resume".'
-      )
-    )
-    .addWidget(
-      CardService.newTextParagraph().setText(
-        '<b>For later steps</b> (optional). These replace the Name and ' +
-          'email variables only. The Doc always shows your resume as it is.'
-      )
-    )
-    .addWidget(
-      stepTextInput(
-        'overrideName',
-        'Name for later steps',
-        'Replaces the Name variable. Default: basics.name.'
-      )
-    )
-    .addWidget(
-      stepTextInput(
-        'overrideEmail',
-        'Email for later steps',
-        'Replaces the Resume email address variable. Default: basics.email.'
-      )
-    )
+    .addWidget(titleInput)
     .addWidget(
       CardService.newTextButton()
         .setText('Disconnect')
@@ -149,19 +129,6 @@ function connectedCard() {
         )
     );
   return CardService.newCardBuilder().addSection(section).build();
-}
-
-/** A card text field bound to a manifest input, accepting earlier steps' variables. */
-function stepTextInput(fieldName, title, hint) {
-  return CardService.newTextInput()
-    .setFieldName(fieldName)
-    .setTitle(title)
-    .setHint(hint)
-    .setHostAppDataSource(
-      CardService.newHostAppDataSource().setWorkflowDataSource(
-        CardService.newWorkflowDataSource().setIncludeVariables(true)
-      )
-    );
 }
 
 /** The custom sign-in card a public add-on needs instead of Google's generic one. */
@@ -347,20 +314,16 @@ function onExecuteJsonResumeToDoc(event) {
       : failStep('Could not load resume: ' + loaded.error);
   }
   var resume = loaded.resume;
-  var overrides = readOverrides(inputs);
-  if (overrides.error) return failStep(overrides.error);
 
   // The email output is EMAIL_ADDRESS, and Studio needs every declared output
   // on every run: a missing one fails with "Missing required output
   // variables", an empty one with "Output contains an invalid email address"
-  // (both measured live, 2026-10-27). So with no usable address from the
-  // resume or the step, it fails here, before any Doc, with a fix to make.
-  var basics = isPlainObject(resume.basics) ? resume.basics : {};
-  if (!overrides.email && !safeEmail(basics.email)) {
+  // (both measured live, 2026-10-27). So a resume without a usable address
+  // fails here, before any Doc is created, with a fix the user can make.
+  if (!safeEmail(isPlainObject(resume.basics) ? resume.basics.email : '')) {
     return failStep(
       'Could not load resume: it has no valid email address. Add one as ' +
-        'basics.email in the jsonresume.org editor, or set "Email for later ' +
-        'steps" in this step.'
+        'basics.email in the jsonresume.org editor.'
     );
   }
 
@@ -376,32 +339,7 @@ function onExecuteJsonResumeToDoc(event) {
     return docCreateFailure(err.status);
   }
 
-  var out = buildOutputs(doc.id, doc.webViewLink, resume, doc.name);
-  if (overrides.name) out.name = overrides.name;
-  if (overrides.email) out.email = overrides.email;
-  return outputs(out);
-}
-
-/**
- * The step's optional values for later steps: { name, email } or { error }.
- *
- * They replace only the Name and email OUTPUTS. The Doc, its title and the
- * Resume (JSON / plain text) outputs always show the resume as it is: a Doc
- * that silently differs from the resume is confusing (operator, 2026-10-27).
- *
- * A set but invalid email fails the step, actionable: silently falling back
- * to the resume would hide the typo.
- */
-function readOverrides(inputs) {
-  var name = readActionInput(inputs, 'overrideName');
-  var email = readActionInput(inputs, 'overrideEmail');
-  if (email && !safeEmail(email)) {
-    return {
-      error:
-        '"Email for later steps" is not a valid email address. Fix it, or clear it to use your resume\'s.',
-    };
-  }
-  return {name: name, email: safeEmail(email)};
+  return outputs(buildOutputs(doc.id, doc.webViewLink, resume, doc.name));
 }
 
 /** A failed Doc create, in the user's terms. `status` is unset for a network error. */
@@ -873,24 +811,11 @@ function headlineFor(key, item) {
  */
 function readActionInput(inputs, id) {
   var entry = inputs && inputs[id];
-  if (!entry || typeof entry !== 'object') return '';
-  // stringValues, or an email-typed array: an EMAIL_ADDRESS input's key is
-  // not documented. Numbers and booleans never read as text. An object value
-  // (an address with a display name) gives its address.
-  var keys = Object.keys(entry).filter(function (k) {
-    return (
-      (k === 'stringValues' || /^email.*Values$/i.test(k)) &&
-      Array.isArray(entry[k]) &&
-      entry[k].length
-    );
-  });
-  if (!keys.length) return '';
-  var key = keys.indexOf('stringValues') >= 0 ? 'stringValues' : keys[0];
-  var v = entry[key][0];
-  if (v && typeof v === 'object') {
-    v = v.email || v.emailAddress || v.address || v.value || '';
+  if (!entry) return '';
+  if (Array.isArray(entry.stringValues) && entry.stringValues.length) {
+    return str(entry.stringValues[0]).trim();
   }
-  return str(v).trim();
+  return '';
 }
 
 function str(v) {
