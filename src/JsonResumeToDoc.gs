@@ -315,6 +315,18 @@ function onExecuteJsonResumeToDoc(event) {
   }
   var resume = loaded.resume;
 
+  // The email output is EMAIL_ADDRESS, and Studio needs every declared output
+  // on every run: a missing one fails with "Missing required output
+  // variables", an empty one with "Output contains an invalid email address"
+  // (both measured live, 2026-10-27). So a resume without a usable address
+  // fails here, before any Doc is created, with a fix the user can make.
+  if (!safeEmail(isPlainObject(resume.basics) ? resume.basics.email : '')) {
+    return failStep(
+      'Could not load resume: it has no valid email address. Add one as ' +
+        'basics.email in the jsonresume.org editor.'
+    );
+  }
+
   var doc;
   try {
     doc = renderResumeDoc(
@@ -555,19 +567,18 @@ function failStep(message, opts) {
  *
  * `email` is the one EMAIL_ADDRESS output (manifest): Studio's "Draft an
  * email" To field offers only email-address variables, never text (live,
- * 2026-10-27). It goes through addEmailAddress, and only when safeEmail()
- * accepts it: a resume without a usable address leaves the variable out
- * rather than hand Studio a malformed one.
+ * 2026-10-27). It goes through addEmailAddress after safeEmail(). Every
+ * declared output must be returned, so the run has already failed (see
+ * onExecuteJsonResumeToDoc) if the resume has no usable address.
  */
 function outputs(plain) {
   var variableDataMap = {};
   Object.keys(plain).forEach(function (key) {
     if (key === 'email') {
-      var email = safeEmail(plain.email);
-      if (email) {
-        variableDataMap.email =
-          AddOnsResponseService.newVariableData().addEmailAddress(email);
-      }
+      variableDataMap.email =
+        AddOnsResponseService.newVariableData().addEmailAddress(
+          safeEmail(plain.email)
+        );
       return;
     }
     variableDataMap[key] =

@@ -143,7 +143,7 @@ users never see them, and renaming one breaks every flow bound to it.
 | `docId` | Document ID | for a Drive step (share, move) |
 | `name` | Name | `basics.name`, for addressing a message |
 | `label` | Headline | `basics.label` |
-| `email` | Resume email address | `basics.email`, usable as a draft's **To**. Left out when the resume has no valid address |
+| `email` | Resume email address | `basics.email`, usable as a draft's **To**. A resume with no valid address **fails the step** (Studio needs every output on every run) |
 | `resumeText` | Resume (plain text) | flattened text for any AI step (summary, cover letter) |
 | `resume` | Resume (JSON) | the validated `resume.json`. **Weakest case:** no native step consumes JSON, and it can be up to 2 MB |
 
