@@ -10,6 +10,13 @@ Entries are written by [release-please](https://github.com/googleapis/release-pl
 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Do not edit them by
 hand; each release is inserted directly below this paragraph, newest first.
 
+## [0.1.2](https://github.com/ismailkattakath/jsonresume-connect/compare/v0.1.1...v0.1.2) (2026-10-28)
+
+
+### Bug Fixes
+
+* **card:** show the connected account right after reconnecting ([3837736](https://github.com/ismailkattakath/jsonresume-connect/commit/38377361a8a1424bb72581c379467356c07567f3))
+
 ## [0.1.1](https://github.com/ismailkattakath/jsonresume-connect/compare/v0.1.0...v0.1.1) (2026-10-28)
 
 
