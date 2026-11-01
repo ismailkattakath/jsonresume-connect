@@ -148,7 +148,7 @@ kept for the record.
 
 ## Demo video script (~2 min, unlisted YouTube)
 
-Use a **test** Google account **outside the `kattakath.com` organization** and a **test**
+Use a **test** `@gmail.com` account (see § Before recording) and a **test**
 résumé. Show the browser address bar throughout. Narrate or caption every step.
 
 ### Why the first video was rejected (2026-10-29)
@@ -165,10 +165,21 @@ three counts, read from its frames on 2026-11-01:
 
 ### Before recording
 
-- **A test account outside the organization.** It must be able to use Workspace Studio and
-  install a draft add-on. Add it under **Marketplace SDK › Store Listing › Draft Testers**.
-  **Open question:** Studio needs a Workspace account, so this probably needs a second Workspace
-  tenant whose admin allows unpublished custom steps (step 10 above).
+- **A fresh `@gmail.com` test account, enrolled in Google Workspace Experiments.** It is the
+  only kind of account that can do all three things the video needs:
+  - **Be a draft tester.** "For public app listings, the email addresses must be Gmail
+    accounts" ([manage the listing][mlisting]). Add it under **Marketplace SDK › Store
+    Listing › Draft Testers**. A test deployment will not do, because "Test users must belong
+    to the same domain as the script owner" ([testing add-ons][addontest]).
+  - **Use Workspace Studio.** A personal account needs Google Workspace Experiments
+    ([Studio eligibility][studioelig]). **Leaving Experiments is permanent: you cannot
+    rejoin** ([Experiments][experiments]).
+  - **See the unverified-app screen.** A Gmail account gets the "Unverified auth flow"
+    ([Apps Script client verification][asverify]).
+  - A second Workspace tenant fails the first test, because it is not Gmail.
+  - **Not yet verified:** that a Gmail Studio user can run a step installed as a draft tester.
+    Try it once before recording.
+  - The account uses **1 of the 100** lifetime users of the unverified-app cap.
 - **Scopes match in three places.** `oauthScopes` in `src/appsscript.json`, the console's
   **Data Access** list, and the consent screen must list the same two scopes.
 - **Start from no grant.** Remove any earlier grant from the test account:
@@ -187,6 +198,25 @@ three counts, read from its frames on 2026-11-01:
 | 1:15 | Run the flow → Activity tab → open `docUrl` | "drive.file: the add-on creates this Doc in the user's Drive." |
 | 1:35 | Click the PDF and DOCX links | "Export links for the Doc it created." |
 | 1:45 | Drive: the add-on sees only this file; **Disconnect** clears the JSON Resume sign-in | "It cannot open any other file." |
+
+### Production pipeline (free tools, researched 2026-11-01)
+
+One rule overrides every effect below: **the consent segments stay full-frame and at normal
+speed.** Zoom, trimming and speed-ramping apply only outside them. Write down the consent time
+ranges right after recording. Every later step reuses them.
+
+| Step | Tool | Why it won | What it beat |
+|---|---|---|---|
+| Record, click-following zoom, cursor smoothing | [OpenScreen][openscreen] (`getopenscreen` fork, MIT) | Auto-zoom like Screen Studio, plus a CLI that edits the zooms in the `.openscreen` project file, so the zooms over consent can be removed | Cap: AGPLv3, and commercial use needs a paid license. Screen Studio: paid. Kap: no release since 2022. The original OpenScreen repo is archived |
+| Trim dead time, speed-ramp waits | [auto-editor][autoeditor] (Unlicense, in nixpkgs) | `--edit audio --margin 0.3s --when-inactive speed:4 --set-action nil,<consent-start>,<consent-end>` | Hand-written ffmpeg `silencedetect` scripts. **Never run it unpinned:** a static, silent consent screen is exactly what it cuts |
+| Compose: Material 3 title cards, lower thirds, transitions | [Remotion][remotion] (free for individuals; its own license, not OSI) | React code, so each segment's zoom can be read and checked. Ships `@remotion/transitions`, `@remotion/captions` and `@remotion/google-fonts` (Roboto Flex). Build the M3 look from Material 3 design tokens | HyperFrames (Apache-2.0, but pre-1.0). Motion Canvas: stale since 2024-12. MUI: not on Material 3 yet |
+| Captions | [whisper.cpp][whispercpp] (MIT, in nixpkgs) → `@remotion/captions` | Runs on-device on Apple Silicon | Paid caption services |
+| Thumbnail, 1280×720 | `npx remotion still`, from the same components | One source for the look | Figma or Canva: a second copy of the design |
+| Export | Remotion, 1920×1080 H.264, unlisted on YouTube | — | Shotcut (in nixpkgs) only for hand fixes |
+
+**Before the real recording, test the pipeline:** record a 30-second clip with a static
+consent screen, run it through every step, and check the export frame by frame. The consent
+segment must come out complete, uncropped and at normal speed.
 
 ## Re-verification triggers
 
@@ -207,3 +237,11 @@ three counts, read from its frames on 2026-11-01:
 [glitch]: https://support.glitch.com/t/google-api-not-allowing-glitch-me-as-authorised-domain/11276
 [asverify]: https://developers.google.com/apps-script/guides/client-verification
 [demohelp]: https://support.google.com/cloud/answer/13804565
+[mlisting]: https://developers.google.com/workspace/marketplace/manage-app-listing
+[addontest]: https://developers.google.com/workspace/add-ons/how-tos/testing-workspace-addons
+[studioelig]: https://support.google.com/workspace-studio/answer/16782648
+[experiments]: https://support.google.com/calendar/answer/13447104
+[openscreen]: https://github.com/getopenscreen/openscreen
+[autoeditor]: https://github.com/WyattBlue/auto-editor
+[remotion]: https://www.remotion.dev/
+[whispercpp]: https://github.com/ggml-org/whisper.cpp
