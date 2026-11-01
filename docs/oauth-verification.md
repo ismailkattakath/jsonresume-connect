@@ -7,8 +7,29 @@
   sensitive scopes"** ("Connect to an external service"). An earlier draft of this file guessed
   it was not sensitive; the console settled it. So publishing the app needs Google's
   sensitive-scope review: the justifications below **and the demo video** (§ Demo video script).
-- Until verified, the app stays usable by test users only (Audience › Test users), and
-  external users would see the unverified-app screen.
+- Until verified, external users see the unverified-app screen, and the sensitive scope is
+  capped at 100 users for the project's lifetime (see § Status).
+
+## Status (read in the console and Gmail, 2026-11-01)
+
+- **Audience:** **In production**, user type **External**. User cap: **1 / 100** used.
+- **Branding:** **verified**, shown to users.
+- **Data access:** **under review, blocked** on two of five steps, reviewed 2026-10-29:
+
+| Step | Result | Google's finding |
+|---|---|---|
+| 1. Homepage requirements | complete (2026-10-27) | — |
+| 2. Branding guidelines | complete (2026-10-27) | — |
+| 3. Request minimum scopes | complete (2026-10-29) | — |
+| 4. Privacy policy requirements | **error** | "does not specify any data protection mechanisms for sensitive data". **Fixed** by `privacy.md` § How your data is protected |
+| 5. App functionality | **error** | "demo video does not show the OAuth consent flow". Re-record per § Demo video script |
+
+- **To resume the review:** resubmit in **Verification Center** with the updated privacy-policy
+  link, then **reply to Google's email** ("[Action Needed] OAuth Verification Request
+  Acknowledgement", 2026-10-29) with the new demo-video link. Google continues only after that
+  reply.
+- **Do not trigger the unverified scope for new users** until approval: each one spends the
+  100-user cap, which never resets.
 - **Do brand verification anyway.** Without it the consent screen does not show the app name and
   logo ([branding help][cbrand]). Marketplace review also checks that "The app has passed OAuth
   verification" ([review]).
@@ -127,13 +148,40 @@ kept for the record.
 
 ## Demo video script (~2 min, unlisted YouTube)
 
-Use a **test** Google account and a **test** résumé. Show the browser address bar throughout.
+Use a **test** Google account **outside the `kattakath.com` organization** and a **test**
+résumé. Show the browser address bar throughout. Narrate or caption every step.
+
+### Why the first video was rejected (2026-10-29)
+
+The first video ([youtu.be/-2EGooqRRNE](https://youtu.be/-2EGooqRRNE), 1:57) does show a Google
+consent screen, at about 0:05–0:33. It still failed "does not show the OAuth consent flow" on
+three counts, read from its frames on 2026-11-01:
+
+| Gap | What the video shows | What Google requires |
+|---|---|---|
+| **Recorded with an in-org account** | The consent popup is signed in as the operator's own `kattakath.com` account, the project's own organization. Apps Script does not show the unverified-app screen to accounts in the same domain ([Apps Script client verification][asverify]) | Console › Data Access: "The unverified app screen will appear for your test account. This is expected and **must be shown** in the video" |
+| **One of two consent workflows** | Only the in-Studio **Grant permission** popup, which is the **Apps Script** OAuth client | The project has **two** OAuth clients: *Apps Script* and *Google Workspace Marketplace Integration Client*. Console: "Your video must include **all OAuth clients** that you assigned to this project". Help: "if there are multiple OAuth consent workflows, you must demonstrate each" ([demo-video help][demohelp]) |
+| **Consent screen not shown complete** | The popup is cropped: the scope list is cut off mid-scroll, "See access details" is never opened, and the footer with the language selector is never in frame | "The complete OAuth Consent Screen", with all scopes "fully expanded and readable", and the language selector set to **English** ([demo-video help][demohelp]) |
+
+### Before recording
+
+- **A test account outside the organization.** It must be able to use Workspace Studio and
+  install a draft add-on. Add it under **Marketplace SDK › Store Listing › Draft Testers**.
+  **Open question:** Studio needs a Workspace account, so this probably needs a second Workspace
+  tenant whose admin allows unpublished custom steps (step 10 above).
+- **Scopes match in three places.** `oauthScopes` in `src/appsscript.json`, the console's
+  **Data Access** list, and the consent screen must list the same two scopes.
+- **Start from no grant.** Remove any earlier grant from the test account:
+  [Google Account › Third-party connections](https://myaccount.google.com/connections) ›
+  JSON Resume Connect › Delete all connections.
+- **Maximize the consent popup** so the whole screen fits, including the footer.
 
 | t | Show | Say (caption) |
 |---|---|---|
-| 0:00 | Marketplace listing or the install dialog | "JSON Resume Connect adds a résumé step to Google Workspace Studio." |
-| 0:10 | **Google consent screen** with both scopes visible | "It asks for two permissions: files it creates in Drive (drive.file) and outbound requests to jsonresume.org and Google APIs." |
-| 0:30 | Studio: add the **JSON Resume Connect** step → **Connect JSON Resume** → jsonresume.org approval "Read your resume" → refresh | "The user connects their own JSON Resume account." |
+| 0:00 | **Workflow 1 — Marketplace install.** As the draft tester, open the listing and click **Install**. Show the install consent screen in full: the app name, the account, both scopes, and the language selector set to English. Pause ~5 s, then **Allow** | "Workflow 1 of 2: installing from the Google Workspace Marketplace." |
+| 0:15 | **Workflow 2 — Studio Grant permission.** Add the **JSON Resume Connect** step and click **Grant permission**. Show the **unverified-app screen** (expected before approval), then **Advanced › Go to JSON Resume Connect** | "Workflow 2 of 2: authorizing the step in Workspace Studio. Google shows this screen until verification completes." |
+| 0:25 | **Google OAuth consent screen**, complete: the app name, the account, **both scope lines with "See access details" opened**, scrolled to the footer with the language selector set to **English**. Pause ~5 s, then **Select all › Continue** | "It asks for two permissions: files it creates in Drive (drive.file) and outbound requests to jsonresume.org and Google APIs (script.external_request)." |
+| 0:40 | Back in the step card: **Connect JSON Resume** → jsonresume.org approval "Read your resume" → refresh | "The user connects their own JSON Resume account." |
 | 0:55 | Connected card "Connected to JSON Resume as @username" | — |
 | 1:05 | Add a Gmail draft step that uses the step's `docUrl` / `pdfUrl` | — |
 | 1:15 | Run the flow → Activity tab → open `docUrl` | "drive.file: the add-on creates this Doc in the user's Drive." |
@@ -157,3 +205,5 @@ Use a **test** Google account and a **test** résumé. Show the browser address 
 [review]: https://developers.google.com/workspace/marketplace/about-app-review
 [codelab]: https://codelabs.developers.google.com/workspace-studio-custom-extensions
 [glitch]: https://support.glitch.com/t/google-api-not-allowing-glitch-me-as-authorised-domain/11276
+[asverify]: https://developers.google.com/apps-script/guides/client-verification
+[demohelp]: https://support.google.com/cloud/answer/13804565
