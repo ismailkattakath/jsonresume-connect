@@ -22,12 +22,22 @@
 | 2. Branding guidelines | complete (2026-10-27) | — |
 | 3. Request minimum scopes | complete (2026-10-29) | — |
 | 4. Privacy policy requirements | **error** | "does not specify any data protection mechanisms for sensitive data". **Fixed** by `privacy.md` § How your data is protected |
-| 5. App functionality | **error** | "demo video does not show the OAuth consent flow". Re-record per § Demo video script |
+| 5. App functionality | **error** | "demo video does not show the OAuth consent flow". Re-recorded, see below |
 
-- **To resume the review:** resubmit in **Verification Center** with the updated privacy-policy
-  link, then **reply to Google's email** ("[Action Needed] OAuth Verification Request
-  Acknowledgement", 2026-10-29) with the new demo-video link. Google continues only after that
-  reply.
+- **Resubmitted 2026-11-01.**
+  - **Demo video:** [youtu.be/Dogx8ME4Dfc](https://youtu.be/Dogx8ME4Dfc), unlisted, 1:47. Recorded
+    by the operator as the Gmail draft tester. It shows the Marketplace install, the
+    unverified-app screen, the sign-in screen (English), the scopes screen, the Studio step
+    connecting to jsonresume.org, and a run completing.
+  - **Data Access** now lists four scopes, matching the Marketplace SDK: `drive.file`,
+    `script.external_request`, `userinfo.email` and `userinfo.profile`. Saving them updated the
+    live request, so the Verification Center shows "under review".
+  - **Replied** on Google's thread (2026-11-01). Google continues only after that reply.
+- **Known risk, accepted:** the video does **not** show the Studio "Grant permission" consent
+  (the Apps Script client). The Marketplace install had already granted the scopes. If Google
+  repeats "all OAuth clients", record a short second clip: remove the grant, then Studio ›
+  **Grant permission** › consent › run › open the created Doc. Splice it in with the
+  `jsonresume-connect-demo` Remotion project. The video also never opens the created Doc.
 - **Do not trigger the unverified scope for new users** until approval: each one spends the
   100-user cap, which never resets.
 - **Do brand verification anyway.** Without it the consent screen does not show the app name and
