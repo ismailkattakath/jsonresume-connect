@@ -5,7 +5,7 @@ permalink: /privacy/
 
 # Privacy policy — JSON Resume Connect
 
-*Last updated: 2026-10-27. Changes are tracked in this file's
+*Last updated: 2026-11-01. Changes are tracked in this file's
 [git history](https://github.com/ismailkattakath/jsonresume-connect/commits/main/docs/privacy.md).*
 
 **JSON Resume Connect** ("the add-on") is an independent open-source Google Workspace add-on. It
@@ -46,6 +46,23 @@ that hosts the add-on. The maintainer can read them. They record which inputs we
 (field **names**, not values) and error messages. An error message can quote a short part of the
 data that caused it, for example an error returned by a Google API. Logs are used **only** to fix
 bugs, and Google Cloud deletes them on its own retention schedule.
+
+## How your data is protected
+
+The add-on treats your JSON Resume sign-in and your résumé as **sensitive data**. These
+safeguards protect them, and each one can be checked in the source code:
+
+| Safeguard | What it means for you |
+|---|---|
+| **Encrypted in transit** | Every request the add-on makes uses **HTTPS**. Its manifest (`src/appsscript.json`, `urlFetchWhitelist`) lets it reach only `https://jsonresume.org/`, `https://docs.googleapis.com/` and `https://www.googleapis.com/`, and Apps Script blocks any other address. TLS certificate checks are never turned off |
+| **Encrypted at rest** | The résumé Doc lives in your Google Drive, which Google encrypts in transit and at rest ([Google Drive Help](https://support.google.com/drive/answer/10519333)). The add-on keeps no copy anywhere else |
+| **Sign-in tokens stay private to you** | Your JSON Resume tokens are kept in Apps Script **User Properties** and **User Cache**, inside Google's infrastructure. Only you, as the current user of the add-on, can read them; "properties are never shared between scripts" ([Apps Script Properties Service](https://developers.google.com/apps-script/guides/properties)). The maintainer cannot read them |
+| **No password, no shared secret** | You sign in on jsonresume.org's own page. The add-on never sees your jsonresume.org password. It uses OAuth with **PKCE** (a one-time proof that protects the sign-in code from interception) as a public client, so there is no client secret to leak |
+| **Least privilege** | It asks jsonresume.org for **read-only** access to your résumé (`resume:read`). In Google it can open **only files it created** (`drive.file`) |
+| **No server, no database** | Your data never passes through a server run by the maintainer. There is none |
+| **Kept out of logs** | Execution logs record field **names**, never your résumé or a token (see [Logs](#logs)) |
+| **Minimal retention** | Your résumé exists in memory only while a flow runs. **Disconnect** deletes your tokens and username at once (see [Deleting your data](#deleting-your-data)) |
+| **Vulnerability reporting** | Security problems are reported privately and fixed on `main`, as described in [SECURITY.md](https://github.com/ismailkattakath/jsonresume-connect/blob/main/SECURITY.md) |
 
 ## Google API Services — Limited Use
 
