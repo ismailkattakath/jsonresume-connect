@@ -60,7 +60,7 @@ safeguards protect them, and each one can be checked in the source code:
 | **No password, no shared secret** | You sign in on jsonresume.org's own page. The add-on never sees your jsonresume.org password. It uses OAuth with **PKCE** (a one-time proof that protects the sign-in code from interception) as a public client, so there is no client secret to leak |
 | **Least privilege** | It asks jsonresume.org for **read-only** access to your résumé (`resume:read`). In Google it can open **only files it created** (`drive.file`) |
 | **No server, no database** | Your data never passes through a server run by the maintainer. There is none |
-| **Kept out of logs** | Execution logs record field **names**, never your résumé or a token (see [Logs](#logs)) |
+| **Kept out of logs** | Execution logs record input field **names**, never the résumé body or a token. An error message can quote a short error string, as described in [Logs](#logs) |
 | **Minimal retention** | Your résumé exists in memory only while a flow runs. **Disconnect** deletes your tokens and username at once (see [Deleting your data](#deleting-your-data)) |
 | **Vulnerability reporting** | Security problems are reported privately and fixed on `main`, as described in [SECURITY.md](https://github.com/ismailkattakath/jsonresume-connect/blob/main/SECURITY.md) |
 
