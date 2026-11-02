@@ -7,7 +7,7 @@ it needs. User-facing release notes live in `docs/`; this file is the operator's
 
 | Step | Workflow | Trigger | Output |
 |---|---|---|---|
-| 1 | `ci.yml` (job `lint-format-test`) | PR, push to `main` | lint, format, tests, `src/appsscript.json` parses |
+| 1 | `ci.yml` (jobs `lint-format-test`, `dco`, `gate`) | PR, push to `main`, dispatch | lint, format, tests, `src/appsscript.json` parses, DCO; `gate` aggregates them |
 | 2 | `release-please.yml` | push to `main` | opens/updates the release PR from Conventional Commits |
 | 3 | merge the release PR | operator | tag `vX.Y.Z`, GitHub release, `CHANGELOG.md` |
 | 4 | `deploy.yml` (called by step 2's `deploy` job) | release created | `clasp push --force` + `clasp create-deployment --description vX.Y.Z` |
@@ -78,7 +78,8 @@ gh variable set DEPLOYMENT_ID --repo "$R" --env production --body "<deployment i
   `kattakath/nix-config`. Set the variable **after** the key, or the token step fails:
   `gh secret set CI_BOT_APP_PRIVATE_KEY --repo "$R" < app.pem`, then
   `gh variable set CI_BOT_CLIENT_ID --repo "$R" --body "<client id>"`. Without the App it
-  falls back to `RELEASE_PLEASE_TOKEN`, then `GITHUB_TOKEN`.
+  falls back to `RELEASE_PLEASE_TOKEN`; with neither, the job **fails**. There is no
+  `GITHUB_TOKEN` fallback: a release PR it opens runs no CI, so it could never pass `gate`.
 
 ## Environment `production`
 
@@ -97,7 +98,12 @@ gh api -X PUT repos/ismailkattakath/jsonresume-connect/environments/production \
 JSON
 ```
 
-## Branch ruleset for `main` — apply after going public (not yet applied)
+## Branch ruleset for `main` — applied
+
+Both rulesets are live: `main` (id `25995382`) and `release tags` (id `25995384`). The JSON
+below is how they were created. The `main` ruleset is due to be replaced by the shared
+`kattakath/.github` ruleset, whose one required check is `gate` (see CONTRIBUTING.md § How a
+PR lands); until then it requires `lint-format-test` and `dco`, which `ci.yml` still reports.
 
 Requires a PR, the CI check, linear history; blocks force-push and deletion. The repository
 admin role (`actor_id: 5`) may bypass — that is how the owner pushes straight to `main` and
@@ -143,7 +149,7 @@ JSON
 ### Tag ruleset — release tags are immutable
 
 `deploy.yml` checks that the tag's commit is on `main`, but a moved tag would still pass if it
-was moved to another `main` commit. Block that (apply with the branch ruleset):
+was moved to another `main` commit. This ruleset blocks that:
 
 ```bash
 gh api -X POST repos/ismailkattakath/jsonresume-connect/rulesets --input - <<'JSON'
@@ -169,13 +175,13 @@ JSON
 
 ## DCO (Developer Certificate of Origin)
 
-- `dco.yml` (job `dco`) fails a PR when any non-merge commit lacks a `Signed-off-by:` trailer
+- `ci.yml` job `dco` (PR-only) fails a PR when any non-merge commit lacks a `Signed-off-by:` trailer
   naming its author (`git commit -s`). Bot commits (`*[bot]@users.noreply.github.com`:
   release-please, Dependabot) are exempt.
 - It is plain `git` in a pinned checkout: no third-party action holds the PR.
 - **Alternative: the DCO GitHub App** (github.com/apps/dco, CNCF's standard). It needs no
-  workflow and offers a "remediation commit" flow. If you install it, delete `dco.yml` and make
-  the App's `DCO` check required instead of `dco` — one check, not two.
+  workflow and offers a "remediation commit" flow. If you install it, delete the `dco` job
+  (and its `gate` expect key) and rely on the App's `DCO` check instead — one check, not two.
 
 ## Supply-chain choices (and what they beat)
 
