@@ -27,7 +27,7 @@ jobs:
       # The owner's CI GitHub App (same pinned action and names as kattakath/nix-config's
       # auto-merge.yml). Release PRs pushed with GITHUB_TOKEN are held as "action_required"
       # until someone approves each run; PRs pushed as the App run their checks at once.
-      # Skipped when the App is not configured, so a fork still releases with GITHUB_TOKEN.
+      # Skipped when the App is not configured; the next step then demands RELEASE_PLEASE_TOKEN.
       - id: app-token
         if: ${{ vars.CI_BOT_CLIENT_ID != '' }}
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
@@ -39,11 +39,22 @@ jobs:
           permission-contents: write
           permission-issues: write
           permission-pull-requests: write
+      # Fail loudly, never fall back to GITHUB_TOKEN: a release PR it opens starts no CI, so
+      # it can never pass the required `gate` check and sits BLOCKED with no error anywhere.
+      - name: Require a token whose release PRs run CI
+        if: ${{ steps.app-token.outputs.token == '' }}
+        env:
+          HAS_PAT: ${{ secrets.RELEASE_PLEASE_TOKEN != '' }} # zizmor: ignore[secrets-outside-env] -- a boolean, never the value
+        run: |
+          if [ "$HAS_PAT" != true ]; then
+            echo "::error title=release-please::set CI_BOT_CLIENT_ID + CI_BOT_APP_PRIVATE_KEY (or RELEASE_PLEASE_TOKEN); see .github/RELEASING.md"
+            exit 1
+          fi
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
-          # App token, else a fine-grained PAT, else GITHUB_TOKEN (see .github/RELEASING.md).
-          token: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_TOKEN || github.token }} # zizmor: ignore[secrets-outside-env] -- an environment reviewer would gate every push to main
+          # App token, else a fine-grained PAT; no GITHUB_TOKEN fallback (see .github/RELEASING.md).
+          token: ${{ steps.app-token.outputs.token || secrets.RELEASE_PLEASE_TOKEN }} # zizmor: ignore[secrets-outside-env] -- an environment reviewer would gate every push to main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 

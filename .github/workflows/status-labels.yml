@@ -1,0 +1,32 @@
+name: status-labels
+
+# Thin caller. Mirrors "auto-merge armed" / "in merge queue" as PR labels; the logic and the
+# reason for pull_request_target live in kattakath/.github's status-labels.yml header.
+# pull_request_target is safe here: the called workflow checks out and runs no PR code, it
+# only reads PR metadata and edits labels.
+
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] -- no checkout; reads PR metadata and edits labels only
+    types:
+      [
+        auto_merge_enabled,
+        auto_merge_disabled,
+        enqueued,
+        dequeued,
+        closed,
+        reopened,
+        synchronize,
+      ]
+
+concurrency:
+  group: status-labels-${{ github.event.pull_request.number }}
+  cancel-in-progress: true # every run recomputes from live state, so the latest wins
+
+permissions: {}
+
+jobs:
+  sync:
+    permissions:
+      pull-requests: write # read the PR's live auto-merge / merge-queue state
+      issues: write # create the two labels and add/remove them (labels are an issues API)
+    uses: kattakath/.github/.github/workflows/status-labels.yml@3d5ad5b9e04c853dbb0d82446255c9ef9230332a

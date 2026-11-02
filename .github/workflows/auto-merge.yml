@@ -1,0 +1,28 @@
+name: auto-merge
+
+# Thin caller. The logic, and why it needs an App token rather than GITHUB_TOKEN, lives in
+# kattakath/.github/.github/workflows/auto-merge.yml. Open work in progress as a DRAFT:
+# an armed PR merges the moment `gate` is green.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number }}
+  # false: `true` let a later event cancel the ready_for_review arm run (kattakath/nix-config #750).
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  arm:
+    # Release PRs are merged by hand, never armed: merging one cuts an immutable tag,
+    # a GitHub release and a production deploy.
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    uses: kattakath/.github/.github/workflows/auto-merge.yml@3d5ad5b9e04c853dbb0d82446255c9ef9230332a
+    with:
+      client-id: ${{ vars.CI_BOT_CLIENT_ID }}
+    secrets:
+      app-private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}

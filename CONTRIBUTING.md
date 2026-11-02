@@ -111,5 +111,15 @@ repositories.
 - The maintainer reviews every pull request ([CODEOWNERS](.github/CODEOWNERS)). How decisions
   are made: [GOVERNANCE.md](GOVERNANCE.md).
 
+### How a PR lands
+
+- **One required check: `gate`.** It passes only when every CI job ended as the event
+  expects: lint, format and tests ran and passed, and `dco` ran and passed on the PR.
+- **Fork PRs run everything on the PR.** You see a real failure before review.
+- **A maintainer merges** a contributor's PR after review. The maintainer's own PRs arm
+  auto-merge and land when `gate` is green, so work in progress is opened as a draft.
+- **Release PRs** (`release-please--*`) are never auto-merged. The maintainer merges them by
+  hand, because a merge cuts an immutable tag, a GitHub release and a deploy.
+
 By contributing, you agree that your contributions are licensed under the
 [MIT License](LICENSE).

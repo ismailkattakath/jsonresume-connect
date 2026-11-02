@@ -1,0 +1,27 @@
+name: arm-dependabot
+
+# Thin caller. Why Dependabot PRs are armed from a schedule: kattakath/.github's
+# arm-dependabot.yml header. It selects PRs by author (dependabot[bot]), whose branches are
+# always dependabot/*, so it can never arm a release-please-- PR.
+
+on:
+  schedule:
+    # Off the hour: GitHub delays and drops scheduled runs at peak. Dispatch to arm at once.
+    - cron: '41 */6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: arm-dependabot
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: read # list open Dependabot PRs; the arm itself uses the App token
+
+jobs:
+  arm:
+    uses: kattakath/.github/.github/workflows/arm-dependabot.yml@3d5ad5b9e04c853dbb0d82446255c9ef9230332a
+    with:
+      client-id: ${{ vars.CI_BOT_CLIENT_ID }}
+    secrets:
+      app-private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
