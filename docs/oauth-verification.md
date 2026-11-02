@@ -7,14 +7,20 @@
   sensitive scopes"** ("Connect to an external service"). An earlier draft of this file guessed
   it was not sensitive; the console settled it. So publishing the app needs Google's
   sensitive-scope review: the justifications below **and the demo video** (§ Demo video script).
-- Until verified, external users see the unverified-app screen, and the sensitive scope is
-  capped at 100 users for the project's lifetime (see § Status).
+- **Approved 2026-11-02** (Google's email, 09:57 UTC): the sensitive scope
+  `script.external_request` passed review (see § Status).
 
-## Status (read in the console and Gmail, 2026-11-01)
+## Status (read in Gmail, 2026-11-02; console last read 2026-11-01)
 
 - **Audience:** **In production**, user type **External**. User cap: **1 / 100** used.
 - **Branding:** **verified**, shown to users.
-- **Data access:** **under review, blocked** on two of five steps, reviewed 2026-10-29:
+- **Data access:** **approved 2026-11-02, 09:57 UTC**, on Google's existing verification
+  thread. The email approves `.../auth/script.external_request`. The other three scopes are
+  non-sensitive and needed no review. The subject still says "[Action Needed]", but the body asks
+  for nothing. It only reminds you that adding a scope or changing the consent screen needs a
+  fresh verification. The console was not re-read after the email.
+- **History:** the 2026-10-29 review blocked two of five steps. The 2026-11-01 resubmission
+  below resolved both:
 
 | Step | Result | Google's finding |
 |---|---|---|
@@ -33,13 +39,14 @@
     `script.external_request`, `userinfo.email` and `userinfo.profile`. Saving them updated the
     live request, so the Verification Center shows "under review".
   - **Replied** on Google's thread (2026-11-01). Google continues only after that reply.
-- **Known risk, accepted:** the video does **not** show the Studio "Grant permission" consent
+- **Known risk, accepted (did not block the approval):** the video does **not** show the Studio "Grant permission" consent
   (the Apps Script client). The Marketplace install had already granted the scopes. If Google
   repeats "all OAuth clients", record a short second clip: remove the grant, then Studio ›
   **Grant permission** › consent › run › open the created Doc. Splice it in with the
   `jsonresume-connect-demo` Remotion project. The video also never opens the created Doc.
-- **Do not trigger the unverified scope for new users** until approval: each one spends the
-  100-user cap, which never resets.
+- **The 100-user cap** applied to the unverified sensitive scope. It should no longer bind now
+  that the scope is approved. That is an inference: the email does not say so, so confirm in the
+  console (Audience) before relying on it.
 - **Do brand verification anyway.** Without it the consent screen does not show the app name and
   logo ([branding help][cbrand]). Marketplace review also checks that "The app has passed OAuth
   verification" ([review]).
