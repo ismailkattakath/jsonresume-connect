@@ -19,6 +19,13 @@
   non-sensitive and needed no review. The subject still says "[Action Needed]", but the body asks
   for nothing. It only reminds you that adding a scope or changing the consent screen needs a
   fresh verification. The console was not re-read after the email.
+- **Smoke test passed (2026-11-06), Apps Script version 5 with the PKCE fix (`d2d62a4`).** As the
+  Gmail draft tester in a guest window: connect card, then `jsonResumeAuthCallback`
+  **Completed** (3:55:56), then two `onExecuteJsonResumeToDoc` runs **Completed** (5.0 s, 10.1 s),
+  read in the project's Executions log. "Completed" means no crash; the created Doc was not
+  checked. The same sign-in in a browser signed in to several Google accounts never reached the
+  callback (`script.google.com/accounts?authuser=3…`, "Sorry, unable to open the file at this
+  time").
 - **gcloud (2026-11-06):** `gcloud projects describe` confirms project **560535498451**,
   **ACTIVE**, with the Docs, Drive and Marketplace SDK APIs enabled. gcloud **cannot** show
   verification status: its only OAuth command (`gcloud iap oauth-brands`) went with the IAP OAuth
