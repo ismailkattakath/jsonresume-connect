@@ -3,6 +3,11 @@
 Copy-paste text and the asset list for **Google Cloud console › APIs & Services › Google
 Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 
+> **Listing status: submitted for review 2026-11-06.** Visibility **Public** (saved, permanent),
+> Individual + Admin Install, four scopes, deployment `AKfycbwY…` at Apps Script **version 5**
+> (v0.1.2 + the PKCE CSPRNG fix). Google: "If the app is approved, it will be published
+> automatically." The draft cannot be edited while in review.
+>
 > **Preview status: cleared (read 2026-11-06).** Google's help page no longer calls custom steps
 > a "limited preview", and says developers can "publish them publicly to the Google Workspace
 > Marketplace" ([Create and use custom steps][studiohelp]). It names no admin switch for custom
