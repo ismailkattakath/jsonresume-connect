@@ -24,6 +24,19 @@ import {
 
 const ctx = loadProject();
 
+// ---- PKCE verifier: CSPRNG, not the library's Math.random() ---------------
+{
+  const pk = loadProject({Utilities: {getUuid: () => crypto.randomUUID()}});
+  const a = pk.pkceVerifier();
+  const b = pk.pkceVerifier();
+  check(
+    'PKCE verifier is 64 hex chars (RFC 7636 allows 43-128 unreserved)',
+    /^[0-9a-f]{64}$/.test(a),
+    a
+  );
+  check('PKCE verifier differs per call', a !== b);
+}
+
 // ---- the /api/oauth/resume body -------------------------------------------
 // The body is { username, url, resume } (measured 2026-10-27).
 check(
@@ -214,6 +227,7 @@ check(
 function cardsFor({hasAccess}) {
   const {stub, calls} = recordingCardService();
   const c = loadProject({
+    Utilities: {getUuid: () => crypto.randomUUID()},
     CardService: stub,
     ...fakeOAuth2({hasAccess}),
     PropertiesService: {
@@ -352,6 +366,7 @@ for (const callbackOk of [true, false]) {
   const user = propertyStore({});
   let fetches = 0;
   const c = loadProject({
+    Utilities: {getUuid: () => crypto.randomUUID()},
     OAuth2: oauth.OAuth2,
     PropertiesService: {
       getUserProperties: () => user,
@@ -403,6 +418,7 @@ for (const callbackOk of [true, false]) {
   const oauth = fakeOAuth2({hasAccess: true});
   const user = propertyStore({JR_USERNAME: 'ada'});
   const c = loadProject({
+    Utilities: {getUuid: () => crypto.randomUUID()},
     CardService: stub,
     AddOnsResponseService: fakeAddOnsResponseService(),
     OAuth2: oauth.OAuth2,
@@ -442,6 +458,7 @@ for (const callbackOk of [true, false]) {
 {
   const {stub, calls} = recordingCardService();
   const c = loadProject({
+    Utilities: {getUuid: () => crypto.randomUUID()},
     CardService: stub,
     console: {log() {}, error() {}},
     ...fakeOAuth2({hasAccess: false}),

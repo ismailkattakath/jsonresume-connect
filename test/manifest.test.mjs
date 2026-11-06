@@ -210,6 +210,14 @@ check(
     ])
 );
 check(
+  "no generateCodeVerifier() (the library's Math.random() verifier)",
+  !/\.generateCodeVerifier\s*\(/.test(code)
+);
+check(
+  'the OAuth service takes its verifier from pkceVerifier()',
+  /\.setCodeVerififer\(\s*pkceVerifier\(\)\s*\)/.test(code)
+);
+check(
   'no DocumentApp or DriveApp call (each one forces a broader scope)',
   !/\b(DocumentApp|DriveApp)\s*\./.test(code)
 );

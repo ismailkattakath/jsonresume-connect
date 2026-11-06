@@ -264,7 +264,7 @@ Node 24 (`.nvmrc`). Without a global Node: `nix shell nixpkgs#nodejs_24`.
 
 | Suite | Checks |
 |---|---|
-| `test/manifest.test.mjs` | each file parses; no name defined twice; one step, its name in no source file; callbacks defined; declared outputs == returned; card field == manifest input; exactly two scopes; no DocumentApp/DriveApp/advanced-service call; allowlist rules; OAuth2.gs hash |
+| `test/manifest.test.mjs` | each file parses; no name defined twice; one step, its name in no source file; callbacks defined; declared outputs == returned; card field == manifest input; exactly two scopes; no DocumentApp/DriveApp/advanced-service call; PKCE verifier from `pkceVerifier()`, never `generateCodeVerifier()`; allowlist rules; OAuth2.gs hash |
 | `test/execute.test.mjs` | the whole execute path against fakes: not connected, 401 (resets the connection), 404, HTTP 500, fetch error, non-JSON, over 2 MB, invalid résumé, Drive 403, valid run (one HTML upload, two styling calls, every output), title input, best-effort styling, envelope-only logging, allowlisted URLs only |
 | `test/render.test.mjs` | HTML escaping against a hostile résumé, the `href` guard, export links, section order and absence, the live-run styling findings |
 | `test/step.test.mjs` | the live event payload shape, strict validation, connect cards, plain-text flattening |

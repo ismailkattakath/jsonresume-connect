@@ -210,6 +210,16 @@ function disconnectJsonResume() {
     .build();
 }
 
+/**
+ * A PKCE verifier from a CSPRNG: 64 hex chars, inside RFC 7636's 43-128.
+ * Not the library's generateCodeVerifier(), which uses Math.random().
+ * Utilities.getUuid() is java.util.UUID.randomUUID(), whose UUIDs come from
+ * "a cryptographically strong pseudo random number generator" (Java SE docs).
+ */
+function pkceVerifier() {
+  return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+}
+
 /** OAuth2 for Apps Script (vendored at aae9287, the #513 public-client refresh fix). */
 function jsonResumeService() {
   return OAuth2.createService('jsonresume')
@@ -217,7 +227,7 @@ function jsonResumeService() {
     .setTokenUrl(JR_ORIGIN + '/api/oauth/token')
     .setClientId(jsonResumeClientId())
     .setScope('resume:read')
-    .generateCodeVerifier()
+    .setCodeVerififer(pkceVerifier()) // the library's spelling
     .setCallbackFunction('jsonResumeAuthCallback')
     .setPropertyStore(PropertiesService.getUserProperties())
     .setCache(CacheService.getUserCache())
