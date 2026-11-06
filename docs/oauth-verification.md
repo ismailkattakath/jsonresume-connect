@@ -127,7 +127,8 @@ kept for the record.
    - Developer contact email: `<operator>`
 5. **Google Auth platform › Audience.** User type **External**. Click **Publish app** (moves from
    Testing to In production). While in Testing, add test users under **Audience › Test users**.
-6. **Google Auth platform › Data Access › Add or Remove Scopes.** Add the two scopes above. **Read
+6. **Google Auth platform › Data Access › Add or Remove Scopes.** Add the two scopes above, plus the default `userinfo.email` and
+   `userinfo.profile` (four in all, as Data Access lists them since 2026-11-01). **Read
    the "sensitive" indicator** next to each ("Sensitive scopes require review by Google and have a
    sensitive indicator" — [scopes list][scopes]). Record what it says in this file.
 7. **Search Console** (search.google.com/search-console). Verify the homepage domain with an
@@ -158,7 +159,10 @@ kept for the record.
       quiet launch is wanted.
     - Installation settings: **Individual + Admin Install**.
     - App integration: **Google Workspace add-on** › paste the Deployment ID from step 9.
-    - OAuth scopes: the **same two** scopes. They must match the consent screen and the manifest.
+    - OAuth scopes: the **same four** Data Access lists: `drive.file`,
+      `script.external_request`, `userinfo.email`, `userinfo.profile`. The manifest declares the
+      first two; the two `userinfo` scopes are Google's defaults. A mismatch with Data Access is a
+      rejection risk ("Scope Matching", Google's 2026-10-29 review).
     - Developer name: `Ismail Kattakath` · Developer website: `https://github.com/ismailkattakath`
       · Developer email: `<operator>` (not shown publicly).
     - Trader status: `<operator>` (EEA consumer disclosure).
@@ -201,8 +205,9 @@ three counts, read from its frames on 2026-11-01:
   - **Not yet verified:** that a Gmail Studio user can run a step installed as a draft tester.
     Try it once before recording.
   - The account uses **1 of the 100** lifetime users of the unverified-app cap.
-- **Scopes match in three places.** `oauthScopes` in `src/appsscript.json`, the console's
-  **Data Access** list, and the consent screen must list the same two scopes.
+- **Scopes match in three places.** The console's **Data Access** list, the Marketplace SDK and
+  the consent screen list the same four scopes. `oauthScopes` in `src/appsscript.json` declares
+  the two non-default ones (`drive.file`, `script.external_request`).
 - **Start from no grant.** Remove any earlier grant from the test account:
   [Google Account › Third-party connections](https://myaccount.google.com/connections) ›
   JSON Resume Connect › Delete all connections.

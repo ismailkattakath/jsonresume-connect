@@ -67,7 +67,7 @@ WHY IT IS BUILT THIS WAY
 • No server, no analytics, no tracking. Your résumé and your Docs stay in your accounts.
 
 YOU NEED
-• A Google Workspace account with access to Workspace Studio.
+• A Google Workspace account with access to Workspace Studio. In a Workspace organization, an administrator must turn on custom steps in the Admin console first.
 • A jsonresume.org account with a résumé (sign in with GitHub).
 
 Open source (MIT): https://github.com/ismailkattakath/jsonresume-connect
