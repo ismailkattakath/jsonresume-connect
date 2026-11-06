@@ -19,6 +19,10 @@
   non-sensitive and needed no review. The subject still says "[Action Needed]", but the body asks
   for nothing. It only reminds you that adding a scope or changing the consent screen needs a
   fresh verification. The console was not re-read after the email.
+- **gcloud (2026-11-06):** `gcloud projects describe` confirms project **560535498451**,
+  **ACTIVE**, with the Docs, Drive and Marketplace SDK APIs enabled. gcloud **cannot** show
+  verification status: its only OAuth command (`gcloud iap oauth-brands`) went with the IAP OAuth
+  Admin APIs, shut down 2026-03-19. Read the status in the console's Verification Center.
 - **History:** the 2026-10-29 review blocked two of five steps. The 2026-11-01 resubmission
   below resolved both:
 

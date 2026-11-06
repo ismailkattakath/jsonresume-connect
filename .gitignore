@@ -2,3 +2,5 @@ node_modules/
 # clasp project binding: holds your own scriptId. Copy .clasp.json.example.
 .clasp.json
 .clasprc.json
+# direnv binding: holds your own GCP project ID. Copy .envrc.example.
+.envrc

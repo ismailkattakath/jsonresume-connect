@@ -1,0 +1,3 @@
+# direnv binding: points gcloud at your own Google Cloud project inside this folder.
+# Copy to .envrc, set your project ID, then run `direnv allow`.
+export CLOUDSDK_CORE_PROJECT=your-gcp-project-id
