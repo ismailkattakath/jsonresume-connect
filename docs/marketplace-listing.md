@@ -3,9 +3,11 @@
 Copy-paste text and the asset list for **Google Cloud console › APIs & Services › Google
 Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 
-> **Status to check first:** Google's help page labels Workspace Studio custom steps as a
-> **limited preview** ([Create and use custom steps][studiohelp]). Confirm that a public
-> Marketplace listing for a Studio-only add-on is accepted **before** paying for review effort.
+> **Preview status: cleared (read 2026-11-06).** Google's help page no longer calls custom steps
+> a "limited preview", and says developers can "publish them publicly to the Google Workspace
+> Marketplace" ([Create and use custom steps][studiohelp]). It names no admin switch for custom
+> steps; the Admin console toggle is known only from this project's own deploy (README § Also
+> learned in the deploy).
 >
 > **One step, named "JSON Resume Connect"** (core merges Load + Render into it and deletes
 > Parse Job Description and Apply Tailoring).
@@ -67,7 +69,7 @@ WHY IT IS BUILT THIS WAY
 • No server, no analytics, no tracking. Your résumé and your Docs stay in your accounts.
 
 YOU NEED
-• A Google Workspace account with access to Workspace Studio. In a Workspace organization, an administrator must turn on custom steps in the Admin console first.
+• A Google Workspace account with access to Workspace Studio. In a Workspace organization, an administrator can turn custom steps off in the Admin console; if the step is missing, ask them.
 • A jsonresume.org account with a résumé (sign in with GitHub).
 
 Open source (MIT): https://github.com/ismailkattakath/jsonresume-connect
