@@ -256,7 +256,10 @@ segment must come out complete, uncropped and at normal speed.
 
 - Repo rename or transfer to the jsonresume org (homepage and privacy URLs change).
 - A new scope in `appsscript.json`.
-- A new app name or logo on the consent screen.
+- A new app name or logo on the consent screen. Measured 2026-11-18 for a logo change: only
+  **Branding** needed re-verifying. "Verify branding" ran automatically in under five minutes,
+  then "Publish branding" put the new logo live. Until published, users keep seeing the
+  previously verified branding. Data access stayed verified throughout.
 
 [vo]: https://support.google.com/cloud/answer/13463073
 [vr]: https://support.google.com/cloud/answer/13464321
