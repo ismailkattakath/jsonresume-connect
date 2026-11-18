@@ -16,7 +16,9 @@ Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 > icons and banner from `assets/`. Unchanged: visibility **Public** (saved, permanent),
 > Individual + Admin Install, four scopes. Deployment `AKfycbwY…` is at Apps Script
 > **version 6** (v0.1.3: the PKCE CSPRNG fix and the new logo). The OAuth consent screen logo was
-> not changed, so it still shows the first mark.
+> changed to the same icon the same day: Branding re-verified automatically within minutes and
+> was published, and the Verification Center still reads "Your app's data access has been
+> verified."
 >
 > **Preview status: cleared (read 2026-11-06).** Google's help page no longer calls custom steps
 > a "limited preview", and says developers can "publish them publicly to the Google Workspace
