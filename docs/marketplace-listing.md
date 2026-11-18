@@ -86,7 +86,7 @@ YOU NEED
 
 Open source (MIT): https://github.com/ismailkattakath/jsonresume-connect
 
-Independent project. Not affiliated with or endorsed by the JSON Resume project or Google LLC. Google Docs™, Google Drive™, Google Workspace™ and Google Workspace Studio™ are trademarks of Google LLC.
+Independent project that works with JSON Resume. Not affiliated with or endorsed by Google LLC. Google Docs™, Google Drive™, Google Workspace™ and Google Workspace Studio™ are trademarks of Google LLC.
 ```
 
 ## Graphic assets

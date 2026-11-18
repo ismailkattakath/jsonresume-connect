@@ -55,10 +55,16 @@
 - "JSON Resume" is used **nominatively**, to name the open standard and service the add-on
   reads. That is how the ecosystem names itself too (`resume-cli`, `jsonresume-theme-*`).
 - Marketplace policy: "Do not represent that you or your product is authorized by, endorsed by
-  or produced by another company" ([policies][pol]). Until the JSON Resume org adopts the
-  project, every listing and the README carry:
-  > *Independent project. Not affiliated with or endorsed by the JSON Resume project.*
-- If the org adopts it, drop the disclaimer. The repo may then move to the `jsonresume` org, which changes the Pages URL (see below).
+  or produced by another company" ([policies][pol]). So every listing and the README say the
+  project is independent:
+  > *Independent project that works with JSON Resume.*
+- **Wording agreed with the JSON Resume maintainer (2026-11-06,
+  [jsonresume.org#638](https://github.com/jsonresume/jsonresume.org/issues/638)):** "Please keep
+  describing the app as independent; 'works with JSON Resume' is a better fit than a full 'not
+  affiliated' disclaimer." The earlier line read *Not affiliated with or endorsed by the JSON
+  Resume project*. The same reply keeps the project in the jsonresume.org projects directory,
+  not under the org.
+- If the org adopts it, drop the line. The repo may then move to the `jsonresume` org, which changes the Pages URL (see below).
 
 ## Attribution line (descriptions, README footer, Pages footer)
 
