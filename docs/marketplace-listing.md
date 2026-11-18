@@ -3,17 +3,20 @@
 Copy-paste text and the asset list for **Google Cloud console › APIs & Services › Google
 Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 
-> **Listing status: REJECTED 2026-11-06, not yet resubmitted.** Submitted and rejected the same
-> day (Google's email, 14:22 UTC). Two findings, both settings in the Marketplace SDK, neither
-> in the code:
+> **Listing status: resubmitted for review 2026-11-18.** The console shows "The draft is in
+> review and can't be edited." The first submission was rejected on 2026-11-06 (Google's email,
+> 14:22 UTC) with two findings, both settings in the Marketplace SDK, neither in the code:
 >
 > | Google's finding (quoted) | Fix |
 > |---|---|
 > | "The support page redirects to GitHub to open an issue, which is not user-friendly for non-technical users; please provide a standard support channel like a contact form or email." | A support page on the project site that gives an email address (§ Support links) |
 > | "A GitHub profile is not accepted, as it does not provide the required relevant information about the developer." | Developer website `https://ismail.kattakath.com/` (set in App Configuration, [`oauth-verification.md`](oauth-verification.md) step 11) |
 >
-> What was submitted: visibility **Public** (saved, permanent), Individual + Admin Install, four
-> scopes, deployment `AKfycbwY…` at Apps Script **version 5** (v0.1.2 + the PKCE CSPRNG fix).
+> What was resubmitted: both fixes above, the "works with JSON Resume" description line, and the
+> icons and banner from `assets/`. Unchanged: visibility **Public** (saved, permanent),
+> Individual + Admin Install, four scopes. Deployment `AKfycbwY…` is at Apps Script
+> **version 6** (v0.1.3: the PKCE CSPRNG fix and the new logo). The OAuth consent screen logo was
+> not changed, so it still shows the first mark.
 >
 > **Preview status: cleared (read 2026-11-06).** Google's help page no longer calls custom steps
 > a "limited preview", and says developers can "publish them publicly to the Google Workspace
