@@ -11,3 +11,10 @@ OAuth2.gs
   Copyright 2014 Google Inc. (now Google LLC).
   Licensed under the Apache License, Version 2.0; the full text is in
   LICENSES/Apache-2.0.txt. This file is not covered by the MIT License.
+
+App icon (assets/logo.svg, assets/icon-*.png)
+  Made by the JSON Resume project for this app
+  (https://github.com/jsonresume/jsonresume.org, apps/styleguide/public/
+  brand/partners/jsonresume-connect, commit
+  cf09f9b33b89cb13dd72df99be05a4e7a1923a17) and used with its permission.
+  Copyright (c) 2014-2026 JSON Resume contributors. MIT License.
