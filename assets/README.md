@@ -1,13 +1,23 @@
 # Brand assets
 
-An **original** mark: a folded page holding a pair of JSON braces `{ }`.
-It borrows neither Google's logo or colours nor the JSON Resume logo.
+The mark is **made by the JSON Resume project for this app**: the JSON Resume mark, filled with
+its yellow, in front of the document it becomes. It borrows nothing from Google's logo or colours.
+
+- **Source:** [`jsonresume/jsonresume.org`, `apps/styleguide/public/brand/partners/jsonresume-connect/`][partner],
+  copied byte for byte at commit `cf09f9b33b89cb13dd72df99be05a4e7a1923a17` (2026-11-06).
+- **Permission**, from that folder's README: "JSON Resume Connect may use these files as its app
+  icon, OAuth consent logo and listing images. Describe it as an independent app that works
+  with JSON Resume; the plain JSON Resume logo stays the project's own." Offered by the
+  maintainer in [jsonresume.org#638](https://github.com/jsonresume/jsonresume.org/issues/638).
+- **Do not redraw or re-render the icons.** `logo.svg` and every `icon-*.png` are upstream's
+  files. To update them, copy the new upstream files. Only the banner is built here.
+- The first mark (a folded indigo page with braces, 2026-10-27) is in this folder's git history.
 
 ## Files
 
 | File | Size | Used for | Rule (source) |
 |---|---|---|---|
-| `src/logo.svg` (= `logo.svg`) | vector, 128 viewBox | source of every PNG | — |
+| `src/logo.svg` (= `logo.svg`) | vector, 128 viewBox | upstream's `icon.svg`; the banner embeds its paths | — |
 | `icon-32.png` | 32×32 | Marketplace app icon (required) | [Create a listing][listing]: "at least two sizes: 32x32 and 128x128" |
 | `icon-128.png` | 128×128 | Marketplace app icon (required); manifest `addOns.common.logoUrl` | same |
 | `icon-48.png`, `icon-96.png` | 48×48, 96×96 | only if a web-app integration is added | [listing]: web apps also need 48 and 96 |
@@ -37,10 +47,12 @@ All icons are **square, colour (not grayscale), transparent background**: the
 ## Rebuild
 
 ```bash
-RV=$(nix build --no-link --print-out-paths nixpkgs#resvg)/bin/resvg   # resvg 0.48.1
-for s in 32 48 96 120 128 512; do $RV -w $s -h $s assets/src/logo.svg assets/icon-$s.png; done
-$RV assets/src/banner.svg assets/card-banner-220x140.png
+RV=$(nix build --no-link --print-out-paths nixpkgs#resvg)/bin/resvg   # resvg 0.49.0
+$RV assets/src/banner.svg assets/card-banner-220x140.png               # the banner only
 ```
+
+The icons are not rebuilt (see the top of this file). `src/banner.svg` repeats the mark's paths
+from `src/logo.svg`; if upstream changes the mark, copy the new paths into it.
 
 ## Manifest `logoUrl`
 
@@ -60,11 +72,12 @@ $RV assets/src/banner.svg assets/card-banner-220x140.png
 
 | Token | Hex | Why |
 |---|---|---|
-| page | `#3D2C8D` | deep indigo: not Google blue `#4285F4`, not Docs blue |
-| fold | `#9D8DF1` | lighter tint of the same hue |
-| braces | `#FFFFFF` | contrast on indigo |
-| banner bg | `#EEEAFE` → `#D9D2FB` | soft tint; JSON Resume's `#FFF18F` avoided on purpose |
+| front page | `#FFF18F` | JSON Resume's brand yellow, set by upstream |
+| back page | `#FFFFFF` | the document the résumé becomes, set by upstream |
+| outline, braces | `#1A1A1A` | set by upstream |
+| banner bg | `#FFFDF0` → `#FFF7C7` | ours: a pale tint of the same yellow, so the mark stays the darkest thing on the card |
 
+[partner]: https://github.com/jsonresume/jsonresume.org/tree/master/apps/styleguide/public/brand/partners/jsonresume-connect
 [listing]: https://developers.google.com/workspace/marketplace/create-listing
 [review]: https://developers.google.com/workspace/marketplace/about-app-review
 [brand]: https://support.google.com/cloud/answer/15549049

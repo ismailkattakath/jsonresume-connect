@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon-128.png" width="96" height="96" alt="JSON Resume Connect logo: a pair of braces on a folded page">
+  <img src="assets/icon-128.png" width="96" height="96" alt="JSON Resume Connect logo: a yellow page with a pair of braces, in front of a white document">
 </p>
 
 <h1 align="center">JSON Resume Connect</h1>

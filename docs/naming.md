@@ -51,7 +51,8 @@
   CONTRIBUTING, DESIGN_SYSTEM_PLAN and the org profile.
 - The code is **MIT** ("Copyright (c) 2014-2026 JSON Resume contributors"). The logo files
   (`apps/styleguide/public/brand/*.svg`) carry **no separate licence**. So this project does
-  **not** use the JSON Resume logo: it has its own mark (`assets/`).
+  **not** use the plain JSON Resume logo. Since 2026-11-18 it uses the variant the maintainer made
+  for it and gave permission for (source and terms: [`assets/README.md`](../assets/README.md)).
 - "JSON Resume" is used **nominatively**, to name the open standard and service the add-on
   reads. That is how the ecosystem names itself too (`resume-cli`, `jsonresume-theme-*`).
 - Marketplace policy: "Do not represent that you or your product is authorized by, endorsed by

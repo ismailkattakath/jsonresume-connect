@@ -2,7 +2,7 @@
 title: JSON Resume Connect
 ---
 
-<img src="https://raw.githubusercontent.com/ismailkattakath/jsonresume-connect/main/assets/icon-128.png" width="96" height="96" alt="JSON Resume Connect logo: a pair of braces on a folded page">
+<img src="https://raw.githubusercontent.com/ismailkattakath/jsonresume-connect/main/assets/icon-128.png" width="96" height="96" alt="JSON Resume Connect logo: a yellow page with a pair of braces, in front of a white document">
 
 # JSON Resume Connect
 

@@ -12,6 +12,21 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Ismail Kattakath"
 SPDX-License-Identifier = "MIT"
 
+# The mark is the JSON Resume project's, made for this app and used with permission
+# (assets/README.md). Upstream's repo is MIT and gives the files no separate licence.
+[[annotations]]
+path = ["assets/logo.svg", "assets/src/logo.svg", "assets/icon-*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "2014-2026 JSON Resume contributors"
+SPDX-License-Identifier = "MIT"
+
+# The banner places that mark on our background.
+[[annotations]]
+path = ["assets/src/banner.svg", "assets/card-banner-220x140.png"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2014-2026 JSON Resume contributors", "2026 Ismail Kattakath"]
+SPDX-License-Identifier = "MIT"
+
 # Screenshots of Google Workspace Studio: Google's interface, not ours to MIT-license.
 # Last on purpose: when several annotations match a file, the last one wins.
 [[annotations]]
