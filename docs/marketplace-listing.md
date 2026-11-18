@@ -3,10 +3,17 @@
 Copy-paste text and the asset list for **Google Cloud console › APIs & Services › Google
 Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 
-> **Listing status: submitted for review 2026-11-06.** Visibility **Public** (saved, permanent),
-> Individual + Admin Install, four scopes, deployment `AKfycbwY…` at Apps Script **version 5**
-> (v0.1.2 + the PKCE CSPRNG fix). Google: "If the app is approved, it will be published
-> automatically." The draft cannot be edited while in review.
+> **Listing status: REJECTED 2026-11-06, not yet resubmitted.** Submitted and rejected the same
+> day (Google's email, 14:22 UTC). Two findings, both settings in the Marketplace SDK, neither
+> in the code:
+>
+> | Google's finding (quoted) | Fix |
+> |---|---|
+> | "The support page redirects to GitHub to open an issue, which is not user-friendly for non-technical users; please provide a standard support channel like a contact form or email." | A support page on the project site that gives an email address (§ Support links) |
+> | "A GitHub profile is not accepted, as it does not provide the required relevant information about the developer." | Developer website `https://ismail.kattakath.com/` (set in App Configuration, [`oauth-verification.md`](oauth-verification.md) step 11) |
+>
+> What was submitted: visibility **Public** (saved, permanent), Individual + Admin Install, four
+> scopes, deployment `AKfycbwY…` at Apps Script **version 5** (v0.1.2 + the PKCE CSPRNG fix).
 >
 > **Preview status: cleared (read 2026-11-06).** Google's help page no longer calls custom steps
 > a "limited preview", and says developers can "publish them publicly to the Google Workspace

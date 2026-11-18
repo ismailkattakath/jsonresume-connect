@@ -170,8 +170,9 @@ kept for the record.
       `script.external_request`, `userinfo.email`, `userinfo.profile`. The manifest declares the
       first two; the two `userinfo` scopes are Google's defaults. A mismatch with Data Access is a
       rejection risk ("Scope Matching", Google's 2026-10-29 review).
-    - Developer name: `Ismail Kattakath` · Developer website: `https://github.com/ismailkattakath`
-      · Developer email: `<operator>` (not shown publicly).
+    - Developer name: `Ismail Kattakath` · Developer website: `https://ismail.kattakath.com/`
+      (not the GitHub profile: Google rejected that on 2026-11-06, see
+      [`marketplace-listing.md`](marketplace-listing.md)) · Developer email: `<operator>` (not shown publicly).
     - Trader status: `<operator>` (EEA consumer disclosure).
     - **Save Draft.**
 12. **Marketplace SDK › Store Listing.** Fill it from [`marketplace-listing.md`](marketplace-listing.md).
