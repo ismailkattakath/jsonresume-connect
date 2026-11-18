@@ -20,6 +20,12 @@ Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 > was published, and the Verification Center still reads "Your app's data access has been
 > verified."
 >
+> **Open: the screenshots still show the first icon.** Shots 1, 2, 3, 4 and 6 were captured
+> before the icon changed (shot 5, the Doc, shows no icon). They went into the resubmission
+> unchanged, because the listing cannot be edited while in review. Retake them once Google
+> answers. The flow they were shot in was deleted on 2026-11-18, so rebuild it first
+> (§ Screenshots).
+>
 > **Preview status: cleared (read 2026-11-06).** Google's help page no longer calls custom steps
 > a "limited preview", and says developers can "publish them publicly to the Google Workspace
 > Marketplace" ([Create and use custom steps][studiohelp]). It names no admin switch for custom
