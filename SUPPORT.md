@@ -2,6 +2,7 @@
 
 | You have | Go to |
 |---|---|
+| A question, with no GitHub account | the [support page](https://jsonresume-connect.kattakath.com/support/) (email) |
 | A question, or "how do I…" | [GitHub Discussions](https://github.com/ismailkattakath/jsonresume-connect/discussions) |
 | A bug in this add-on | a [bug report](https://github.com/ismailkattakath/jsonresume-connect/issues/new?template=bug_report.yml) |
 | An idea | a [feature request](https://github.com/ismailkattakath/jsonresume-connect/issues/new?template=feature_request.yml) |
