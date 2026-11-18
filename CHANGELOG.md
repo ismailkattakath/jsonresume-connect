@@ -10,6 +10,14 @@ Entries are written by [release-please](https://github.com/googleapis/release-pl
 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Do not edit them by
 hand; each release is inserted directly below this paragraph, newest first.
 
+## [0.1.3](https://github.com/ismailkattakath/jsonresume-connect/compare/v0.1.2...v0.1.3) (2026-11-18)
+
+
+### Bug Fixes
+
+* **manifest:** the add-on logo is the new JSON Resume Connect icon ([#18](https://github.com/ismailkattakath/jsonresume-connect/issues/18)) ([e6048b2](https://github.com/ismailkattakath/jsonresume-connect/commit/e6048b217be6c376aa11a63bb44d422d90ce0fe5))
+* **oauth:** PKCE verifier from a CSPRNG, not the library's Math.random() ([d2d62a4](https://github.com/ismailkattakath/jsonresume-connect/commit/d2d62a40bc757fcd40a290770a92160ca66d2878))
+
 ## [0.1.2](https://github.com/ismailkattakath/jsonresume-connect/compare/v0.1.1...v0.1.2) (2026-10-28)
 
 
