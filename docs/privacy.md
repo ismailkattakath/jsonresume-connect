@@ -105,9 +105,7 @@ The add-on is not directed at children.
 ## Changes and contact
 
 - Changes to this policy are published on this page and in its git history.
-- Questions: open an issue at
-  [github.com/ismailkattakath/jsonresume-connect/issues](https://github.com/ismailkattakath/jsonresume-connect/issues),
-  or contact [the maintainer on GitHub](https://github.com/ismailkattakath).
+- Questions: see the [support page](../support/), which gives a contact email address.
 
 ---
 

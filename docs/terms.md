@@ -64,9 +64,7 @@ By installing or using **JSON Resume Connect** ("the add-on") you agree to these
 
 ## 10. Contact
 
-- Open an issue at
-  [github.com/ismailkattakath/jsonresume-connect/issues](https://github.com/ismailkattakath/jsonresume-connect/issues),
-  or contact [the maintainer on GitHub](https://github.com/ismailkattakath).
+- See the [support page](../support/), which gives a contact email address.
 
 ---
 

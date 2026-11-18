@@ -122,14 +122,14 @@ appears. jsonresume.org accepts an invalid upload as-is; the step is what reject
 
 ## Support links (required)
 
-All three are served by GitHub Pages from `docs/` (see `docs/_config.yml`). Replace the base URL
+The first three are served by GitHub Pages from `docs/` (see `docs/_config.yml`). Replace the base URL
 if the repo is renamed (see [`naming.md`](naming.md)) — **Pages URLs do not follow a rename**.
 
 | Field | URL |
 |---|---|
 | Terms of service | `https://jsonresume-connect.kattakath.com/terms/` |
 | Privacy policy | `https://jsonresume-connect.kattakath.com/privacy/` |
-| Support | `https://github.com/ismailkattakath/jsonresume-connect/issues` |
+| Support | `https://jsonresume-connect.kattakath.com/support/` (email contact; a GitHub issues link was rejected 2026-11-06) |
 | Help (optional) | `https://github.com/ismailkattakath/jsonresume-connect#readme` |
 | Report issue (optional) | `https://github.com/ismailkattakath/jsonresume-connect/issues/new/choose` |
 

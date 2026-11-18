@@ -28,7 +28,7 @@ clean document in Google Docs™, with PDF and DOCX links.
 - [Privacy policy](privacy/)
 - [Terms of service](terms/)
 - [Source code and documentation](https://github.com/ismailkattakath/jsonresume-connect)
-- [Support: open an issue](https://github.com/ismailkattakath/jsonresume-connect/issues)
+- [Support](support/)
 
 ---
 
