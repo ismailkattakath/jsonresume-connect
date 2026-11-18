@@ -5,7 +5,7 @@ permalink: /privacy/
 
 # Privacy policy — JSON Resume Connect
 
-*Last updated: 2026-11-01. Changes are tracked in this file's
+*Last updated: 2026-11-18. Changes are tracked in this file's
 [git history](https://github.com/ismailkattakath/jsonresume-connect/commits/main/docs/privacy.md).*
 
 **JSON Resume Connect** ("the add-on") is an independent open-source Google Workspace add-on. It
@@ -112,5 +112,5 @@ The add-on is not directed at children.
 ---
 
 *Google Docs™, Google Drive™, Google Workspace™ and Google Workspace Studio™ are trademarks of
-Google LLC. This add-on is not affiliated with or endorsed by Google LLC or by the JSON Resume
-project.*
+Google LLC. This add-on is an independent project that works with JSON Resume. It is not
+affiliated with or endorsed by Google LLC.*

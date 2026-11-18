@@ -5,7 +5,7 @@ permalink: /terms/
 
 # Terms of service — JSON Resume Connect
 
-*Last updated: 2026-10-27.*
+*Last updated: 2026-11-18.*
 
 By installing or using **JSON Resume Connect** ("the add-on") you agree to these terms.
 
@@ -70,5 +70,6 @@ By installing or using **JSON Resume Connect** ("the add-on") you agree to these
 
 ---
 
-*Google Workspace™ and Google Workspace Studio™ are trademarks of Google LLC. This add-on is not
-affiliated with or endorsed by Google LLC or by the JSON Resume project.*
+*Google Workspace™ and Google Workspace Studio™ are trademarks of Google LLC. This add-on is an
+independent project that works with JSON Resume. It is not affiliated with or endorsed by
+Google LLC.*
