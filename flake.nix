@@ -29,7 +29,12 @@
           year = "2026";
           holder = "Ismail Kattakath";
         };
-        editorconfig.enable = false;
+        # Verbatim licence texts (MIT from opensource.org, Apache-2.0 from apache.org):
+        # never reformat them, which REUSE compliance depends on.
+        editorconfig.settings."{LICENSE,LICENSES/*}" = {
+          indent_size = "unset";
+          trim_trailing_whitespace = "unset";
+        };
       };
 
       perSystem =
