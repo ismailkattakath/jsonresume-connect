@@ -5,7 +5,7 @@ Thanks for helping. This project is small, so the rules are short.
 - **Bugs and ideas:** open an issue with one of the [issue forms](.github/ISSUE_TEMPLATE/).
 - **Questions:** see [SUPPORT.md](SUPPORT.md).
 - **Security problems:** never in a public issue. See [SECURITY.md](SECURITY.md).
-- **Conduct:** everyone follows the [Code of Conduct](CODE_OF_CONDUCT.md).
+- **Conduct:** everyone follows the [Code of Conduct](https://github.com/ismailkattakath/.github/blob/main/.github/CODE_OF_CONDUCT.md).
 
 ## Development setup
 

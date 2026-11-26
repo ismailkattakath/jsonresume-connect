@@ -237,9 +237,10 @@ So the add-on uses **no `DocumentApp` and no `DriveApp`**. It calls REST through
 then `npx @google/clasp push`. `rootDir` is `src/`, so only the add-on is pushed. `.clasp.json`
 is gitignored: a script id is yours, not the repo's.
 
-**gcloud** (optional, with [direnv](https://direnv.net)): `cp .envrc.example .envrc`, put your
-Google Cloud project ID in it, then `direnv allow`. Inside this folder gcloud then uses that
-project through `CLOUDSDK_CORE_PROJECT`. `.envrc` is gitignored for the same reason.
+**gcloud** (optional, with [direnv](https://direnv.net)): `cp .envrc.local.example .envrc.local`, put
+your Google Cloud project ID in it, then `direnv allow`. Inside this folder gcloud then uses
+that project through `CLOUDSDK_CORE_PROJECT`, and the tracked `.envrc` loads the Nix devShell
+(`nix develop`: Node.js 24 + git). `.envrc.local` is gitignored for the same reason.
 
 The `.gs` files share **one global scope** in Apps Script. `RenderDoc.gs` uses `str()` from
 `JsonResumeToDoc.gs`, and the step uses the renderer's functions, so every file must be in the

@@ -4,7 +4,7 @@
 
 | Role | Who | Can |
 |---|---|---|
-| **Maintainer** | [@ismailkattakath](https://github.com/ismailkattakath) | merge, release, triage, set direction, enforce the [Code of Conduct](CODE_OF_CONDUCT.md) |
+| **Maintainer** | [@ismailkattakath](https://github.com/ismailkattakath) | merge, release, triage, set direction, enforce the [Code of Conduct](https://github.com/ismailkattakath/.github/blob/main/.github/CODE_OF_CONDUCT.md) |
 | **Contributor** | anyone who opens an issue, discussion or pull request | propose changes |
 
 The maintainer owns every path ([CODEOWNERS](.github/CODEOWNERS)).
