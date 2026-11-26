@@ -12,7 +12,7 @@
 
 Before you ask:
 
-- Read the [README](README.md). Its troubleshooting table maps each error message to a fix.
+- Read [Deploy the add-on](docs/how-to/deploy.md). Its troubleshooting table maps each error message to a fix.
 - Check the flow's **Activity** tab and the Apps Script **Executions** log for the real error.
 - Search existing issues and discussions.
 

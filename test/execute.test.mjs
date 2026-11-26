@@ -8,7 +8,7 @@
  * ScriptApp, Utilities and AddOnsResponseService.
  *
  * What a fake cannot prove: that Google's services behave as faked. Those
- * shapes were measured live (README § Notes, RENDERER-DESIGN.md); these tests
+ * shapes were measured live (docs/explanation/building-notes.md, RENDERER-DESIGN.md); these tests
  * prove the step's own control flow over them.
  */
 

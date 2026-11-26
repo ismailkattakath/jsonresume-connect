@@ -13,3 +13,8 @@ exclude:
   - marketplace-listing.md
   - naming.md
   - README-intro.md
+  # Diátaxis docs for developers (linked from the README), not public site pages.
+  - tutorials
+  - how-to
+  - reference
+  - explanation

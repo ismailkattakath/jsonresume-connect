@@ -74,7 +74,7 @@ jobs:
 
       - name: Require urlFetchWhitelist
         if: env.HAS_CLASP == 'true'
-        # A versioned deployment enforces the URL allowlist (README, Deploying it).
+        # A versioned deployment enforces the URL allowlist (docs/how-to/deploy.md).
         run: jq -e '(.urlFetchWhitelist | length) > 0' src/appsscript.json > /dev/null || { echo "::error::src/appsscript.json has no urlFetchWhitelist; a versioned deployment would block UrlFetchApp"; exit 1; }
 
       - name: Write clasp credentials and project file

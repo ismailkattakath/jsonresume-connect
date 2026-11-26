@@ -28,8 +28,8 @@ The unit tests cover the pure code. Anything touching the card UI, OAuth, `UrlFe
 
 1. Push your branch's files to **your own** Apps Script project (the web editor or `clasp`).
    Never use the maintainer's project or credentials.
-2. Install it with a **test deployment** (*Deploy → Test deployments → Install*). The README's
-   install section has the exact steps and the admin-console gates.
+2. Install it with a **test deployment** (*Deploy → Test deployments → Install*). [Deploy the add-on](docs/how-to/deploy.md)
+   has the exact steps and the admin-console gates.
 3. Build a short flow in Workspace Studio that exercises your change, and run it.
 4. In the pull request, say what you ran and what you saw. Include the flow's shape and the
    step outputs. **Never paste a real résumé, an OAuth token or an access log.**

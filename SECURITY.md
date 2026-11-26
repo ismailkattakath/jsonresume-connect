@@ -43,7 +43,7 @@ In scope — the security properties this add-on is meant to keep:
 | **OAuth tokens** | The jsonresume.org access and refresh tokens live only in the running user's Apps Script `UserProperties` (with `UserCache`), via the vendored OAuth2 library. They must never be logged, returned as a step output, written into a Doc, or readable by another user. | `LoadJsonResume.gs`, `OAuth2.gs` |
 | **Untrusted résumé content** | Every résumé value is attacker-controllable text. It must be HTML-escaped before it reaches the generated document, and a link must only become a link when its URL is safe (no `javascript:` and similar). Any injection into the Doc, or a way to make a link do something other than open an `https` page, is a vulnerability. | `RenderResume.gs` (`escapeHtml` and the URL check) |
 | **Drive access** | The add-on asks only for `drive.file`: it can touch files it created or the user opened with it, nothing else. Any path that reads or changes another Drive file, or widens the scope, is a vulnerability. | `appsscript.json` (`oauthScopes`) |
-| **Outbound URLs** | The manifest declares a `urlFetchWhitelist`; Google enforces it on versioned deployments (whether test deployments or redirect targets are checked is unmeasured — see the README). A fetch that reaches a host the add-on did not mean to contact is a vulnerability. | `appsscript.json` |
+| **Outbound URLs** | The manifest declares a `urlFetchWhitelist`; Google enforces it on versioned deployments (whether test deployments or redirect targets are checked is unmeasured — see [docs/how-to/deploy.md](docs/how-to/deploy.md)). A fetch that reaches a host the add-on did not mean to contact is a vulnerability. | `appsscript.json` |
 
 Out of scope:
 

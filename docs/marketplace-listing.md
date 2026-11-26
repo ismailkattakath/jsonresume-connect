@@ -29,8 +29,7 @@ Workspace Marketplace SDK › Store Listing** ([Create a listing][listing]).
 > **Preview status: cleared (read 2026-11-06).** Google's help page no longer calls custom steps
 > a "limited preview", and says developers can "publish them publicly to the Google Workspace
 > Marketplace" ([Create and use custom steps][studiohelp]). It names no admin switch for custom
-> steps; the Admin console toggle is known only from this project's own deploy (README § Also
-> learned in the deploy).
+> steps; the Admin console toggle is known only from this project's own deploy ([deploy how-to](how-to/deploy.md#also-learned-in-the-deploy)).
 >
 > **One step, named "JSON Resume Connect"** (core merges Load + Render into it and deletes
 > Parse Job Description and Apply Tailoring).
